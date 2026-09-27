@@ -3,7 +3,7 @@
     "formatVersion": 1,
     "exportedAt": "",
     "appVersion": "stock",
-    "catalogVersion": 78,
+    "catalogVersion": 81,
     "fleets": [
         {
             "id": "fleet-actiontec",
@@ -8305,14 +8305,6 @@
                     "enabled": true
                 },
                 {
-                    "kind": "NAME_CONTAINS",
-                    "text": "BWCDEVICE",
-                    "companyId": 0,
-                    "dataPrefixHex": "",
-                    "radio": null,
-                    "enabled": true
-                },
-                {
                     "kind": "NAME_GLOB",
                     "text": "Axon*",
                     "companyId": 0,
@@ -8350,6 +8342,14 @@
                     "companyId": 845,
                     "dataPrefixHex": "",
                     "radio": null,
+                    "enabled": true
+                },
+                {
+                    "kind": "SERVICE_DATA",
+                    "text": "",
+                    "companyId": 0,
+                    "dataPrefixHex": "425743444556494345",
+                    "radio": "BLE",
                     "enabled": true
                 }
             ],
@@ -49399,14 +49399,22 @@
                     "dataPrefixHex": "",
                     "radio": null,
                     "enabled": true
+                },
+                {
+                    "kind": "MANUFACTURER_ID",
+                    "text": "",
+                    "companyId": 2504,
+                    "dataPrefixHex": "",
+                    "radio": null,
+                    "enabled": true
                 }
             ],
             "minPeers": 0,
             "peerWindowSec": 60,
             "clusterByOui": false,
             "sequentialMac": false,
-            "notes": "Penguin Flock-family / roadside camera provisioning name. Name-only, low uniqueness. Current Flock-family poles are often quiet on Wi-Fi and BLE.",
-            "attentionNote": "Penguin is a Flock-family / roadside camera provisioning name. Name-only, low uniqueness. Current poles are often quiet on Wi-Fi and BLE. Pattern match, not that camera. Look with your eyes.",
+            "notes": "Penguin Flock-family external battery. The XUNTONG BLE manufacturer ID is the usual fingerprint; Penguin* names are older firmware. Current poles are often quiet on Wi-Fi and BLE.",
+            "attentionNote": "Penguin is a Flock-family external battery (XUNTONG manufacturer ID). Name hits are older firmware and low uniqueness. Pattern match, not that camera. Look with your eyes.",
             "builtIn": true,
             "kind": "SURVEILLANCE"
         },
@@ -50118,14 +50126,6 @@
                     "enabled": true
                 },
                 {
-                    "kind": "MANUFACTURER_ID",
-                    "text": "",
-                    "companyId": 2504,
-                    "dataPrefixHex": "",
-                    "radio": null,
-                    "enabled": true
-                },
-                {
                     "kind": "OUI",
                     "text": "D4:11:D6",
                     "companyId": 0,
@@ -50138,7 +50138,7 @@
             "peerWindowSec": 60,
             "clusterByOui": false,
             "sequentialMac": false,
-            "notes": "Flock Raven or ShotSpotter-style acoustic gunshot sensor, usually on a pole with cameras. Current Flock-family poles are often quiet on Wi-Fi and BLE.",
+            "notes": "Flock Raven or ShotSpotter-style acoustic gunshot sensor, usually on a pole with cameras. BLE UUIDs 3100–3500 are the Raven radio. The XUNTONG battery manufacturer ID is Penguin, not this row. Current Flock-family poles are often quiet on Wi-Fi and BLE.",
             "attentionNote": "",
             "builtIn": true,
             "kind": "SURVEILLANCE"
@@ -50662,7 +50662,40 @@
                         "endian": "le",
                         "bitOffset": null,
                         "bitWidth": null,
-                        "scale": 2.0,
+                        "scale": null,
+                        "offsetAdd": 180.0,
+                        "modulo": null,
+                        "unit": "°",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "10",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "mask",
+                                "valueHex": "02",
+                                "and": {
+                                    "offset": 4,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "heading",
+                        "label": "Heading",
+                        "offset": 4,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": null,
                         "offsetAdd": null,
                         "modulo": null,
                         "unit": "°",
@@ -50673,10 +50706,82 @@
                             "op": "eq",
                             "valueHex": "10",
                             "and": {
-                                "offset": 4,
+                                "offset": 3,
                                 "length": 1,
-                                "op": "neq",
-                                "valueHex": "FF"
+                                "op": "nmask",
+                                "valueHex": "02",
+                                "and": {
+                                    "offset": 4,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "hspeed",
+                        "label": "Horizontal speed",
+                        "offset": 5,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": 0.75,
+                        "offsetAdd": 63.75,
+                        "modulo": null,
+                        "unit": "m/s",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "10",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "mask",
+                                "valueHex": "01",
+                                "and": {
+                                    "offset": 5,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "hspeed",
+                        "label": "Horizontal speed",
+                        "offset": 5,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": 0.25,
+                        "offsetAdd": null,
+                        "modulo": null,
+                        "unit": "m/s",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "10",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "nmask",
+                                "valueHex": "01",
+                                "and": {
+                                    "offset": 5,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
                             }
                         }
                     },
@@ -50842,7 +50947,40 @@
                         "endian": "le",
                         "bitOffset": null,
                         "bitWidth": null,
-                        "scale": 2.0,
+                        "scale": null,
+                        "offsetAdd": 180.0,
+                        "modulo": null,
+                        "unit": "°",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "11",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "mask",
+                                "valueHex": "02",
+                                "and": {
+                                    "offset": 4,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "heading",
+                        "label": "Heading",
+                        "offset": 4,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": null,
                         "offsetAdd": null,
                         "modulo": null,
                         "unit": "°",
@@ -50853,10 +50991,82 @@
                             "op": "eq",
                             "valueHex": "11",
                             "and": {
-                                "offset": 4,
+                                "offset": 3,
                                 "length": 1,
-                                "op": "neq",
-                                "valueHex": "FF"
+                                "op": "nmask",
+                                "valueHex": "02",
+                                "and": {
+                                    "offset": 4,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "hspeed",
+                        "label": "Horizontal speed",
+                        "offset": 5,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": 0.75,
+                        "offsetAdd": 63.75,
+                        "modulo": null,
+                        "unit": "m/s",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "11",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "mask",
+                                "valueHex": "01",
+                                "and": {
+                                    "offset": 5,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "hspeed",
+                        "label": "Horizontal speed",
+                        "offset": 5,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": 0.25,
+                        "offsetAdd": null,
+                        "modulo": null,
+                        "unit": "m/s",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "11",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "nmask",
+                                "valueHex": "01",
+                                "and": {
+                                    "offset": 5,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
                             }
                         }
                     },
@@ -51022,7 +51232,40 @@
                         "endian": "le",
                         "bitOffset": null,
                         "bitWidth": null,
-                        "scale": 2.0,
+                        "scale": null,
+                        "offsetAdd": 180.0,
+                        "modulo": null,
+                        "unit": "°",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "12",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "mask",
+                                "valueHex": "02",
+                                "and": {
+                                    "offset": 4,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "heading",
+                        "label": "Heading",
+                        "offset": 4,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": null,
                         "offsetAdd": null,
                         "modulo": null,
                         "unit": "°",
@@ -51033,10 +51276,82 @@
                             "op": "eq",
                             "valueHex": "12",
                             "and": {
-                                "offset": 4,
+                                "offset": 3,
                                 "length": 1,
-                                "op": "neq",
-                                "valueHex": "FF"
+                                "op": "nmask",
+                                "valueHex": "02",
+                                "and": {
+                                    "offset": 4,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "hspeed",
+                        "label": "Horizontal speed",
+                        "offset": 5,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": 0.75,
+                        "offsetAdd": 63.75,
+                        "modulo": null,
+                        "unit": "m/s",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "12",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "mask",
+                                "valueHex": "01",
+                                "and": {
+                                    "offset": 5,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "hspeed",
+                        "label": "Horizontal speed",
+                        "offset": 5,
+                        "length": null,
+                        "type": "u8",
+                        "endian": "le",
+                        "bitOffset": null,
+                        "bitWidth": null,
+                        "scale": 0.25,
+                        "offsetAdd": null,
+                        "modulo": null,
+                        "unit": "m/s",
+                        "enum": null,
+                        "when": {
+                            "offset": 2,
+                            "length": 1,
+                            "op": "eq",
+                            "valueHex": "12",
+                            "and": {
+                                "offset": 3,
+                                "length": 1,
+                                "op": "nmask",
+                                "valueHex": "01",
+                                "and": {
+                                    "offset": 5,
+                                    "length": 1,
+                                    "op": "neq",
+                                    "valueHex": "FF"
+                                }
                             }
                         }
                     },

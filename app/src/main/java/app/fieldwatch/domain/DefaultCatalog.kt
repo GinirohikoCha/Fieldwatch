@@ -355,7 +355,7 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Flock Raven or ShotSpotter-style acoustic gunshot sensor, usually on a pole with cameras. Current Flock-family poles are often quiet on Wi-Fi and BLE.",
+        notes = "Flock Raven or ShotSpotter-style acoustic gunshot sensor, usually on a pole with cameras. BLE UUIDs 3100–3500 are the Raven radio. The XUNTONG battery manufacturer ID is Penguin, not this row. Current Flock-family poles are often quiet on Wi-Fi and BLE.",
         builtIn = true,
         rules = listOf(
             name("RAVEN"),
@@ -367,7 +367,6 @@ object DefaultCatalog {
             uuid("3300"),
             uuid("3400"),
             uuid("3500"),
-            mfg(0x09C8),
             oui("D4:11:D6"),
         ),
     )
@@ -509,13 +508,14 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Penguin Flock-family / roadside camera provisioning name. Name-only, low uniqueness. Current Flock-family poles are often quiet on Wi-Fi and BLE.",
-        attentionNote = "Penguin is a Flock-family / roadside camera provisioning name. Name-only, low uniqueness. Current poles are often quiet on Wi-Fi and BLE. Pattern match, not that camera. Look with your eyes.",
+        notes = "Penguin Flock-family external battery. The XUNTONG BLE manufacturer ID is the usual fingerprint; Penguin* names are older firmware. Current poles are often quiet on Wi-Fi and BLE.",
+        attentionNote = "Penguin is a Flock-family external battery (XUNTONG manufacturer ID). Name hits are older firmware and low uniqueness. Pattern match, not that camera. Look with your eyes.",
         builtIn = true,
         rules = listOf(
             name("Penguin"),
             name("PENGUIN"),
             glob("Penguin*"),
+            mfg(0x09C8),
         ),
     )
 
@@ -2660,12 +2660,12 @@ object DefaultCatalog {
             name("Axon Fleet"),
             name("Axon Body"),
             name("Axon Dock"),
-            name("BWCDEVICE"),
             glob("Axon*"),
             uuid("FE6B"),
             uuid("FE6C"),
             uuid("FC81"),
             mfg(0x034D),
+            svcContainsAscii("BWCDEVICE"),
         ),
     )
 
@@ -4524,6 +4524,12 @@ object DefaultCatalog {
         MatchRule(RuleKind.NAME_GLOB, text = pattern, radio = RadioKind.BLE)
     private fun svcData(uuid: String, prefix: String) =
         MatchRule(RuleKind.SERVICE_DATA, text = uuid, dataPrefixHex = prefix, radio = RadioKind.BLE)
+    private fun svcContainsAscii(text: String) = MatchRule(
+        RuleKind.SERVICE_DATA,
+        text = "",
+        dataPrefixHex = text.encodeToByteArray().joinToString("") { "%02X".format(it) },
+        radio = RadioKind.BLE,
+    )
     private fun wifiName(text: String) =
         MatchRule(RuleKind.NAME_CONTAINS, text = text, radio = RadioKind.WIFI)
     private fun wifiGlob(pattern: String) =

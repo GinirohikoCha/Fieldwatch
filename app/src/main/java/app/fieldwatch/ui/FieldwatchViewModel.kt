@@ -740,10 +740,12 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                 val stamp = java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US)
                     .format(java.util.Date())
                 val file = File(dir, "fieldwatch-sit-compare-$stamp.pdf")
+                publishExport(0.32f, "Loading map tiles…")
+                val tiles = pathTilesForFigure(doc.pathFigure)
                 withContext(Dispatchers.Default) {
-                    DebriefPdf.write(doc, file) { p ->
+                    DebriefPdf.write(doc, file, tiles) { p ->
                         kotlinx.coroutines.runBlocking {
-                            publishExport(0.35f + 0.6f * p, "Writing sit compare PDF…")
+                            publishExport(0.38f + 0.55f * p, "Writing sit compare PDF…")
                         }
                     }
                 }
@@ -1453,6 +1455,18 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
         _sitExportRadios.value = radios
     }
 
+    private suspend fun pathTilesForFigure(figure: SitPathPlot.Figure?): List<PathTiles.Tile> {
+        if (figure == null || !figure.drawable) return emptyList()
+        val samples = Geo.despikePath(figure.tracks.flatMap { it.samples })
+        if (samples.size < 2) return emptyList()
+        val settings = app.config.settings
+        return PathTiles.load(
+            app, samples,
+            privacy = settings.demoMode,
+            onlineLookup = settings.onlineLookup,
+        )
+    }
+
     fun refreshSitPath() {
         viewModelScope.launch(Dispatchers.Default) {
             val model = buildSitPath()
@@ -1568,8 +1582,10 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                 val stamp = java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US)
                     .format(java.util.Date())
                 val file = File(dir, "fieldwatch-debrief-$stamp.pdf")
+                publishExport(0.32f, "Loading map tiles…")
+                val tiles = pathTilesForFigure(doc.pathFigure)
                 withContext(Dispatchers.Default) {
-                    DebriefPdf.write(doc, file) { p ->
+                    DebriefPdf.write(doc, file, tiles) { p ->
                         kotlinx.coroutines.runBlocking {
                             publishExport(0.4f + 0.55f * p, "Writing debrief PDF…")
                         }

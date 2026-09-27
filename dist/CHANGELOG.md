@@ -4,6 +4,13 @@ Newest first. This is Fieldwatch (`app.fieldwatch`). Each build below is what Se
 
 Fieldwatch continues the Spectre 1.2.14 field build under a new name, application id, and the MIT License. It does not replace Spectre on a phone.
 
+## 1.1.14 — 27 September 2026
+
+- Debrief / Compare PDF path figure: OpenStreetMap tiles when Online place names and maps is on and Privacy is off (same gate as Reports → Path). Full-width letter frame, thick green stays, numbered Extra attention (red) and bookmarked (blue) hits. Offline or Privacy: the north-up trace only.
+- Remote ID Location: heading uses the OpenDroneID east/west flag (direction 0–179, +180 when that bit is set) instead of a ×2 scale. Horizontal speed (`hspeed`) decodes with the SpeedMult bit (×0.25, or ×0.75 + 63.75). Catalog 79. ATAK track course/speed follow those values.
+- Catalog 80: BLE manufacturer 0x09C8 (XUNTONG) moves from Raven / ShotSpotter to Penguin. That ID is the Flock external battery, not the acoustic sensor. Raven keeps names, UUIDs 3100–3500, and OUI D4:11:D6.
+- Catalog 81: Axon `BWCDEVICE` matches ASCII (and byte-reversed) in BLE service data, not the advertised name. Empty-UUID service-data rules contain that hex in any service payload.
+
 ## 1.1.13 — 26 September 2026
 
 - TAK / CoT: advertised Remote ID aircraft pins include ATAK track course and speed when the Location message has them. Wi-Fi Remote ID (vendor IE FA:0B:BC type 0x0D) decodes Location / Basic ID / System the same way as BLE FFFA, so Payload location can pin a Wi-Fi-only drone. Vendor IE payload is no longer truncated at 24 bytes.

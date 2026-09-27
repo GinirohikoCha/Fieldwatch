@@ -189,6 +189,27 @@ class DeviceStoreTest {
     }
 
     @Test
+    fun remoteIdWestHeadingAndHorizontalSpeed() {
+        val store = DeviceStore()
+        val mac = "AA:BB:CC:DD:EE:05"
+        val flags = 0x20 or 0x02
+        val lat = le32(400_000_000)
+        val lon = le32(-740_000_000)
+        val geo = le16(2200)
+        val height = le16(2100)
+        val msg = byteArrayOf(0x12, flags.toByte(), 90, 40, 4) + lat + lon + le16(0) + geo + height + ByteArray(6)
+        val location = "0D00" + msg.toHexUpper()
+        store.ingestBatch(
+            listOf(ble(mac, name = "", facts = RadioFacts(serviceData = listOf(ServiceDataRecord("FFFA", location))))),
+            fleets,
+            30,
+        )
+        val device = store.find("BLE:$mac")!!
+        assertEquals(270.0, device.payloadHeading!!, 1e-6)
+        assertEquals(10.0, device.payloadSpeed!!, 1e-6)
+    }
+
+    @Test
     fun radioHoldDoesNotResurrectAlreadyGone() {
         val now = 1_000_000L
         val linger = 15_000L

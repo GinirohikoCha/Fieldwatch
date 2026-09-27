@@ -303,6 +303,8 @@ enum class DecodeWhenOp {
     @SerialName("eq") EQ,
     @SerialName("neq") NEQ,
     @SerialName("mask") MASK,
+    /** Inverse of [MASK]: every 1-bit in Hex must be clear in the payload slice. */
+    @SerialName("nmask") NMASK,
     /** Payload byte length equals [DecodeWhen.length]. offset/valueHex ignored. */
     @SerialName("len") LEN,
 }

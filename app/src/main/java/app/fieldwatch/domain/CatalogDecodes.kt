@@ -408,6 +408,12 @@ internal object CatalogDecodes {
         utf8("uas_id", "UAS ID", 4, length = 20),
     )
 
+    /**
+     * Packed Location after the 0x0D app code and counter (opendroneid.c).
+     * Flags at offset 3: SpeedMult bit 0, EWDirection bit 1.
+     * Direction byte is 0–179; EWDirection adds 180. SpeedHorizontal is
+     * value×0.25, or value×0.75 + 255×0.25 when SpeedMult is set.
+     */
     private fun locationFields(): List<DecodeField> = listOf(
         bits(
             "status", "Status", 3, bitOffset = 4, bitWidth = 4,
@@ -419,7 +425,22 @@ internal object CatalogDecodes {
                 "4" to "RID failure",
             ),
         ),
-        u8("heading", "Heading", 4, unit = "°", gate = neq(4, "FF")),
+        u8(
+            "heading", "Heading", 4, offsetAdd = 180.0, unit = "°",
+            gate = mask(3, "02", neq(4, "FF")),
+        ),
+        u8(
+            "heading", "Heading", 4, unit = "°",
+            gate = nmask(3, "02", neq(4, "FF")),
+        ),
+        u8(
+            "hspeed", "Horizontal speed", 5, scale = 0.75, offsetAdd = 63.75, unit = "m/s",
+            gate = mask(3, "01", neq(5, "FF")),
+        ),
+        u8(
+            "hspeed", "Horizontal speed", 5, scale = 0.25, unit = "m/s",
+            gate = nmask(3, "01", neq(5, "FF")),
+        ),
         i8("vspeed", "Vertical speed", 6, scale = 0.5, unit = "m/s"),
         i32le("latitude", "Latitude", 7, scale = 1e-7, unit = "°"),
         i32le("longitude", "Longitude", 11, scale = 1e-7, unit = "°"),
@@ -488,6 +509,12 @@ internal object CatalogDecodes {
 
     private fun neq(offset: Int, hex: String, and: DecodeWhen? = null) =
         DecodeWhen(offset = offset, op = DecodeWhenOp.NEQ, valueHex = hex, and = and)
+
+    private fun mask(offset: Int, hex: String, and: DecodeWhen? = null) =
+        DecodeWhen(offset = offset, op = DecodeWhenOp.MASK, valueHex = hex, and = and)
+
+    private fun nmask(offset: Int, hex: String, and: DecodeWhen? = null) =
+        DecodeWhen(offset = offset, op = DecodeWhenOp.NMASK, valueHex = hex, and = and)
 
     /** Tesla tsTPMS type byte at offset 2: 0–4 sleep, 5+ live. */
     private fun teslaAwake(): DecodeWhen =

@@ -565,6 +565,7 @@ private fun WhenOpMenu(op: DecodeWhenOp, modifier: Modifier, onChange: (DecodeWh
         DecodeWhenOp.EQ -> "equals"
         DecodeWhenOp.NEQ -> "not equals"
         DecodeWhenOp.MASK -> "mask"
+        DecodeWhenOp.NMASK -> "none of bits"
         DecodeWhenOp.LEN -> "length"
     }
     ExposedDropdownMenuBox(open, { open = it }, modifier) {
@@ -573,6 +574,7 @@ private fun WhenOpMenu(op: DecodeWhenOp, modifier: Modifier, onChange: (DecodeWh
             DropdownMenuItem(text = { Text("equals") }, onClick = { onChange(DecodeWhenOp.EQ); open = false })
             DropdownMenuItem(text = { Text("not equals") }, onClick = { onChange(DecodeWhenOp.NEQ); open = false })
             DropdownMenuItem(text = { Text("mask") }, onClick = { onChange(DecodeWhenOp.MASK); open = false })
+            DropdownMenuItem(text = { Text("none of bits") }, onClick = { onChange(DecodeWhenOp.NMASK); open = false })
             DropdownMenuItem(text = { Text("payload length") }, onClick = { onChange(DecodeWhenOp.LEN); open = false })
         }
     }

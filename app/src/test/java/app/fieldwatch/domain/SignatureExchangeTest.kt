@@ -865,6 +865,38 @@ class SignatureExchangeTest {
     }
 
     @Test
+    fun xuntongMfgHitsPenguinNotRaven() {
+        val engine = SignatureEngine()
+        val pack = ble(name = "", manufacturerId = 0x09C8, mac = "AA:BB:CC:DD:EE:08")
+        val ravenNamed = ble(name = "RAVEN-1", mac = "AA:BB:CC:DD:EE:09")
+        val hits = engine.match(listOf(pack, ravenNamed), stock)
+        assertTrue("XUNTONG is Penguin battery", "fleet-penguin" in hits.getValue(pack.key))
+        assertFalse("XUNTONG is not Raven", "fleet-raven" in hits.getValue(pack.key))
+        assertTrue("RAVEN name stays Raven", "fleet-raven" in hits.getValue(ravenNamed.key))
+        assertFalse("RAVEN name is not Penguin", "fleet-penguin" in hits.getValue(ravenNamed.key))
+    }
+
+    @Test
+    fun axonBwcdeviceMatchesServiceDataNotName() {
+        val engine = SignatureEngine()
+        val tagged = ble(name = "", mac = "AA:BB:CC:11:22:33").copy(
+            facts = RadioFacts(
+                serviceData = listOf(ServiceDataRecord("FE6B", "41584A414E5553425743444556494345")),
+            ),
+        )
+        val reversed = ble(name = "", mac = "AA:BB:CC:11:22:34").copy(
+            facts = RadioFacts(
+                serviceData = listOf(ServiceDataRecord("FC81", "454349564544435742")),
+            ),
+        )
+        val namedOnly = ble(name = "BWCDEVICE", mac = "AA:BB:CC:11:22:35")
+        val hits = engine.match(listOf(tagged, reversed, namedOnly), stock)
+        assertTrue("BWCDEVICE in service data", "fleet-axon" in hits.getValue(tagged.key))
+        assertTrue("byte-reversed BWCDEVICE", "fleet-axon" in hits.getValue(reversed.key))
+        assertFalse("name-only BWCDEVICE is not Axon", "fleet-axon" in hits.getValue(namedOnly.key))
+    }
+
+    @Test
     fun ravenWifiDirectSsidHitsRavenOnly() {
         val engine = SignatureEngine()
         val raven = sighting(RadioKind.WIFI, "00:0A:F5:86:56:DD", "DIRECT-rR-Raven-607")

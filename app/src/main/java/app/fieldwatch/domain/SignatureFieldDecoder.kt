@@ -134,6 +134,15 @@ object SignatureFieldDecoder {
                 }
                 ok
             }
+            DecodeWhenOp.NMASK -> {
+                var ok = true
+                for (i in got.indices) {
+                    val g = got[i].toInt() and 0xff
+                    val w = want[i].toInt() and 0xff
+                    if ((g and w) != 0) ok = false
+                }
+                ok
+            }
         }
     }
 

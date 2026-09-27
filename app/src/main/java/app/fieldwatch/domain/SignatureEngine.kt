@@ -237,8 +237,13 @@ class SignatureEngine {
         }
         RuleKind.SERVICE_DATA -> {
             val prefix = hexOnly(rule.dataPrefixHex)
-            if (rule.text.isBlank() || prefix.isEmpty()) null
-            else FastRule.SvcData(uuidAliases(rule.text), prefix, rule.radio)
+            if (prefix.isEmpty()) null
+            else FastRule.SvcData(
+                aliases = uuidAliases(rule.text).filter { it.isNotBlank() }.toSet(),
+                prefix = prefix,
+                radio = rule.radio,
+                contains = rule.text.isBlank(),
+            )
         }
         RuleKind.RADIO_KIND -> FastRule.Radio(rule.radio)
         RuleKind.HIDDEN_SSID -> FastRule.Hidden
@@ -357,12 +362,8 @@ class SignatureEngine {
             }
             RuleKind.SERVICE_DATA -> {
                 val prefix = hexOnly(rule.dataPrefixHex)
-                val want = uuidAliases(rule.text)
-                prefix.isNotEmpty() && want.isNotEmpty() &&
-                    device.facts.serviceData.any { rec ->
-                        uuidAliases(rec.uuid).any { it in want } &&
-                            hexOnly(rec.dataHex).startsWith(prefix)
-                    }
+                if (prefix.isEmpty()) false
+                else serviceDataHits(device, uuidAliases(rule.text).filter { it.isNotBlank() }.toSet(), prefix, contains = rule.text.isBlank())
             }
             RuleKind.RADIO_KIND ->
                 rule.radio == null || device.kind == rule.radio
@@ -556,14 +557,14 @@ class SignatureEngine {
             }
         }
 
-        class SvcData(val aliases: Set<String>, val prefix: String, val radio: RadioKind?) : FastRule() {
-            override fun hits(device: Sighting): Boolean {
-                if (!radioOk(device, radio)) return false
-                return device.facts.serviceData.any { rec ->
-                    uuidAliases(rec.uuid).any { it in aliases } &&
-                        hexOnly(rec.dataHex).startsWith(prefix)
-                }
-            }
+        class SvcData(
+            val aliases: Set<String>,
+            val prefix: String,
+            val radio: RadioKind?,
+            val contains: Boolean,
+        ) : FastRule() {
+            override fun hits(device: Sighting): Boolean =
+                radioOk(device, radio) && serviceDataHits(device, aliases, prefix, contains)
         }
 
         class Radio(val kind: RadioKind?) : FastRule() {
@@ -582,6 +583,37 @@ class SignatureEngine {
                 val id = device.manufacturerId ?: return emptyList()
                 return listOf(MfgRecord(id, device.manufacturerDataHex))
             }
+        }
+    }
+}
+
+private fun serviceDataHits(
+    device: Sighting,
+    aliases: Set<String>,
+    prefix: String,
+    contains: Boolean,
+): Boolean {
+    val needles = if (contains) {
+        val rev = reverseHexBytes(prefix)
+        if (rev.isEmpty() || rev == prefix) listOf(prefix) else listOf(prefix, rev)
+    } else {
+        listOf(prefix)
+    }
+    return device.facts.serviceData.any { rec ->
+        if (aliases.isNotEmpty() && uuidAliases(rec.uuid).none { it in aliases }) return@any false
+        val data = hexOnly(rec.dataHex)
+        if (contains) needles.any { data.contains(it) } else data.startsWith(prefix)
+    }
+}
+
+private fun reverseHexBytes(hex: String): String {
+    val h = hexOnly(hex)
+    if (h.length < 2 || h.length % 2 != 0) return ""
+    return buildString(h.length) {
+        var i = h.length
+        while (i >= 2) {
+            i -= 2
+            append(h, i, i + 2)
         }
     }
 }

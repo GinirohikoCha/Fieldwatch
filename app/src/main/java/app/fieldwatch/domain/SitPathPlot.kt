@@ -117,8 +117,9 @@ object SitPathPlot {
         width: Float,
         height: Float,
         pad: Float = 16f,
+        scaleBarReserve: Float = 44f,
     ): Layout? {
-        if (width <= pad * 2 || height <= pad * 2) return null
+        if (width <= pad * 2 || height <= pad * 2 + scaleBarReserve) return null
         val pts = Geo.despikePath(model.samples).let { cleaned ->
             if (cleaned.size >= 2) cleaned else model.samples
         }
@@ -152,7 +153,7 @@ object SitPathPlot {
         val spanX = (maxX - minX).coerceAtLeast(8f)
         val spanY = (maxY - minY).coerceAtLeast(8f)
         val innerW = width - pad * 2
-        val innerH = height - pad * 2 - 44f
+        val innerH = height - pad * 2 - scaleBarReserve
         val scale = min(innerW / spanX, innerH / spanY)
         val usedW = spanX * scale
         val usedH = spanY * scale
@@ -175,7 +176,7 @@ object SitPathPlot {
             plotLeft = pad,
             plotTop = pad,
             plotRight = width - pad,
-            plotBottom = height - pad - 44f,
+            plotBottom = height - pad - scaleBarReserve,
             samples = pts,
         )
     }

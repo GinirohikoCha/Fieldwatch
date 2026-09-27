@@ -479,8 +479,8 @@ def draw_cover(c, doc):
         y -= 16
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 9)
-    c.drawString(48, 108, "Version 1.1.13")
-    c.drawString(48, 94, "26 September 2026")
+    c.drawString(48, 108, "Version 1.1.14")
+    c.drawString(48, 94, "27 September 2026")
     c.drawString(48, 80, "Package  app.fieldwatch   ·   Android 10+ (API 29)   ·   Target API 35")
     c.setStrokeColor(colors.HexColor("#2A3340"))
     c.setLineWidth(0.6)
@@ -520,7 +520,7 @@ def draw_body(c, doc):
     c.line(48, 40, PAGE_W - 48, 40)
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 8)
-    c.drawString(48, 28, "v1.1.13  ·  Off Grid Pete LLC")
+    c.drawString(48, 28, "v1.1.14  ·  Off Grid Pete LLC")
     draw_ig_mark(c, 148, 30, 5.2, MUTED)
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 8)
@@ -819,7 +819,7 @@ def story():
             [
                 ["IEEE MA-L registry", "B4:1E:52 is registered to Flock Safety (9 May 2024). This is the only high-confidence Flock-assigned OUI in the default set."],
                 ["Independent ALPR / DeFlock research", "Field OUI lists for LiteOn camera radios and Silicon Labs battery packs commonly seen on Flock hardware; SSID patterns Flock-XXXXXX, FS Ext Battery, Penguin, Pigvision."],
-                ["GainSec / firmware write-ups", "Raven BLE service UUID range 0x3100–0x3500 and manufacturer ID 0x09C8 (XUNTONG) as stronger digital fingerprints than OUI alone."],
+                ["GainSec / firmware write-ups", "Raven BLE service UUID range 0x3100–0x3500. XUNTONG manufacturer ID 0x09C8 is the Penguin / Flock external battery, not the Raven acoustic radio."],
                 ["BLE tracker conventions", "Apple 0x004C Offline Finding 0x12; Samsung SmartTag FD5A / 0x0075; Tile 0x00C7 and FEED/FEDD. Chipolo and Pebblebee/moto tag are name-only Find Hub locators (stock rows, on)."],
                 ["Android platform docs", "WifiManager scan throttling, BLE ScanSettings, permission model (location, NEARBY_WIFI_DEVICES, BLUETOOTH_SCAN), foreground-service types."],
             ],
@@ -1682,10 +1682,12 @@ def story():
             "Turn that switch off to keep streets out of Debrief/AI Export and maps off Path together."
         ),
         P(
-            "Debrief PDF and Compare PDF include a letter-size operator-path figure of the same walk. "
-            "On the PDF, stacked radios at one place share one number; the Path key lists every radio "
-            "at that stop. Compare overlays this sit (solid) and the second sit (dashed) when both have "
-            "enough GPS samples. Caption stays inside the panel outline."
+            "Debrief PDF and Compare PDF include a letter-size operator-path figure of the same walk, "
+            "full width of the report frame. When Online place names and maps is on, Privacy is off, "
+            "and the phone is online, OpenStreetMap tiles fill that frame the same way Reports → Path does. "
+            "Thick green is a stay; Extra attention is red; bookmarked is blue; stacked radios at one place "
+            "share a Path-key number. Offline or Privacy: the north-up trace only. Compare overlays this sit "
+            "(solid) and the second sit (dashed) when both have enough GPS samples. Caption stays inside the panel outline."
         ),
         P("Compare sits", "h3"),
         figure_wrap(
@@ -1942,8 +1944,8 @@ def story():
                 ["longitude (aliases lon, lng)", "Advertised WGS84 longitude. Required with latitude."],
                 ["alt_geo (aliases altitude, alt, hae)", "Optional HAE meters for the CoT point. Sticky with the lat/lon pair."],
                 ["op_lat / op_lon (aliases operator_lat / operator_lon)", "Remote ID System operator (pilot) location. Second TAK pin, linked to the aircraft. Not the aircraft pin. Do not reuse these ids for the aircraft."],
-                ["heading (aliases course, direction)", "Location heading degrees. TAK track course on the aircraft pin. OpenDroneID uses direction + east/west flag, not a ×2 scale."],
-                ["speed (aliases hspeed)", "Horizontal speed m/s. TAK track speed on the aircraft pin."],
+                ["heading (aliases course, direction)", "Location heading degrees. TAK track course on the aircraft pin. Direction byte 0–179 plus 180 when the east/west flag is set (opendroneid.c). Not a ×2 scale."],
+                ["speed (aliases hspeed)", "Horizontal speed m/s. TAK track speed on the aircraft pin. Stock Remote ID id is hspeed: ×0.25, or ×0.75 + 63.75 when SpeedMult is set."],
                 ["uas_id (alias serial)", "Remote ID Basic ID. Sticky. TAK aircraft uid when at least four characters after cleaning."],
                 ["self_id", "Remote ID Self ID. Sticky. Preferred advertised callsign when present."],
             ],
@@ -2355,6 +2357,7 @@ def story():
                 ["Service UUID", "BLE AD type 0x02/0x03/0x06/0x07 or service data keys", "16-bit values are compared as both short and Bluetooth-base 128-bit forms."],
                 ["Manufacturer ID", "BLE AD type 0xFF company identifier", "Apple 0x004C, Samsung 0x0075, Tile 0x00C7, XUNTONG 0x09C8, etc."],
                 ["Manufacturer data prefix", "Bytes after the company ID", "AirTag Offline Finding uses 0x12 as the first payload byte."],
+                ["Service data", "BLE AD type 0x16/0x21 payload after the UUID", "UUID plus prefix (Find Hub FEAA 40/41). Empty UUID: those hex bytes anywhere in any service payload, also byte-reversed (Axon BWCDEVICE)."],
                 ["Radio kind", "WIFI or BLE", "Do not OR this alone or the signature matches every radio of that type."],
                 ["Hidden SSID", "Empty SSID on a Wi-Fi result", "Matches the class of hidden APs. Combine with a full BSSID (AND) to follow one radio."],
                 ["Vendor IE OUI", "802.11 element 221 when the OS returns IEs", "LiteOn 00:80:19 / 00:0A:EB on Flock. Many phones strip IEs from scan results."],
@@ -2395,7 +2398,7 @@ def story():
         P(
             "Typical field use: open <b>Flock Safety Cameras</b>, turn off the LiteOn / Espressif OUI "
             "rules, leave B4:1E:52 and the Flock-* name globs on. Match-any still means one enabled "
-            "rule is enough. Penguin and Pigvision are name-only — if you switch every name rule off, "
+            "rule is enough. Pigvision is name-only — if you switch every name rule off, "
             "they will not match until you turn one back on."
         ),
         P(
@@ -2443,14 +2446,14 @@ def story():
             "and a TAK Extra attention pin at your GPS if that feed is on — Extra attention and "
             "the bookmark apply to the whole signature, not only B4:1E:52.", "body_left"),
         P("<b>Names help, and they lie.</b> Flock-ABCDEF during provisioning is a strong name. "
-            "A substring “Flock” on an unrelated SSID is weaker. Penguin / Pigvision are "
-            "name-only and low uniqueness. Optional catalog rows (Verkada, Axis, Hikvision, …) "
+            "A substring “Flock” on an unrelated SSID is weaker. Pigvision is "
+            "name-only and low uniqueness. Penguin also hits BLE manufacturer 0x09C8 (XUNTONG). Optional catalog rows (Verkada, Axis, Hikvision, …) "
             "are also mostly names, ship <b>off</b>, and will label any AP that chose that word. "
             "Do not write “Hikvision camera” in a log because an SSID contained Hikvision.", "body_left"),
         P("<b>Raven is a different radio.</b> Acoustic ShotSpotter / Raven sensors are not the "
             "ALPR camera. Stronger digital fingerprints are BLE UUID 0x3100–0x3500 and "
-            "manufacturer 0x09C8 (XUNTONG), plus OUI D4:11:D6. The name “RAVEN” alone is easier "
-            "to collide with.", "body_left"),
+            "OUI D4:11:D6. Manufacturer 0x09C8 (XUNTONG) is the Penguin battery, not Raven. "
+            "The name “RAVEN” alone is easier to collide with.", "body_left"),
         P("<b>Vendor IEs are often missing.</b> LiteOn 00:80:19 / 00:0A:EB in element 221 is a "
             "nice corroboration when the OS includes IEs. Samsung scan results frequently omit "
             "them. A silent vendor-IE switch is normal, not proof the AP is clean.", "body_left"),
@@ -2468,8 +2471,8 @@ def story():
             "<i>broadcast</i>, not that the corridor is empty.", "body_left"),
         callout(
             "How to talk about a match",
-            "High: B4:1E:52 and/or SSID Flock-* / FLCK, or Raven UUID 0x3100–0x3500 / mfg 0x09C8. "
-            "Medium: FS Ext Battery by name, or Flock name without the IEEE OUI. "
+            "High: B4:1E:52 and/or SSID Flock-* / FLCK, or Raven UUID 0x3100–0x3500. "
+            "Medium: FS Ext Battery by name, Penguin 0x09C8 (XUNTONG), or Flock name without the IEEE OUI. "
             "Low: LiteOn / Espressif / Silicon Labs OUI alone, Penguin/Pigvision name, optional "
             "catalog name-only cameras. Never: “this is a Flock camera” from RF without a "
             "visual or the IEEE OUI (or a clear Flock-* SSID). Pattern match ≠ plate, person, or serial.",
@@ -3279,6 +3282,7 @@ def story():
             "<b>equals</b> — bytes at Offset / Length must match Hex. Ruuvi Format 5: offset 0, length 1, hex 05. Remote ID location on the catalog map: the message-type nibble is packed with the protocol version, so the header is 10 / 11 / 12 for location (type 1, proto 0–2). The OpenDroneID parser reads the same versions on BLE and Wi-Fi.",
             "<b>not equals</b> — skip when those bytes are Hex (a reserved/invalid marker).",
             "<b>mask</b> — every 1-bit in Hex must be set in the payload slice: (payload AND Hex) equals Hex. Use it for flag bytes when you only care that a bit is on.",
+            "<b>none of bits</b> — every 1-bit in Hex must be clear: (payload AND Hex) is 0. Remote ID east heading and low-range horizontal speed use this on the flags byte.",
             "<b>payload length</b> (When → length) — the whole source payload must be exactly Bytes long. Offset/Hex are ignored. Govee H5074 is 7 bytes; H5075 is 5 or 6. Same company ID, different length, different fields.",
         ]),
         P(
@@ -3311,7 +3315,7 @@ def story():
             ["Signature", "Source", "What detail can show"],
             [
                 ["Ruuvi", "Mfr 0x0499", "Format 5: temp / humidity / pressure / accel / battery / TX / movement / sequence / MAC in payload. Format 3: humidity / pressure / accel / battery (Format 3 temperature is sign-magnitude, not a plain int)."],
-                ["Remote ID", "Service FFFA", "Open Drone ID app code, counter, message type. Protocol 0–2: Basic ID, location (latitude / longitude / alt_geo / heading), Self ID, System (op_lat / op_lon = pilot). TAK Payload location uses those ids plus track course/speed. Wi-Fi vendor IE FA:0B:BC type 0x0D decodes the same packed messages. Not a tail number."],
+                ["Remote ID", "Service FFFA", "Open Drone ID app code, counter, message type. Protocol 0–2: Basic ID, location (latitude / longitude / alt_geo / heading / hspeed). Heading is direction 0–179 plus 180 when flags bit 1 (east/west) is set — not ×2. hspeed is ×0.25, or ×0.75 + 63.75 when flags bit 0 (SpeedMult) is set. Self ID, System (op_lat / op_lon = pilot). TAK Payload location uses those ids plus track course/speed. Wi-Fi vendor IE FA:0B:BC type 0x0D decodes the same packed messages. Not a tail number."],
                 ["Blue Maestro", "Mfr 0x0133", "Tempo Disc battery, log interval, stored logs, temperature, humidity."],
                 ["GoPro", "Mfr 0xF202", "Schema, processor awake/asleep, Wi-Fi AP, pairing, model name, media offload."],
                 ["Osmo / DJI", "Mfr 0x08AA", "Model id (Osmo Action / Pocket / 360 and some aircraft). Osmo and DJI rows share the map; identity rules still split cameras from drones."],
@@ -3678,7 +3682,8 @@ def story():
             "signature has that field filled (full caution text on each hit; amber highlighted boxes on the PDF; "
             "pattern match, not a skimmer detector), anomalies, privacy, "
             "recommended actions, and a one-line takeaway. "
-            "When GPS tagging recorded a walk, a letter-size operator-path figure sits with the report (stacked radios at one place share a Path-key number). "
+            "When GPS tagging recorded a walk, a full-width operator-path figure sits with the report "
+            "(OSM tiles when maps are on and Privacy is off; stacked radios at one place share a Path-key number). "
             "<b>Anomalies</b> is not a second inventory: Extra attention, Signature hits, and tracking callouts already list named matches. "
             "Anomalies only keeps cues that are not those sections (Fast Pair in pairing mode, a very loud unnamed radio, a high randomized-BLE count). "
             "AirTag / SmartTag / Tile rosters and Extra attention reprints are omitted."
@@ -4106,7 +4111,7 @@ def story():
             ["Share", "What it is", "Use it when"],
             [
                 ["Debrief (text)", "Sit report, plain text. Distance, Where you were, Observer notes, tracking assessment (last 15 min, ignores Live display view/filter), environment, inventories, actions, takeaway. Custom names. Reports tab.", "After a walk: was something with me? Notes, Signal/SMS, a logbook. Same words as the PDF."],
-                ["Debrief (PDF)", "Same sit report, letter-size typeset (FIELDWATCH header, numbered sections, Observer notes after Where you were, amber Possible trackers with you / Possible tail callouts when those lists are non-empty, amber Extra attention callout per special note, operator-path figure, takeaway box). Tracking does not care which Live display view or filter was on.", "Hand to someone, file the sit, print. Easier to read than the text dump."],
+                ["Debrief (PDF)", "Same sit report, letter-size typeset (FIELDWATCH header, numbered sections, Observer notes after Where you were, amber Possible trackers with you / Possible tail callouts when those lists are non-empty, amber Extra attention callout per special note, full-width path figure with OSM / stays / numbered hits, takeaway box). Tracking does not care which Live display view or filter was on.", "Hand to someone, file the sit, print. Easier to read than the text dump."],
                 ["Compare (text / PDF)", "Presence-only this sit vs a second saved sit. Kind + MAC. Observer notes after Windows. Custom names. Path overlay on the PDF when both walks have GPS.", "Two rooms, two days, or last 15 minutes vs a named sit (RAM ~400 vs sit 3000)."],
                 ["AI Export (Reports)", "Sit-level analyst <i>prompt</i>: onboard Debrief verbatim, plus a compact working table (5/15-minute rates, RSSI bands, Extra attention, Observer notes, finder-tag IDs). Asks for an addendum — not a rewrite, not a second roster.", "Paste into a chat when you want numbers and a stress-test of tracking callouts. Not a legal memo."],
                 ["Signature candidates", "Log miner on Reports. Re-matches the rotating log, lists unmatched families that share a unique on-air ID (2+ radios). Create signature is a draft with the shared rule, no MAC pin. Save returns to the list and re-runs it. Offline.", "After a sit with logging on: recurring unmatched globs / vendor IEs / OUIs worth a custom signature. Not every unknown radio. §5.6.4, §9.2.1, §11.5."],
@@ -4533,7 +4538,7 @@ def story():
             ["Payload location", "TAK What-to-send chip, on by default when you turn the feed on. Selects radios with sticky advertised lat/lon from a decode map or the OpenDroneID parser. Required for stock Remote ID (no Extra attention mark). BLE FFFA and Wi-Fi FA:0B:BC both qualify."],
             ["Reports", "Bottom tab. Sits (optional named window), Path, Debrief (text/PDF), Sit export, Compare sits, AI Export, Signature candidates, Log export (Format + radios), Reset / clear log. The selected sit drives Path, Debrief, Sit export, and Compare’s this-sit side. Config for GPS, place names, and logging on/off stays on Settings. §5.6."],
             ["Sit (named)", "Optional window of watching, started from Reports → Start sit. Path, Debrief, Compare this-sit, and AI Export use that start/end instead of the last 15 minutes in RAM, and keep radios the Live list has dropped. One at a time. Live list, Filters, Hunt, TAK unchanged if you never start one. Not DF. §5.6."],
-            ["Path", "Reports card. North-up plot of this phone for the selected sit (or last 15 minutes). Leave Reports in front to watch an open sit grow, or the last-15-minute snake move; the plot redraws about every three seconds. Extra attention (red) and bookmarked (blue) dots at strongest RSSI. Observer notes only if that radio is bookmarked. Thick green = stay. Time ticks. Head labeled Now while live, End on a saved sit. OSM tiles when Online place names and maps is on and the phone is online; Privacy mode or offline: the trace only. Also a letter-size figure on Debrief / Compare PDF. §5.6.1."],
+            ["Path", "Reports card. North-up plot of this phone for the selected sit (or last 15 minutes). Leave Reports in front to watch an open sit grow, or the last-15-minute snake move; the plot redraws about every three seconds. Extra attention (red) and bookmarked (blue) dots at strongest RSSI. Observer notes only if that radio is bookmarked. Thick green = stay. Time ticks. Head labeled Now while live, End on a saved sit. OSM tiles when Online place names and maps is on and the phone is online; Privacy mode or offline: the trace only. Debrief / Compare PDF uses the same map, stays, and numbered hits, full width of the letter frame. §5.6.1."],
             ["Sit export", "Reports card under Sit report. Same Format chips as Log export, different file: one row per unique radio in the selected sit (or last 15 minutes). Logging can be off. GPX/KML include the operator path as a track. Not the rotating log. Privacy mode does not mask the file. §5.6.2."],
             ["Log export", "Reports card. Share/Save of the rotating session file (JSON lines on disk; CSV / GPX / KML / WiGLE at export). One line per hear while logging was on. Needs Write to disk. Clearing the log does not delete sits. §5.6.3, §11.6."],
             ["Observer notes", "Optional 280-character field on a Named radio (same KIND+MAC as the custom name). Cyan block on detail; cyan notes chip on Live next to Extra attention “!”. Debrief lists them after Where you were; Compare after Windows. Path lists the note only if that radio is bookmarked. AI Export lists heard radios with the note. Not catalog Notes and not Extra attention gold. BLE privacy addresses hide the pencil. Settings backup includes the note. §5.5, §5.6."],
@@ -4543,7 +4548,7 @@ def story():
             ["Notes (signature)", "Editor field on a signature. Shows on radio detail as a quiet Notes card for matching radios, and in Share / AI Export. Stock copy is what the family is and how it is typically used — not the match recipe (company IDs, UUIDs). Not Extra attention: no Live “!”, not amber, not Debrief. Dual-chip radios list each family. §5.5, §9.3."],
             ["Extra attention", "Optional field on a signature, separate from Notes. If it is not empty, a match gets a “!” on the Live display, an amber Extra attention card on detail, and a line in Debrief / AI Export (amber PDF callout). Empty = no mark. The “!” is its own chip, not the decode hexagon, not the cyan Observer notes chip, and not the phosphor alerted bell. Stock fills it on Hobby BLE serial, Axon, WatchGuard Video, Digital Ally, Reveal Media, Wolfcom, Ray-Ban / Meta glasses, Snap Spectacles, Brilliant Frame, Even G1, Fieldy, Plaud Note, Limitless, Bee, Omi, Friend, Hak5 Pineapple, Flipper Zero, Pwnagotchi, Marauder / Deauther, GhostESP, Bruce, Porkchop, Cradlepoint, AirLink, Compex, Novatel Wireless, Utility Inc, Panasonic i-PRO / Arbitrator, and roadside / public camera + ALPR (Flock, Penguin, Pigvision, FS Ext Battery, Genetec AutoVu, Rekor, Motorola Vigilant, Verkada, Avigilon, Axis, Hikvision, Dahua, Hanwha Wisenet, Uniview, Rhombus, Hayden AI, Miovision, Tattile, LVT LiveView) — those rows also ship with the bookmark on. Many camera/ALPR rows are name-only; cellular units stay quiet. Pattern match, not identity, not a safety finding. §5.5, §9.3, §9.5, §12.14."],
             ["Hobby BLE serial", "Catalog signature (on). BLE advertised names for cheap UART modules (HMSoft, JDY, CC41, AT-09, BT05, ESP32 BLE). Not Classic HC-05/HC-06. Extra attention cautions that the same boards have been used in some pump/ATM overlays; look with your eyes if it is loud next to a card reader. Not proof. Turn the row off if those names are local noise."],
-            ["Axon", "Catalog signature (on). IEEE OUI 00:25:DF plus Axon Body / Fleet / Dock names. Extra attention: body-worn, in-car, dock, or TASER. Public safety class — used in law enforcement, not exclusive to it. Not that officer. Quiet LTE units will not appear."],
+            ["Axon", "Catalog signature (on). IEEE OUI 00:25:DF plus Axon Body / Fleet / Dock names, UUIDs, and BWCDEVICE in BLE service data. Extra attention: body-worn, in-car, dock, or TASER. Public safety class — used in law enforcement, not exclusive to it. Not that officer. Quiet LTE units will not appear."],
             ["WatchGuard Video", "Catalog signature (on). IEEE OUI 00:1D:96 (WatchGuard Video, not the firewall company). Extra attention: body-worn / in-car. Now Motorola. Public safety class — used in law enforcement, not exclusive to it."],
             ["Ray-Ban / Meta glasses", "Catalog signature (on). BLE company IDs 0x01AB / 0x058E / 0x0D53 and Ray-Ban names. Extra attention. Quest and other Meta wearables can match the same IDs."],
             ["Snap Spectacles", "Catalog signature (on). BLE company ID 0x03C2 plus Spectacles names. Extra attention. Not proof of recording."],
@@ -4581,7 +4586,7 @@ def story():
             ["Mark seen", "Live display button, above the tabs, only while New detections only is on. Adds what is on the Live display to already-seen. While paused, uses the frozen list."],
             ["Reset seen", "Live display button, above the tabs, only while New detections only is on. Clears already-seen to zero so those radios can show as new. Does not clear the log."],
             ["Debrief (text)", "Reports share of the field sit report as plain text. Opens with DISCLAIMER (hobby / as-is; hypotheses not identity; local law; 15-minute live set). Last 15 minutes in the live map (about 400 radios, not the log) unless a sit is selected. Ignores Live display view and Filters. Where you were, then Observer notes if any, tracking assessment, amber co-travel callouts. Custom names. Radios you passed are omitted. On a drive, tap more than once. §11.4.1."],
-            ["Debrief (PDF)", "Same sit report, letter-size typeset PDF. Disclaimer at the top, then FIELDWATCH header, numbered sections (Observer notes after Where you were), bold stay/transit and Label: kickers, operator-path figure, amber co-travel callouts, takeaway. Same window as the text share. Long trip: tap more than once (§11.4.1). Share as application/pdf."],
+            ["Debrief (PDF)", "Same sit report, letter-size typeset PDF. Disclaimer at the top, then FIELDWATCH header, numbered sections (Observer notes after Where you were), bold stay/transit and Label: kickers, full-width operator-path figure (OSM when maps are on and Privacy is off; thick green stays; numbered Extra attention / bookmarked hits), amber co-travel callouts, takeaway. Same window as the text share. Long trip: tap more than once (§11.4.1). Share as application/pdf."],
             ["Compare sits", "Reports card under Sit report. This sit (open, selected, or last 15 minutes) vs a second saved sit. Presence only — only in this sit, only in the second, in both. Kind + MAC. Text, PDF, and AI Export. Observer notes after Windows. Not a radio fix. §5.6."],
             ["Online place names and maps", "Settings switch, on by default. Debrief and AI Export reverse-geocode GPS stamps via the system geocoder when online. Reports → Path loads OpenStreetMap tiles under the trace (fill the plot, clip, extra map around the route). Offline, no tiles, or Privacy mode: Debrief coordinates only, Path is the north-up trace — no error dialog. Turn off to keep streets and maps out together."],
             ["New at bottom", "Display → Sort. First-seen order, oldest at top; new radios append; gone radios drop. List follows the bottom unless you scroll up."],
@@ -4632,7 +4637,7 @@ def story():
     ]
     stock_sigs = [
             ["Flock Safety Cameras", "OUI B4:1E:52; LiteOn / related field OUIs (Espressif A4:CF:12 and 3C:71:BF dropped); names Flock, FLCK, CONDOR, FALCON, SPARROW; globs Flock-*, Flock-??????. Extra attention filled. Stock bookmark.", "Roadside ALPR / camera pole. High only for B4:1E:52 or a Flock-* SSID. Current poles are often quiet on Wi-Fi and BLE. Other OUIs are component vendors. Beeps on a new match."],
-            ["Raven / ShotSpotter", "Names RAVEN, ShotSpotter, SoundThinking; UUIDs 3100–3500; mfg 0x09C8; OUI D4:11:D6", "UUID range and 0x09C8 are the stronger digital fingerprints."],
+            ["Raven / ShotSpotter", "Names RAVEN, ShotSpotter, SoundThinking; UUIDs 3100–3500; OUI D4:11:D6", "UUID range is the stronger digital fingerprint. 0x09C8 is Penguin."],
             ["Apple AirTags", "Name AirTag / Find My; mfg data 0x004C / 12; UUID FD44", "Offline Finding. iPhones also send 0x12 — dropped when Continuity (Apple Device) is on the same radio unless the name is AirTag or UUID FD44. Not Continuity 0x10 and not AirPods (0x07)."],
             ["Apple Device", "Apple 0x004C types 0x10 / 0x0F / 0x0B / 0x05 / 0x0C–0x0E / 0x08 / 0x0A; names iPhone, iPad, MacBook", "Phone / tablet / Mac Continuity. OF 0x12 on the same radio is not a second AirTag chip. A street of iPhones will light this up."],
             ["Apple audio", "0x004C / 07 Proximity Pairing; 0x004C / 09 AirPlay; names AirPods, Beats", "AirPods / Beats / AirPlay. Not tags, not Nearby Info phones."],
@@ -4747,10 +4752,10 @@ def story():
             ["Minew", "IEEE OUI AC:23:3F; names Minew*", "Shenzhen Minew beacons / sensors. Field AC:23:3F often also iBeacon or Eddystone."],
             ["Estimote", "BLE company 0x015D; names Estimote*", "Location beacons / stickers. Decode fields: frame type (Nearable / Telemetry). Packed sensors are not expanded. §9.6."],
             ["Kontakt.io", "BLE company 0x01FD; names Kontakt*", "Kontakt Micro-Location beacons. Decode fields: UUID FE6A Location packet (battery / TX / channel / moving). §9.6."],
-            ["Penguin", "Name / glob Penguin*. Extra attention filled. Stock bookmark.", "Flock-family / roadside camera provisioning name. Name-only. Low uniqueness. Beeps on a new match."],
+            ["Penguin", "Name / glob Penguin*; mfg 0x09C8 (XUNTONG). Extra attention filled. Stock bookmark.", "Flock-family external battery. 0x09C8 is the usual fingerprint; Penguin* names are older firmware. Beeps on a new match."],
             ["Pigvision", "Name / glob Pigvision*. Extra attention filled. Stock bookmark.", "Flock-family / roadside camera name. Name-only. Beeps on a new match."],
             ["FS Ext Battery", "Name FS Ext Battery; globs FS_*, FS Ext*; remaining pack OUIs 04:0D:84, 1C:34:F1, 38:5B:44, 94:34:69, B4:E3:F9, F0:82:C0 (Silabs 90:35:EA / 58:8E:81 / EC:1B:BD dropped). Extra attention filled. Stock bookmark. Surveillance class.", "Usually a Flock-style camera pack. Name is medium confidence. Current poles are often quiet on Wi-Fi and BLE. Beeps on a new match."],
-            ["Raven / ShotSpotter", "Names RAVEN / ShotSpotter / SoundThinking; UUIDs 3100–3500; mfg 0x09C8; OUI D4:11:D6", "Flock Raven or ShotSpotter-style acoustic gunshot sensor. Wi-Fi Direct SSIDs such as DIRECT-rR-Raven-* hit on the Raven name, not a catch-all DIRECT- prefix. Surveillance class."],
+            ["Raven / ShotSpotter", "Names RAVEN / ShotSpotter / SoundThinking; UUIDs 3100–3500; OUI D4:11:D6", "Flock Raven or ShotSpotter-style acoustic gunshot sensor. Wi-Fi Direct SSIDs such as DIRECT-rR-Raven-* hit on the Raven name, not a catch-all DIRECT- prefix. 0x09C8 is Penguin. Surveillance class."],
             ["Digital Ally", "IEEE 00:23:BD; names FirstVu / Digital Ally / EVO-HD / VuLink", "Body-worn or in-car camera. Extra attention. Quiet LTE units stay off-air."],
             ["Limitless Pendant", "BLE service 632de001-604c-446b-a80f-7963e950f3fb; name Limitless", "Wearable conversation recorder. Extra attention."],
             ["Bee Pendant", "BLE service 03d5d5c4-a86c-11ee-9d89-8f2089a49e7e; Bee Pioneer", "Amazon Bee Pioneer recorder. Extra attention."],
@@ -4849,7 +4854,7 @@ def story():
             ["GhostESP", "Wi-Fi GhostNet / GhostNet*. Extra attention filled. Stock bookmark.", "GhostESP ESP32 audit firmware default AP. Same boards are DIY. Not proof of an attack. Beeps on a new match."],
             ["Bruce", "Wi-Fi BruceNet / BruceNet*. Extra attention filled. Stock bookmark.", "Bruce ESP32 pentest firmware default AP. Evil-portal SSIDs look like ordinary Wi-Fi and miss. Not proof of an attack. Beeps on a new match."],
             ["Rekor", "Rekor / Rekor*. Extra attention filled. Stock bookmark.", "Highway / transit ALPR. Name-only. Beeps on a new match."],
-            ["Axon", "OUI 00:25:DF (Axon Enterprise); names Axon Body / Fleet / Dock / BWCDEVICE / Axon*; UUIDs FE6B/FE6C/FC81; company TASER International 0x034D. Extra attention filled. Stock bookmark.", "Public safety class — used in law enforcement, not exclusive to it (government, municipal, and other corporate fleets likely run some of the same kit). Body-worn, in-car, dock, or TASER. Body 3/4 often advertise BLE on the public OUI. Not that officer. Not Axon Networks 00:58:28. ZTE Axon phones can hit the name. Beeps on a new match."],
+            ["Axon", "OUI 00:25:DF (Axon Enterprise); names Axon Body / Fleet / Dock / Axon*; UUIDs FE6B/FE6C/FC81; company TASER International 0x034D; service data contains BWCDEVICE (any UUID, also byte-reversed). Extra attention filled. Stock bookmark.", "Public safety class — used in law enforcement, not exclusive to it (government, municipal, and other corporate fleets likely run some of the same kit). Body-worn, in-car, dock, or TASER. Body 3/4 often advertise BLE on the public OUI. BWCDEVICE is in the service payload, not the local name. Not that officer. Not Axon Networks 00:58:28. ZTE Axon phones can hit the name. Beeps on a new match."],
             ["WatchGuard Video", "OUI 00:1D:96; names WatchGuard / VISTA WiFi / VISTA XLT. Extra attention filled. Stock bookmark.", "Public safety class — used in law enforcement, not exclusive to it (government, municipal, and other corporate fleets likely run some of the same kit). WatchGuard Video (now Motorola) body-worn / in-car. Not WatchGuard firewall 00:01:21. Patrol units may stay quiet. Beeps on a new match."],
             ["Ray-Ban / Meta glasses", "BLE company IDs 0x01AB, 0x058E, 0x0D53; UUIDs FEB7/FEB8; names Ray-Ban / Meta View / Oakley Meta. Extra attention filled. Stock bookmark.", "Often Ray-Ban Meta. Same IDs on Quest and other Meta wearables. Not proof of recording. Beeps on a new match."],
             ["Snap Spectacles", "BLE company ID 0x03C2; UUID FE45; Spectacles names. Extra attention filled. Stock bookmark.", "Snap Spectacles or other Snap BLE. Not proof of recording. Beeps on a new match."],
@@ -5011,9 +5016,9 @@ def story():
                 ["X", "@OGridPete"],
                 ["Document", "User Manual and Technical Documentation"],
                 ["Application ID", "app.fieldwatch"],
-                ["Software version", "1.1.13 (versionCode 23), field build of 26 September 2026"],
-                ["Document version", "1.1.13"],
-                ["Document date", "26 September 2026"],
+                ["Software version", "1.1.14 (versionCode 24), field build of 27 September 2026"],
+                ["Document version", "1.1.14"],
+                ["Document date", "27 September 2026"],
                 ["License", "MIT License (see LICENSE); third-party: NOTICE"],
                 ["Platform", "Android 10+ (minSdk 29), targetSdk 35"],
                 ["Classification", "Unclassified. Operationally sensitive if filled with site logs."],

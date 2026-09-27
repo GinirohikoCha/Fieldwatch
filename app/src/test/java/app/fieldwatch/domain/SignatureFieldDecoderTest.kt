@@ -331,9 +331,37 @@ class SignatureFieldDecoderTest {
         assertEquals("100 m", rows.display("alt_geo"))
         assertEquals("50 m", rows.display("height"))
         assertEquals("0 °", rows.display("heading"))
+        assertEquals("0 m/s", rows.display("hspeed"))
         assertEquals(40.0, rows.number("latitude")!!, 1e-6)
         assertEquals(-74.0, rows.number("longitude")!!, 1e-6)
         assertEquals(100.0, rows.number("alt_geo")!!, 1e-6)
+        assertEquals(0.0, rows.number("heading")!!, 1e-6)
+        assertEquals(0.0, rows.number("hspeed")!!, 1e-6)
+    }
+
+    @Test
+    fun catalogRemoteIdLocationWestHeadingAndSpeed() {
+        val fleet = DefaultCatalog.fleets().single { it.id == "fleet-remote-id" }
+        // Airborne, EWDirection, direction 90 → 270°. Speed 40 × 0.25 = 10 m/s.
+        val payload = "0D0012225A28000084D717007FE4D3000098083408000000000000"
+        val rows = SignatureFieldDecoder.decodeSighting(bleService("FFFA", payload, fleet.id), listOf(fleet))
+        assertEquals("Location", rows.display("msg_type"))
+        assertEquals("270 °", rows.display("heading"))
+        assertEquals("10 m/s", rows.display("hspeed"))
+        assertEquals(270.0, rows.number("heading")!!, 1e-6)
+        assertEquals(10.0, rows.number("hspeed")!!, 1e-6)
+        assertEquals(1, rows.count { it.id == "heading" })
+        assertEquals(1, rows.count { it.id == "hspeed" })
+    }
+
+    @Test
+    fun catalogRemoteIdLocationHighSpeedMultiplier() {
+        val fleet = DefaultCatalog.fleets().single { it.id == "fleet-remote-id" }
+        // SpeedMult set, SpeedHorizontal 4 → 4×0.75 + 255×0.25 = 66.75 m/s.
+        val payload = "0D0012210004000084D717007FE4D3000098083408000000000000"
+        val rows = SignatureFieldDecoder.decodeSighting(bleService("FFFA", payload, fleet.id), listOf(fleet))
+        assertEquals(66.75, rows.number("hspeed")!!, 1e-6)
+        assertEquals(0.0, rows.number("heading")!!, 1e-6)
     }
 
     @Test

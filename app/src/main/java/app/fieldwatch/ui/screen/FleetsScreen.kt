@@ -635,12 +635,12 @@ private fun RuleEditor(rule: MatchRule, onChange: (MatchRule) -> Unit, onDelete:
                 FieldwatchOutlinedField(
                     rule.text,
                     { onChange(rule.copy(text = it)) },
-                    "Service UUID",
+                    "Service UUID (empty = any, contains)",
                 )
                 FieldwatchOutlinedField(
                     rule.dataPrefixHex,
                     { onChange(rule.copy(dataPrefixHex = it)) },
-                    "Data prefix hex",
+                    if (rule.text.isBlank()) "Contains hex" else "Data prefix hex",
                 )
             }
             RuleKind.RADIO_KIND -> {

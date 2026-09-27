@@ -47,7 +47,9 @@ internal fun ruleShortLabel(rule: MatchRule): String = when (rule.kind) {
     RuleKind.VENDOR_IE_OUI -> "vendor IE ${rule.text}"
     RuleKind.OUI, RuleKind.MAC_PREFIX -> "OUI ${rule.text}"
     RuleKind.SERVICE_UUID -> "UUID ${rule.text}"
-    RuleKind.SERVICE_DATA -> "UUID ${rule.text} ${rule.dataPrefixHex}"
+    RuleKind.SERVICE_DATA ->
+        if (rule.text.isBlank()) "svc contains ${rule.dataPrefixHex}"
+        else "UUID ${rule.text} ${rule.dataPrefixHex}"
     RuleKind.MANUFACTURER_DATA -> "mfg 0x%04X %s".format(rule.companyId, rule.dataPrefixHex)
     RuleKind.MANUFACTURER_ID -> "mfg 0x%04X".format(rule.companyId)
     else -> rule.kind.name
