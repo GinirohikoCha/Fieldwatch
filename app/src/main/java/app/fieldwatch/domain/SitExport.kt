@@ -10,7 +10,8 @@ import java.util.TimeZone
 object SitExport {
     const val CSV_HEADER =
         "kind,mac,name,custom_name,observer_notes,rssi,rssi_min,rssi_max,channel,frequency_mhz," +
-            "randomized,hidden,first_seen,last_seen,hits,lat,lon,extra_attention"
+            "randomized,hidden,first_seen,last_seen,hits,lat,lon,extra_attention," +
+            "signatures,extra_attention_families"
 
     fun csv(
         devices: List<Sighting>,
@@ -18,6 +19,7 @@ object SitExport {
         customNames: Map<String, String>,
         observerNotes: Map<String, String>,
         extraKeys: Set<String>,
+        fleets: List<Fleet> = emptyList(),
     ): String = buildString {
         append(CSV_HEADER).append('\n')
         rows(devices, radios).forEach { d ->
@@ -42,6 +44,8 @@ object SitExport {
                     pin?.lat?.let { coord(it) }.orEmpty(),
                     pin?.lon?.let { coord(it) }.orEmpty(),
                     (d.key in extraKeys).toString(),
+                    csv(joinedNames(d, fleets)),
+                    csv(joinedAttention(d, fleets)),
                 ).joinToString(","),
             ).append('\n')
         }
@@ -53,6 +57,7 @@ object SitExport {
         customNames: Map<String, String>,
         observerNotes: Map<String, String>,
         extraKeys: Set<String>,
+        fleets: List<Fleet> = emptyList(),
     ): String = buildString {
         rows(devices, radios).forEach { d ->
             val pin = hearPoint(d)
@@ -80,6 +85,8 @@ object SitExport {
                 obj.put("lon", JSONObject.NULL)
             }
             obj.put("extra_attention", d.key in extraKeys)
+            obj.put("signatures", joinedNames(d, fleets))
+            obj.put("extra_attention_families", joinedAttention(d, fleets))
             append(obj.toString()).append('\n')
         }
     }
@@ -166,6 +173,17 @@ object SitExport {
             "No GPS-tagged $which in this sit. Settings → Tag detections with GPS."
         }
     }
+
+    private fun joinedNames(d: Sighting, fleets: List<Fleet>): String {
+        if (d.fleetIds.isEmpty() || fleets.isEmpty()) return ""
+        val byId = fleets.associateBy { it.id }
+        return d.fleetIds.mapNotNull { byId[it]?.name?.trim()?.takeIf { n -> n.isNotEmpty() } }
+            .sorted()
+            .joinToString("; ")
+    }
+
+    private fun joinedAttention(d: Sighting, fleets: List<Fleet>): String =
+        d.attentionNotes(fleets).map { it.first }.joinToString("; ")
 
     private fun csv(s: String): String =
         if (s.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) {

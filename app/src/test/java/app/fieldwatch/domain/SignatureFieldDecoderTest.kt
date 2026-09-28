@@ -266,6 +266,14 @@ class SignatureFieldDecoderTest {
     }
 
     @Test
+    fun normalizedWhenTwoByteHexSetsLength() {
+        val gate = normalizeGate(DecodeWhen(offset = 10, op = DecodeWhenOp.EQ, valueHex = "544E"))
+        assertEquals("544E", gate!!.valueHex)
+        assertEquals(2, gate.length)
+        assertEquals(10, gate.offset)
+    }
+
+    @Test
     fun enumMapsRawValue() {
         val fleet = Fleet(
             id = "f",
@@ -319,6 +327,47 @@ class SignatureFieldDecoderTest {
     }
 
     @Test
+    fun catalogPenguinTnSerial() {
+        val fleet = DefaultCatalog.fleets().single { it.id == "fleet-penguin" }
+        // Ryan O'Horo SCAN_RSP payload after company 0x09C8.
+        val payload = "D8A0D89F4A5E2030502A544E3732303233303232303030373731"
+        val rows = SignatureFieldDecoder.decodeSighting(ble(0x09C8, payload, fleet.id), listOf(fleet))
+        assertEquals("D8:A0:D8:9F:4A:5E", rows.display("adv_mac"))
+        assertEquals("TN72023022000771", rows.display("serial"))
+    }
+
+    @Test
+    fun catalogPenguinWithoutTnSkipsDecode() {
+        val fleet = DefaultCatalog.fleets().single { it.id == "fleet-penguin" }
+        val payload = "D8A0D89F4A5E2030502A00003732303233303232303030373731"
+        val rows = SignatureFieldDecoder.decodeSighting(ble(0x09C8, payload, fleet.id), listOf(fleet))
+        assertTrue(rows.isEmpty())
+    }
+
+    @Test
+    fun eqGateUsesHexByteLength() {
+        val fleet = Fleet(
+            id = "f",
+            name = "P",
+            decode = FleetDecode(
+                source = DecodeSource.MANUFACTURER_DATA,
+                fields = listOf(
+                    DecodeField(
+                        id = "tag",
+                        label = "Tag",
+                        offset = 0,
+                        length = 2,
+                        type = DecodeType.UTF8,
+                        gate = DecodeWhen(offset = 0, op = DecodeWhenOp.EQ, valueHex = "544E"),
+                    ),
+                ),
+            ),
+        )
+        val rows = SignatureFieldDecoder.decodeSighting(ble(1, "544E3132", fleet.id), listOf(fleet))
+        assertEquals("TN", rows.display("tag"))
+    }
+
+    @Test
     fun catalogRemoteIdLocation() {
         val fleet = DefaultCatalog.fleets().single { it.id == "fleet-remote-id" }
         // 40° N, 74° W, HAE 100 m, height 50 m (OpenDroneID packed, proto v2).
@@ -337,6 +386,24 @@ class SignatureFieldDecoderTest {
         assertEquals(100.0, rows.number("alt_geo")!!, 1e-6)
         assertEquals(0.0, rows.number("heading")!!, 1e-6)
         assertEquals(0.0, rows.number("hspeed")!!, 1e-6)
+    }
+
+    @Test
+    fun catalogRemoteIdWifiMessagePackUsesBleMap() {
+        val fleet = DefaultCatalog.fleets().single { it.id == "fleet-remote-id" }
+        val hex = "D9F2190302123135383146335954444A3144303033315A353330000000" +
+            "1220820A00864228110CFF80CF0000F508B2083A022E310A00" +
+            "420176E42711B5FF81CF010000000000000005088B02900E00"
+        val rows = SignatureFieldDecoder.decodeSighting(wifiRid(hex, fleet.id), listOf(fleet))
+        assertEquals("1581F3YTDJ1D0031Z530", rows.display("uas_id"))
+        assertEquals("Helicopter / multirotor", rows.display("ua_type"))
+        assertEquals("Airborne", rows.display("status"))
+        assertEquals(28.7851142, rows.number("latitude")!!, 1e-6)
+        assertEquals(-81.3629684, rows.number("longitude")!!, 1e-6)
+        assertEquals(130.0, rows.number("heading")!!, 1e-6)
+        assertEquals(2.5, rows.number("hspeed")!!, 1e-6)
+        assertEquals(28.7827062, rows.number("op_lat")!!, 1e-6)
+        assertEquals(-81.3563979, rows.number("op_lon")!!, 1e-6)
     }
 
     @Test
@@ -374,6 +441,23 @@ class SignatureFieldDecoderTest {
         )
         assertEquals("separated", rows.display("mode"))
         assertEquals("11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11", rows.display("eid"))
+    }
+
+    @Test
+    fun catalogDultSeparatedAndNearOwner() {
+        val fleet = DefaultCatalog.fleets().single { it.id == "fleet-dult" }
+        val separated = SignatureFieldDecoder.decodeSighting(
+            bleService("FCB2", "0100", fleet.id),
+            listOf(fleet),
+        )
+        assertEquals("1", separated.display("network_id"))
+        assertEquals("separated", separated.display("mode"))
+        val near = SignatureFieldDecoder.decodeSighting(
+            bleService("FCB2", "0201", fleet.id),
+            listOf(fleet),
+        )
+        assertEquals("2", near.display("network_id"))
+        assertEquals("near owner", near.display("mode"))
     }
 
     @Test
@@ -673,6 +757,33 @@ class SignatureFieldDecoderTest {
 
     private fun List<DecodedFieldValue>.number(id: String): Double? =
         first { it.id == id }.number
+
+    private fun wifiRid(dataHex: String, fleetId: String) = Sighting(
+        key = "WIFI:60:60:1F:06:31:08",
+        kind = RadioKind.WIFI,
+        mac = "60:60:1F:06:31:08",
+        name = "RID-1581F3YTDJ1D0031Z530",
+        rssi = -80,
+        rssiMin = -80,
+        rssiMax = -80,
+        channel = 6,
+        frequencyMhz = 2437,
+        vendor = null,
+        randomized = false,
+        hiddenSsid = false,
+        serviceUuids = emptyList(),
+        manufacturerId = null,
+        manufacturerDataHex = "",
+        rawHex = "",
+        extras = "",
+        firstSeen = 1L,
+        lastSeen = 1L,
+        hitCount = 1,
+        fleetIds = setOf(fleetId),
+        rssiHistory = emptyList(),
+        presence = emptyList(),
+        facts = RadioFacts(vendorIes = listOf(VendorIeRecord("FA:0B:BC", 0x0D, dataHex))),
+    )
 
     private fun bleService(uuid: String, dataHex: String, fleetId: String) = Sighting(
         key = "BLE:AA:BB:CC:DD:EE:01",

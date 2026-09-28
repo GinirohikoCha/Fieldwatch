@@ -21,6 +21,10 @@ class SitExportTest {
         rssi = -70,
     )
     private val extra = setOf(wifi.key)
+    private val fleets = listOf(
+        Fleet(id = "fleet-flock-cameras", name = "Flock Safety Cameras", attentionNote = "ALPR"),
+        Fleet(id = "fleet-ring", name = "Ring"),
+    )
 
     @Test
     fun csvOneRowPerRadioWithCustomNameAndNote() {
@@ -30,6 +34,7 @@ class SitExportTest {
             mapOf(wifi.key to "porch AP"),
             mapOf(wifi.key to "lot B"),
             extra,
+            fleets,
         )
         assertTrue(csv.startsWith(SitExport.CSV_HEADER))
         assertTrue(csv.contains("porch AP"))
@@ -37,8 +42,14 @@ class SitExportTest {
         assertTrue(csv.contains("37.441900"))
         assertTrue(csv.contains("true"))
         assertTrue(csv.contains("Tag"))
+        assertTrue(csv.contains("Flock Safety Cameras; Ring"))
+        assertTrue(csv.contains("Flock Safety Cameras"))
         val data = csv.lines().filter { it.isNotBlank() }.drop(1)
         assertEquals(2, data.size)
+        val wifiLine = data.first { it.contains("CafeWiFi") }
+        assertTrue(wifiLine, wifiLine.contains("Flock Safety Cameras; Ring"))
+        val bleLine = data.first { it.contains("Tag") }
+        assertTrue(bleLine.endsWith(",false,,") || bleLine.contains(",false,,"))
     }
 
     @Test
@@ -54,6 +65,23 @@ class SitExportTest {
         assertTrue(jsonl.contains("\"mac\":\"11:22:33:44:55:66\""))
         assertTrue(jsonl.contains("\"lat\":null"))
         assertTrue(jsonl.contains("\"lon\":null"))
+        assertTrue(jsonl.contains("\"signatures\":\"\""))
+        assertTrue(jsonl.contains("\"extra_attention_families\":\"\""))
+    }
+
+    @Test
+    fun csvAndJsonlListSignaturesAndAttentionFamilies() {
+        val jsonl = SitExport.jsonl(
+            listOf(wifi),
+            LogExportRadios.BOTH,
+            emptyMap(),
+            emptyMap(),
+            extra,
+            fleets,
+        )
+        assertTrue(jsonl.contains("\"signatures\":\"Flock Safety Cameras; Ring\""))
+        assertTrue(jsonl.contains("\"extra_attention_families\":\"Flock Safety Cameras\""))
+        assertTrue(jsonl.contains("\"extra_attention\":true"))
     }
 
     @Test
@@ -98,7 +126,7 @@ class SitExportTest {
         firstSeen = 1_700_000_000_000L,
         lastSeen = 1_700_000_000_000L,
         hitCount = 4,
-        fleetIds = emptySet(),
+        fleetIds = if (key.startsWith("WIFI")) setOf("fleet-ring", "fleet-flock-cameras") else emptySet(),
         rssiHistory = emptyList(),
         presence = emptyList(),
         gpsTrail = listOfNotNull(gps),

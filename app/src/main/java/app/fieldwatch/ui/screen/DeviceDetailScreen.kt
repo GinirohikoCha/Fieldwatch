@@ -443,7 +443,7 @@ fun DeviceDetailScreen(
                 }
             }
 
-            if (device.kind == RadioKind.BLE) {
+            if (device.kind == RadioKind.BLE || device.kind == RadioKind.WIFI) {
                 val fleets = vm.ui.value.fleets
                 val decoded = remember(device.key, device.facts, device.fleetIds) {
                     SignatureFieldDecoder.decodeSighting(device, fleets)

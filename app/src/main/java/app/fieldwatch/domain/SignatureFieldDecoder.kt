@@ -16,7 +16,8 @@ data class DecodedFieldValue(
 )
 
 /**
- * Parses [Fleet.decode] maps from a BLE advertisement.
+ * Parses [Fleet.decode] maps from a BLE advertisement, or from Wi-Fi Remote ID
+ * framed as BLE FFFA ([OpenDroneId.wifiFffaPayloads]).
  * Used by device detail, reports, and sticky payload coordinates for TAK/CoT.
  * Not a matcher — [SignatureEngine.match] still decides the label.
  */
@@ -24,7 +25,8 @@ object SignatureFieldDecoder {
     private val cache = ConcurrentHashMap<String, List<DecodedFieldValue>>()
 
     fun decodeSighting(device: Sighting, fleets: List<Fleet>): List<DecodedFieldValue> {
-        if (device.kind != RadioKind.BLE || device.fleetIds.isEmpty()) return emptyList()
+        if (device.fleetIds.isEmpty()) return emptyList()
+        if (device.kind != RadioKind.BLE && device.kind != RadioKind.WIFI) return emptyList()
         val byId = fleets.associateBy { it.id }
         val out = ArrayList<DecodedFieldValue>()
         for (id in device.fleetIds) {
@@ -41,14 +43,16 @@ object SignatureFieldDecoder {
     fun decodeFleet(fleet: Fleet, decode: FleetDecode, device: Sighting): List<DecodedFieldValue> {
         val candidates = payloads(decode, device)
         if (candidates.isEmpty()) return emptyList()
-        var empty: List<DecodedFieldValue> = emptyList()
+        val out = ArrayList<DecodedFieldValue>()
+        val seen = HashSet<String>()
         for ((bytes, hex) in candidates) {
             val key = cacheKey(fleet.id, decode, hex)
             val parsed = cache[key] ?: parse(fleet, decode, bytes).also { cache[key] = it }
-            if (parsed.isNotEmpty()) return parsed
-            empty = parsed
+            for (row in parsed) {
+                if (seen.add(row.id)) out += row
+            }
         }
-        return empty
+        return out
     }
 
     private fun cacheKey(fleetId: String, decode: FleetDecode, hex: String): String {
@@ -59,21 +63,26 @@ object SignatureFieldDecoder {
     private fun payloads(decode: FleetDecode, device: Sighting): List<Pair<ByteArray, String>> {
         val hexes: List<String> = when (decode.source) {
             DecodeSource.MANUFACTURER_DATA -> {
-                val records = device.facts.mfgRecords.ifEmpty {
-                    device.manufacturerId?.let { listOf(MfgRecord(it, device.manufacturerDataHex)) }
-                        ?: emptyList()
-                }
-                val want = decode.companyId?.takeIf { it != 0 }
-                val chosen = if (want != null) records.filter { it.companyId == want } else records
-                chosen.map { rec ->
-                    if (decode.includeCompanyId) companyIdPrefix(rec.companyId) + rec.dataHex
-                    else rec.dataHex
+                if (device.kind != RadioKind.BLE) emptyList()
+                else {
+                    val records = device.facts.mfgRecords.ifEmpty {
+                        device.manufacturerId?.let { listOf(MfgRecord(it, device.manufacturerDataHex)) }
+                            ?: emptyList()
+                    }
+                    val want = decode.companyId?.takeIf { it != 0 }
+                    val chosen = if (want != null) records.filter { it.companyId == want } else records
+                    chosen.map { rec ->
+                        if (decode.includeCompanyId) companyIdPrefix(rec.companyId) + rec.dataHex
+                        else rec.dataHex
+                    }
                 }
             }
             DecodeSource.SERVICE_DATA -> {
                 val want = decode.serviceUuid?.let { uuidKey(it) } ?: return emptyList()
-                device.facts.serviceData.filter { uuidKey(it.uuid) == want }.map { it.dataHex }
+                val ads = device.facts.serviceData.filter { uuidKey(it.uuid) == want }.map { it.dataHex }
+                if (want == "FFFA") ads + OpenDroneId.wifiFffaPayloads(device.facts) else ads
             }
+            DecodeSource.UNSUPPORTED -> emptyList()
         }
         val out = ArrayList<Pair<ByteArray, String>>(hexes.size)
         for (hex in hexes) {
@@ -116,10 +125,10 @@ object SignatureFieldDecoder {
 
     private fun gateOkOnce(gate: DecodeWhen, payload: ByteArray): Boolean {
         if (gate.op == DecodeWhenOp.LEN) return payload.size == gate.length.coerceAtLeast(1)
-        val len = gate.length.coerceAtLeast(1)
+        val want = hexToBytes(gate.valueHex) ?: return false
+        val len = want.size.coerceAtLeast(1)
         if (gate.offset < 0 || gate.offset + len > payload.size) return false
         val got = payload.copyOfRange(gate.offset, gate.offset + len)
-        val want = hexToBytes(gate.valueHex) ?: return false
         if (want.size != got.size) return false
         return when (gate.op) {
             DecodeWhenOp.LEN -> payload.size == gate.length
@@ -361,7 +370,7 @@ fun normalizeGate(gate: DecodeWhen?): DecodeWhen? {
     val len = (hex.length / 2).coerceAtLeast(1)
     return DecodeWhen(
         offset = gate.offset.coerceAtLeast(0),
-        length = if (gate.length > 0) gate.length else len,
+        length = len,
         op = gate.op,
         valueHex = hex,
         and = rest,

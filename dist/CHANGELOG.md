@@ -4,6 +4,19 @@ Newest first. This is Fieldwatch (`app.fieldwatch`). Each build below is what Se
 
 Fieldwatch continues the Spectre 1.2.14 field build under a new name, application id, and the MIT License. It does not replace Spectre on a phone.
 
+## Unreleased
+
+## 1.1.15 — 28 September 2026
+
+- Catalog 82: Flock Safety Cameras Extra attention is IEEE B4:1E:52 and Flock / FLCK / Flock-* / Condor / Falcon / Sparrow names only. LiteOn / module prefixes move to LiteOn camera radio (Cameras class, no Extra attention, not bookmarked). UGSI E0:4F:43 is dropped so a Ring- SSID is Ring, not a Flock pole.
+- Sit export CSV / JSON lines include matched signatures and Extra attention family names (semicolon-separated). Extra attention true/false stays. GPX / KML / WiGLE unchanged.
+- Named sit cap 6000 unique radios (was 3000). Unnamed BLE still drops first. Low-memory gate unchanged.
+- Debrief text/PDF hide unmatched rotating BLE from inventories by default. Counts, Extra attention, named signatures, bookmarks, payload pins, and Sit export still include them. Reports switch: Show unmatched rotating BLE.
+- Catalog 83: Penguin decode on XUNTONG 0x09C8 manufacturer data — MAC in payload and ASCII serial starting TN. Identity is still the company ID / Penguin* names.
+- Catalog 84: DULT tracker on BLE service data FCB2 (IETF Detecting Unwanted Location Trackers). Decode Network ID and near-owner vs separated. No Extra attention. Chipolo / Pebblebee names may dual-label. A bare FCB2 UUID list does not match.
+- Wi-Fi Remote ID ASTM message packs (vendor IE FA:0B:BC type 13) are framed as BLE FFFA (`0x0D` + counter + each 25-byte message) so the stock Remote ID Decode fields map, detail, and TAK Payload location use the same fields as BLE. GitHub catalog stays v2.
+- Update stock catalog from GitHub: unknown decode sources keep the signature and drop only that field map. After import, a second dialog asks for a newer APK when any map was skipped.
+
 ## 1.1.14 — 27 September 2026
 
 - Debrief / Compare PDF path figure: OpenStreetMap tiles when Online place names and maps is on and Privacy is off (same gate as Reports → Path). Full-width letter frame, thick green stays, numbered Extra attention (red) and bookmarked (blue) hits. Offline or Privacy: the north-up trace only.

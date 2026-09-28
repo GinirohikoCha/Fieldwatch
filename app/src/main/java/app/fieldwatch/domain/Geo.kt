@@ -359,6 +359,7 @@ object TrackerMatch {
 
     private val finderTokens = listOf(
         "airtag", "smarttag", "tile", "chipolo", "pebblebee", "moto tag", "find my",
+        "find hub", "dult",
     )
     private val beaconTokens = listOf("ibeacon", "minew", "estimote", "kontakt")
     private val wearableTokens = listOf("garmin", "fitbit", "oura")

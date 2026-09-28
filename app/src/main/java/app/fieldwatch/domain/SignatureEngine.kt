@@ -237,12 +237,13 @@ class SignatureEngine {
         }
         RuleKind.SERVICE_DATA -> {
             val prefix = hexOnly(rule.dataPrefixHex)
-            if (prefix.isEmpty()) null
+            val aliases = uuidAliases(rule.text).filter { it.isNotBlank() }.toSet()
+            if (prefix.isEmpty() && aliases.isEmpty()) null
             else FastRule.SvcData(
-                aliases = uuidAliases(rule.text).filter { it.isNotBlank() }.toSet(),
+                aliases = aliases,
                 prefix = prefix,
                 radio = rule.radio,
-                contains = rule.text.isBlank(),
+                contains = rule.text.isBlank() && prefix.isNotEmpty(),
             )
         }
         RuleKind.RADIO_KIND -> FastRule.Radio(rule.radio)
@@ -362,8 +363,14 @@ class SignatureEngine {
             }
             RuleKind.SERVICE_DATA -> {
                 val prefix = hexOnly(rule.dataPrefixHex)
-                if (prefix.isEmpty()) false
-                else serviceDataHits(device, uuidAliases(rule.text).filter { it.isNotBlank() }.toSet(), prefix, contains = rule.text.isBlank())
+                val aliases = uuidAliases(rule.text).filter { it.isNotBlank() }.toSet()
+                if (prefix.isEmpty() && aliases.isEmpty()) false
+                else serviceDataHits(
+                    device,
+                    aliases,
+                    prefix,
+                    contains = rule.text.isBlank() && prefix.isNotEmpty(),
+                )
             }
             RuleKind.RADIO_KIND ->
                 rule.radio == null || device.kind == rule.radio

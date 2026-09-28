@@ -72,6 +72,7 @@ object DefaultCatalog {
 
     fun fleets(): List<Fleet> = listOf(
         flockCameras(),
+        liteOnCameraRadio(),
         ravenAcoustic(),
         airTags(),
         smartTags(),
@@ -82,6 +83,7 @@ object DefaultCatalog {
         estimote(),
         kontakt(),
         penguin(),
+        dultTracker(),
         pigvision(),
         fsExtBattery(),
         appleDevice(),
@@ -321,29 +323,39 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Flock-style roadside ALPR / camera pole. A Flock- name or IEEE B4:1E:52 is the stronger hit. Current poles are often quiet on Wi-Fi and BLE. LiteOn boards also appear on unrelated products.",
-        attentionNote = "Flock-style roadside ALPR / camera pole — reads plates and can be used to locate a vehicle. IEEE B4:1E:52 or a Flock-* SSID is the stronger hit. Current poles are often quiet on Wi-Fi and BLE. LiteOn OUIs are component vendors used on many products. Pattern match, not that camera. Look with your eyes.",
+        notes = "Flock-style roadside ALPR / camera pole. IEEE B4:1E:52 or a Flock-* / FLCK / Condor / Falcon / Sparrow name. Current poles are often quiet on Wi-Fi and BLE. LiteOn module prefixes are a separate row, not Extra attention.",
+        attentionNote = "Flock-style roadside ALPR / camera pole — reads plates and can be used to locate a vehicle. IEEE B4:1E:52 or a Flock-* SSID is the strong hit. Current poles are often quiet on Wi-Fi and BLE. Pattern match, not that camera. Look with your eyes.",
+        builtIn = true,
+        rules = listOf(
+            oui("B4:1E:52"),
+            name("Flock"),
+            name("FLCK"),
+            glob("Flock-*"),
+            glob("Flock-??????"),
+            name("CONDOR"),
+            name("FALCON"),
+            name("SPARROW"),
+        ),
+    )
+
+    /** Component-vendor prefixes seen on camera boards, including some Flock poles. Not Flock's IEEE block. */
+    private fun liteOnCameraRadio() = Fleet(
+        id = "fleet-liteon-camera-radio",
+        name = "LiteOn camera radio",
+        colorIndex = Hue.CAMERA,
+        kind = SignatureClass.CAMERA,
+        matchAny = true,
+        notes = "Wi-Fi module prefixes commonly seen on camera boards (LiteOn and similar). Not Flock's IEEE block. Doorbells and other OEM radios use these chips. A Flock name or B4:1E:52 is Flock Safety Cameras.",
         builtIn = true,
         rules = buildList {
-            // IEEE MA-L registered to Flock Safety (2024-05-09)
-            add(oui("B4:1E:52"))
-            // LiteOn / camera radio prefixes commonly seen on Falcon/Sparrow
             listOf(
                 "70:C9:4E", "3C:91:80", "D8:F3:BC", "80:30:49", "B8:35:32",
                 "14:5A:FC", "74:4C:A1", "08:3A:88", "9C:2F:9D", "C0:35:32",
                 "94:08:53", "E4:AA:EA", "F4:6A:DD", "F8:A2:D6", "24:B2:B9",
-                "00:F4:8D", "D0:39:57", "E8:D0:FC", "E0:4F:43", "B8:1E:A4",
+                "00:F4:8D", "D0:39:57", "E8:D0:FC", "B8:1E:A4",
                 "70:08:94", "58:00:E3", "5C:93:A2", "64:6E:69",
                 "48:27:EA", "82:6B:F2",
             ).forEach { add(oui(it)) }
-            add(name("Flock"))
-            add(name("FLCK"))
-            add(glob("Flock-*"))
-            add(glob("Flock-??????"))
-            add(name("CONDOR"))
-            add(name("FALCON"))
-            add(name("SPARROW"))
-            // 802.11 vendor IE (element 221) OUIs used by Lite-On radio firmware
             add(vendorIe("00:80:19"))
             add(vendorIe("00:0A:EB"))
         },
@@ -508,9 +520,10 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Penguin Flock-family external battery. The XUNTONG BLE manufacturer ID is the usual fingerprint; Penguin* names are older firmware. Current poles are often quiet on Wi-Fi and BLE.",
+        notes = "Penguin Flock-family external battery. The XUNTONG BLE manufacturer ID is the usual fingerprint; Penguin* names are older firmware. Newer packs often advertise a 10-digit name. Decode fields show the TN serial from manufacturer data when present.",
         attentionNote = "Penguin is a Flock-family external battery (XUNTONG manufacturer ID). Name hits are older firmware and low uniqueness. Pattern match, not that camera. Look with your eyes.",
         builtIn = true,
+        decode = CatalogDecodes.penguin,
         rules = listOf(
             name("Penguin"),
             name("PENGUIN"),
@@ -1474,6 +1487,21 @@ object DefaultCatalog {
         rules = listOf(
             svcData("FEAA", "40"),
             svcData("FEAA", "41"),
+        ),
+    )
+
+    private fun dultTracker() = Fleet(
+        id = "fleet-dult",
+        name = "DULT tracker",
+        enabled = true,
+        colorIndex = Hue.FIND_MY,
+        kind = SignatureClass.FINDER,
+        matchAny = true,
+        notes = "IETF DULT location-enabled advertisement (Detecting Unwanted Location Trackers). Chipolo, Pebblebee, moto tag, and other partner tags may dual-label. Near-owner vs separated is a bit in the payload. Separated mode can hold a MAC about a day. Pattern match, not that bag.",
+        builtIn = true,
+        decode = CatalogDecodes.dult,
+        rules = listOf(
+            svcAny("FCB2"),
         ),
     )
 
@@ -4524,6 +4552,9 @@ object DefaultCatalog {
         MatchRule(RuleKind.NAME_GLOB, text = pattern, radio = RadioKind.BLE)
     private fun svcData(uuid: String, prefix: String) =
         MatchRule(RuleKind.SERVICE_DATA, text = uuid, dataPrefixHex = prefix, radio = RadioKind.BLE)
+    /** Service data for [uuid] with any payload (DULT FCB2). */
+    private fun svcAny(uuid: String) =
+        MatchRule(RuleKind.SERVICE_DATA, text = uuid, dataPrefixHex = "", radio = RadioKind.BLE)
     private fun svcContainsAscii(text: String) = MatchRule(
         RuleKind.SERVICE_DATA,
         text = "",

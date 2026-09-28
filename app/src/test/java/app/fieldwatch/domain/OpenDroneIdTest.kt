@@ -36,6 +36,24 @@ class OpenDroneIdTest {
         assertNull(loc.headingDeg)
     }
 
+    @Test
+    fun wifiMessagePackDecodesIdLocationAndOperator() {
+        // DJI RID-1581F3… FA:0B:BC type 13 pack from A54 28 Sep 2026.
+        val hex = "D9F2190302123135383146335954444A3144303033315A353330000000" +
+            "1220820A00864228110CFF80CF0000F508B2083A022E310A00" +
+            "420176E42711B5FF81CF010000000000000005088B02900E00"
+        val loc = OpenDroneId.fromFacts(
+            RadioFacts(vendorIes = listOf(VendorIeRecord("FA:0B:BC", 0x0D, hex))),
+        )
+        assertEquals("1581F3YTDJ1D0031Z530", loc.uasId)
+        assertEquals(28.7851142, loc.lat!!, 1e-6)
+        assertEquals(-81.3629684, loc.lon!!, 1e-6)
+        assertEquals(130.0, loc.headingDeg!!, 1e-6)
+        assertEquals(2.5, loc.speedMps!!, 1e-6)
+        assertEquals(28.7827062, loc.opLat!!, 1e-6)
+        assertEquals(-81.3563979, loc.opLon!!, 1e-6)
+    }
+
     private fun bleWrap(msg: ByteArray) = ("0D00" + msg.toHexUpper())
 
     private fun locationMsg(dir: Int, ew: Boolean, speed: Int): ByteArray {

@@ -306,10 +306,14 @@ object DeviceExplain {
             if (isGenericSignatureName(raw)) return@mapNotNull null
             val n = raw.lowercase()
             when {
-                "airtag" in n || n == "find my" || "find hub" in n ->
+                "airtag" in n || n == "find my" || "find hub" in n || "dult" in n ->
                     Hint(
                         "tag",
-                        if ("find hub" in n) "a Google Find Hub tag" else "an Apple AirTag / Find My tag",
+                        when {
+                            "dult" in n -> "a DULT finder tag"
+                            "find hub" in n -> "a Google Find Hub tag"
+                            else -> "an Apple AirTag / Find My tag"
+                        },
                         "Matched signature $raw.",
                         8,
                     )
@@ -696,6 +700,13 @@ object DeviceExplain {
                     Hint("pentest", "a GhostESP ESP32 audit board", "Matched signature $raw.", 7)
                 n == "bruce" ->
                     Hint("pentest", "a Bruce ESP32 pentest board", "Matched signature $raw.", 7)
+                n == "liteon camera radio" ->
+                    Hint(
+                        "module",
+                        "a camera-module radio (LiteOn or similar)",
+                        "Matched signature $raw.",
+                        3,
+                    )
                 "chipolo" in n || "pebblebee" in n || "moto tag" in n ->
                     Hint("tag", "a finder tag", "Matched signature $raw.", 7)
                 "airpods" in n ->

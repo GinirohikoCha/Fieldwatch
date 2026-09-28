@@ -253,6 +253,19 @@ internal object CatalogDecodes {
         ),
     )
 
+    /**
+     * Penguin / XUNTONG 0x09C8 manufacturer data (Ryan O'Horo SCAN_RSP).
+     * After company ID: 6-byte MAC, four unknown bytes, ASCII serial starting TN.
+     */
+    val penguin: FleetDecode = FleetDecode(
+        source = DecodeSource.MANUFACTURER_DATA,
+        companyId = 0x09C8,
+        fields = listOf(
+            mac("adv_mac", "MAC in payload", 0, gate = eq(10, "544E")),
+            utf8("serial", "Serial", 10, length = 16, gate = eq(10, "544E")),
+        ),
+    )
+
     /** Tile FEED rotating private id (not a serial). */
     val tile: FleetDecode = FleetDecode(
         source = DecodeSource.SERVICE_DATA,
@@ -349,6 +362,26 @@ internal object CatalogDecodes {
                 ),
             ),
             hex("eid", "Ephemeral ID", 1, length = 20),
+        ),
+    )
+
+    /**
+     * IETF DULT location-enabled advertisement on FCB2.
+     * Byte 0 is Network ID; LSB of byte 1 is near-owner (1) vs separated (0).
+     */
+    val dult: FleetDecode = FleetDecode(
+        source = DecodeSource.SERVICE_DATA,
+        serviceUuid = "FCB2",
+        fields = listOf(
+            u8("network_id", "Network ID", 0),
+            bits(
+                "mode", "Mode", 1,
+                bitOffset = 0, bitWidth = 1,
+                enumLabels = mapOf(
+                    "0" to "separated",
+                    "1" to "near owner",
+                ),
+            ),
         ),
     )
 
@@ -504,17 +537,20 @@ internal object CatalogDecodes {
 
     private fun onOff(off: String, on: String) = mapOf("0" to off, "1" to on)
 
+    private fun hexByteLen(hex: String): Int =
+        (hex.filter { it.isLetterOrDigit() }.length / 2).coerceAtLeast(1)
+
     private fun eq(offset: Int, hex: String) =
-        DecodeWhen(offset = offset, op = DecodeWhenOp.EQ, valueHex = hex)
+        DecodeWhen(offset = offset, length = hexByteLen(hex), op = DecodeWhenOp.EQ, valueHex = hex)
 
     private fun neq(offset: Int, hex: String, and: DecodeWhen? = null) =
-        DecodeWhen(offset = offset, op = DecodeWhenOp.NEQ, valueHex = hex, and = and)
+        DecodeWhen(offset = offset, length = hexByteLen(hex), op = DecodeWhenOp.NEQ, valueHex = hex, and = and)
 
     private fun mask(offset: Int, hex: String, and: DecodeWhen? = null) =
-        DecodeWhen(offset = offset, op = DecodeWhenOp.MASK, valueHex = hex, and = and)
+        DecodeWhen(offset = offset, length = hexByteLen(hex), op = DecodeWhenOp.MASK, valueHex = hex, and = and)
 
     private fun nmask(offset: Int, hex: String, and: DecodeWhen? = null) =
-        DecodeWhen(offset = offset, op = DecodeWhenOp.NMASK, valueHex = hex, and = and)
+        DecodeWhen(offset = offset, length = hexByteLen(hex), op = DecodeWhenOp.NMASK, valueHex = hex, and = and)
 
     /** Tesla tsTPMS type byte at offset 2: 0–4 sleep, 5+ live. */
     private fun teslaAwake(): DecodeWhen =
@@ -599,8 +635,8 @@ internal object CatalogDecodes {
         scale = scale, unit = unit, gate = gate,
     )
 
-    private fun utf8(id: String, label: String, offset: Int, length: Int) =
-        DecodeField(id, label, offset, length = length, type = DecodeType.UTF8)
+    private fun utf8(id: String, label: String, offset: Int, length: Int, gate: DecodeWhen? = null) =
+        DecodeField(id, label, offset, length = length, type = DecodeType.UTF8, gate = gate)
 
     private fun mac(id: String, label: String, offset: Int, gate: DecodeWhen? = null) =
         DecodeField(id, label, offset, type = DecodeType.MAC, gate = gate)

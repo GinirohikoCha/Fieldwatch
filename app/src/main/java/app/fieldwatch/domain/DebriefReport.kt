@@ -202,10 +202,15 @@ object DebriefReport {
             }
         }
         val notable = ble.filter {
-            it.fleetIds.isNotEmpty() || it.name.isNotBlank() || it.rssi >= -65 || it.manufacturerId != null
+            inventoryKeep(it, settings, bookmarkedKeys) &&
+                (it.fleetIds.isNotEmpty() || it.name.isNotBlank() || it.rssi >= -65 || it.manufacturerId != null)
         }.sortedByDescending { it.rssi }.take(20)
+        val omittedRand = ble.count { !inventoryKeep(it, settings, bookmarkedKeys) }
         val bleBody = buildString {
             appendLine("Heard ${ble.size} advertiser(s); $randomized with randomized addresses; ${named.count { it.kind == RadioKind.BLE }} signature-matched.")
+            if (omittedRand > 0) {
+                appendLine("Unmatched rotating BLE omitted from lists ($omittedRand). Counts include them. Sit export has every radio.")
+            }
             if (notable.isNotEmpty()) {
                 appendLine("Notable BLE:")
                 notable.forEach { d ->
@@ -238,16 +243,16 @@ object DebriefReport {
         }
         val persistBody = buildString {
             appendLine("Sat most of this window: ${persistent.size}")
-            persistent.take(15).forEach {
+            persistent.filter { inventoryKeep(it, settings, bookmarkedKeys) }.take(15).forEach {
                 appendLine("  · ${it.reportName(customNames)}  ${it.mac}  dwell ${fmtDur(dwellMs(it, windowStart, now))}")
             }
             if (persistent.isEmpty()) appendLine("  · None.")
             appendLine("First seen in this window: ${arrived.size} (loudest 8 below)")
-            arrived.sortedByDescending { it.rssi }.take(8).forEach {
+            arrived.filter { inventoryKeep(it, settings, bookmarkedKeys) }.sortedByDescending { it.rssi }.take(8).forEach {
                 appendLine("  · ${it.reportName(customNames)}  ${it.mac}  ${it.rssi} dBm")
             }
         }
-        val flags = anomalyLines(inWin, customNames)
+        val flags = anomalyLines(inWin, customNames, settings, bookmarkedKeys)
         val anomalyBody = if (flags.isEmpty()) {
             "No extra flags. Signature hits, Extra attention, and tracking callouts already cover named pattern matches."
         } else flags.joinToString("\n") { "  · $it" }
@@ -271,7 +276,7 @@ object DebriefReport {
         fun next() = (n++).toString()
         val sections = buildList {
             add(DebriefSection(next(), "Executive summary", execSummary(wifi, ble, named, hidden, randomized, pathSpan, pathLen, following, withYou, ownLikely, beaconsWithYou, wearablesWithYou, settings, places, win)))
-            add(DebriefSection(next(), "Where you were", whereYouWere(settings, path, pathLen, pathSpan, inWin, names, places, windowEnd, customNames)))
+            add(DebriefSection(next(), "Where you were", whereYouWere(settings, path, pathLen, pathSpan, inWin, names, places, windowEnd, customNames, bookmarkedKeys)))
             observerNotesSection(inWin, customNames, observerNotes)?.let { body ->
                 add(DebriefSection(next(), "Observer notes", body))
             }
@@ -462,6 +467,7 @@ object DebriefReport {
         places: DebriefPlaces = DebriefPlaces.Off,
         window: DebriefWindow? = null,
         customNames: Map<String, String> = emptyMap(),
+        bookmarkedKeys: Set<String> = emptySet(),
     ): String = buildString {
         val names = fleets.associate { it.id to it.name }
         val win = window ?: DebriefWindow(now - WINDOW_MS, now)
@@ -493,7 +499,7 @@ object DebriefReport {
                 if (places.attempted) places.note
                 else "off (Settings → Online place names in Debrief). No reverse-geocode this export.",
         )
-        append(whereYouWere(settings, path, pathLen, pathSpan, inWin, names, places, windowEnd, customNames).trimEnd())
+        append(whereYouWere(settings, path, pathLen, pathSpan, inWin, names, places, windowEnd, customNames, bookmarkedKeys).trimEnd())
         appendLine()
         appendLine()
         if (path.size < 2 || pathSpan < MOVE_M) {
@@ -824,6 +830,7 @@ object DebriefReport {
         places: DebriefPlaces,
         now: Long,
         customNames: Map<String, String> = emptyMap(),
+        bookmarkedKeys: Set<String> = emptySet(),
     ): String = buildString {
         appendLine("Phone GPS at hear-time, not the other radio’s location and not a camera pole. Stays are clusters within about 40 m; hops between them are transit. Coordinates are not repeated on every Wi-Fi/BLE line.")
         if (!settings.tagLocation) {
@@ -862,7 +869,7 @@ object DebriefReport {
                 append("   Heard here: $aps AP(s), $ble BLE")
                 if (sigs.isNotEmpty()) append("  ·  ${sigs.take(6).joinToString(", ")}")
                 appendLine()
-                here.sortedByDescending { it.rssi }.take(4).forEach { d ->
+                here.filter { inventoryKeep(it, settings, bookmarkedKeys) }.sortedByDescending { it.rssi }.take(4).forEach { d ->
                     appendLine("   · ${d.reportName(customNames)}  ${d.mac}  ${d.rssi} dBm")
                 }
                 if (here.isEmpty()) appendLine("   · No GPS-stamped radios tied to this stay (tagging may have started after they were first heard).")
@@ -945,9 +952,26 @@ object DebriefReport {
         append("  dwell ").append(fmtDur(dwellMs(d, from, now)))
     }
 
+    /** Unmatched rotating BLE stays in counts/export; inventories omit it unless Extra attention, named, bookmark, or payload. */
+    private fun inventoryKeep(
+        d: Sighting,
+        settings: AppSettings,
+        bookmarkedKeys: Set<String>,
+    ): Boolean {
+        if (settings.debriefShowUnmatchedRandomBle) return true
+        if (d.kind != RadioKind.BLE) return true
+        if (!d.randomized) return true
+        if (d.fleetIds.isNotEmpty()) return true
+        if (d.payloadLat != null && d.payloadLon != null) return true
+        if (d.key in bookmarkedKeys) return true
+        return false
+    }
+
     private fun anomalyLines(
         devices: List<Sighting>,
         customNames: Map<String, String> = emptyMap(),
+        settings: AppSettings,
+        bookmarkedKeys: Set<String>,
     ): List<String> {
         val out = ArrayList<String>()
         val pairing = devices.filter { d ->
@@ -958,7 +982,8 @@ object DebriefReport {
                 pairing.joinToString { "${it.reportName(customNames)} ${it.mac}" }
         }
         val loudUnknown = devices.filter {
-            it.rssi >= -50 && it.fleetIds.isEmpty() && it.name.isBlank()
+            it.rssi >= -50 && it.fleetIds.isEmpty() && it.name.isBlank() &&
+                inventoryKeep(it, settings, bookmarkedKeys)
         }
         if (loudUnknown.isNotEmpty()) {
             out += "Very strong unnamed radios (≥ −50 dBm): " +

@@ -1,8 +1,14 @@
 package app.fieldwatch.domain
 
 import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 @Serializable
 enum class RadioKind { WIFI, BLE }
@@ -269,10 +275,37 @@ fun MatchRule.couldMatchBle(): Boolean = when (kind) {
     else -> radio != RadioKind.WIFI
 }
 
-@Serializable
+@Serializable(with = DecodeSourceSerializer::class)
 enum class DecodeSource {
     @SerialName("manufacturerData") MANUFACTURER_DATA,
     @SerialName("serviceData") SERVICE_DATA,
+    /**
+     * Pack named a source this APK does not parse. Never written.
+     * [SignatureExchange.parsePack] drops the decode map and keeps the signature.
+     */
+    UNSUPPORTED,
+}
+
+object DecodeSourceSerializer : KSerializer<DecodeSource> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("DecodeSource", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: DecodeSource) {
+        encoder.encodeString(
+            when (value) {
+                DecodeSource.MANUFACTURER_DATA -> "manufacturerData"
+                DecodeSource.SERVICE_DATA -> "serviceData"
+                DecodeSource.UNSUPPORTED -> "manufacturerData"
+            },
+        )
+    }
+
+    override fun deserialize(decoder: Decoder): DecodeSource =
+        when (decoder.decodeString()) {
+            "manufacturerData" -> DecodeSource.MANUFACTURER_DATA
+            "serviceData" -> DecodeSource.SERVICE_DATA
+            else -> DecodeSource.UNSUPPORTED
+        }
 }
 
 @Serializable
@@ -544,6 +577,11 @@ data class AppSettings(
     val detectBleRaven: Boolean = true,
     /** On-screen and sit-report MAC tail and GPS mask. Does not change logs or matching. JSON key demoMode. */
     val demoMode: Boolean = false,
+    /**
+     * When false (default), Debrief text/PDF inventories omit unmatched rotating BLE.
+     * Counts, Extra attention, named signatures, bookmarks, payload pins, and Sit export still include them.
+     */
+    val debriefShowUnmatchedRandomBle: Boolean = false,
     /**
      * Ask for Wi-Fi AP scans faster than the stock ~30 s cadence.
      * Only takes effect while Android Wi-Fi scan throttling is off

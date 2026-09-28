@@ -257,6 +257,7 @@ class SignatureExchangeTest {
         for (id in listOf(
             "fleet-gopro", "fleet-osmo", "fleet-insta360",
             "fleet-wyze", "fleet-ring", "fleet-arlo", "fleet-eufy",
+            "fleet-liteon-camera-radio",
             "fleet-nest", "fleet-tapo", "fleet-reolink",
         )) {
             assertEquals(id, SignatureClass.CAMERA, ids.getValue(id).kind)
@@ -283,6 +284,7 @@ class SignatureExchangeTest {
         for (id in publicCameras) {
             assertTrue(id, ids.getValue(id).attentionNote.isNotBlank())
         }
+        assertTrue(ids.getValue("fleet-liteon-camera-radio").attentionNote.isBlank())
         assertTrue(ids.getValue("fleet-unifi-protect").attentionNote.isBlank())
         assertTrue(ids.getValue("fleet-salto").attentionNote.isBlank())
         assertEquals("Access control", SignatureClass.LOCK.label())
@@ -589,6 +591,32 @@ class SignatureExchangeTest {
     }
 
     @Test
+    fun parsePackDropsUnknownDecodeSourceKeepsSignature() {
+        val fleet = stock.first { it.id == "fleet-govee" }
+        val json = SignatureExchange.encode(
+            SignatureExchange.pack(listOf(fleet), 90, "test", "now"),
+        ).replace("\"source\": \"manufacturerData\"", "\"source\": \"vendorIe\"")
+        val parsed = SignatureExchange.parsePack(json)
+        assertEquals(1, parsed.skippedDecode)
+        val row = parsed.pack.fleets.single()
+        assertEquals("fleet-govee", row.id)
+        assertTrue(row.rules.isNotEmpty())
+        assertEquals(null, row.decode)
+    }
+
+    @Test
+    fun overlayStockKeepsLocalDecodeWhenPackSkippedIt() {
+        val local = stock.first { it.id == "fleet-ruuvi" }
+        assertTrue(local.decode != null)
+        val incoming = local.copy(decode = null, notes = "from pack")
+        val (next, result) = SignatureExchange.overlayStock(listOf(local), listOf(incoming))
+        assertEquals(null, result.error)
+        val row = next.first { it.id == "fleet-ruuvi" }
+        assertEquals("from pack", row.notes)
+        assertEquals(local.decode, row.decode)
+    }
+
+    @Test
     fun overlayStockDoesNotClobberCustomWithSameId() {
         val stockRow = stock.first { it.id == "fleet-govee" }
         val custom = stockRow.copy(builtIn = false, name = "My Govee")
@@ -865,6 +893,29 @@ class SignatureExchangeTest {
     }
 
     @Test
+    fun ringSsidOnUgsiOuiIsRingNotFlock() {
+        val engine = SignatureEngine()
+        val ring = sighting(RadioKind.WIFI, "E0:4F:43:DC:6C:94", "Ring-dc6c94")
+        val module = sighting(RadioKind.WIFI, "70:C9:4E:11:22:33", "Home")
+        val pole = sighting(RadioKind.WIFI, "B4:1E:52:00:00:01", "Flock-ABCDEF")
+        val hits = engine.match(listOf(ring, module, pole), stock)
+        assertTrue("Ring glob", "fleet-ring" in hits.getValue(ring.key))
+        assertFalse("UGSI is not Flock", "fleet-flock-cameras" in hits.getValue(ring.key))
+        assertFalse("UGSI is not LiteOn row", "fleet-liteon-camera-radio" in hits.getValue(ring.key))
+        assertTrue("LiteOn prefix labels module row", "fleet-liteon-camera-radio" in hits.getValue(module.key))
+        assertFalse("LiteOn prefix is not Extra-attention Flock", "fleet-flock-cameras" in hits.getValue(module.key))
+        assertTrue("Flock IEEE + name", "fleet-flock-cameras" in hits.getValue(pole.key))
+        val ringDevice = ring.copy(fleetIds = hits.getValue(ring.key))
+        val moduleDevice = module.copy(fleetIds = hits.getValue(module.key))
+        val poleDevice = pole.copy(fleetIds = hits.getValue(pole.key))
+        assertTrue(ringDevice.attentionNotes(stock).none { it.first.contains("Flock") })
+        assertTrue(moduleDevice.attentionNotes(stock).isEmpty())
+        assertTrue(poleDevice.attentionNotes(stock).any { it.first == "Flock Safety Cameras" })
+        val ringGuess = DeviceExplain.guess(ringDevice, listOf("LiteOn camera radio", "Ring"))
+        assertTrue(ringGuess.headline, ringGuess.headline.contains("Ring", ignoreCase = true))
+    }
+
+    @Test
     fun xuntongMfgHitsPenguinNotRaven() {
         val engine = SignatureEngine()
         val pack = ble(name = "", manufacturerId = 0x09C8, mac = "AA:BB:CC:DD:EE:08")
@@ -894,6 +945,19 @@ class SignatureExchangeTest {
         assertTrue("BWCDEVICE in service data", "fleet-axon" in hits.getValue(tagged.key))
         assertTrue("byte-reversed BWCDEVICE", "fleet-axon" in hits.getValue(reversed.key))
         assertFalse("name-only BWCDEVICE is not Axon", "fleet-axon" in hits.getValue(namedOnly.key))
+    }
+
+    @Test
+    fun dultFcb2ServiceDataHitsNotUuidList() {
+        val engine = SignatureEngine()
+        val tagged = ble(name = "", mac = "AA:BB:CC:11:22:40").copy(
+            facts = RadioFacts(serviceData = listOf(ServiceDataRecord("FCB2", "0100"))),
+        )
+        val uuidOnly = bleUuid("AA:BB:CC:11:22:41", "", "FCB2")
+        val hits = engine.match(listOf(tagged, uuidOnly), stock)
+        assertTrue("FCB2 service data is DULT", "fleet-dult" in hits.getValue(tagged.key))
+        assertFalse("FCB2 UUID list is not DULT", "fleet-dult" in hits.getValue(uuidOnly.key))
+        assertTrue(stock.single { it.id == "fleet-dult" }.attentionNote.isBlank())
     }
 
     @Test

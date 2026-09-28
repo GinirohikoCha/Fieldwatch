@@ -10,7 +10,7 @@ import kotlin.math.min
 
 object Sit {
     const val NAME_MAX = 40
-    const val RADIO_CAP = 3000
+    const val RADIO_CAP = 6000
     const val PATH_CAP = 2000
     const val CLOSED_CAP = 10
     const val TRAIL_CAP = 40

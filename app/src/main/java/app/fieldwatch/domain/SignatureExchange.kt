@@ -25,7 +25,14 @@ data class StockCatalogUpdateResult(
     val added: Int = 0,
     val updated: Int = 0,
     val catalogVersion: Int = 0,
+    /** Decode maps dropped because this APK does not know their source. Signatures still match. */
+    val skippedDecode: Int = 0,
     val error: String? = null,
+)
+
+data class ParsedSignaturePack(
+    val pack: SignaturePack,
+    val skippedDecode: Int = 0,
 )
 
 data class SignatureImportResult(
@@ -74,7 +81,13 @@ object SignatureExchange {
 
     fun encode(pack: SignaturePack): String = json.encodeToString(SignaturePack.serializer(), pack)
 
-    fun parse(text: String): SignaturePack {
+    fun parse(text: String): SignaturePack = parsePack(text).pack
+
+    /**
+     * Same as [parse], plus how many decode maps were dropped because [DecodeSource]
+     * was unknown. Signatures still import; those rows just have no field map.
+     */
+    fun parsePack(text: String): ParsedSignaturePack {
         val trimmed = text.trim().trimStart('\uFEFF')
         if (trimmed.isEmpty()) {
             throw IllegalArgumentException("This file is empty.")
@@ -95,7 +108,16 @@ object SignatureExchange {
         if (pack.fleets.isEmpty()) {
             throw IllegalArgumentException("This pack has no signatures.")
         }
-        return pack
+        var skipped = 0
+        val fleets = pack.fleets.map { fleet ->
+            if (fleet.decode?.source == DecodeSource.UNSUPPORTED) {
+                skipped++
+                fleet.copy(decode = null)
+            } else {
+                fleet
+            }
+        }
+        return ParsedSignaturePack(pack.copy(fleets = fleets), skipped)
     }
 
     fun merge(existing: List<Fleet>, incoming: List<Fleet>): Pair<List<Fleet>, SignatureImportResult> {
@@ -230,6 +252,7 @@ object SignatureExchange {
                 enabled = local.enabled,
                 rules = stock.rules + extras,
                 builtIn = true,
+                decode = stock.decode ?: local.decode,
             )
             if (stockFieldsDiffer(local, overlaid)) {
                 next[index] = overlaid

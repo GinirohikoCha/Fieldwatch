@@ -26,18 +26,66 @@ object OpenDroneId {
         return acc
     }
 
+    /**
+     * Wi-Fi vendor IE payloads framed as BLE FFFA ads: `0x0D` + counter + each
+     * 25-byte ASTM message. Stock Remote ID Decode fields maps then apply.
+     */
+    fun wifiFffaPayloads(facts: RadioFacts): List<String> {
+        val out = ArrayList<String>()
+        for (ie in facts.vendorIes) {
+            if (!ie.oui.equals(WIFI_OUI, ignoreCase = true) || ie.type != WIFI_TYPE) continue
+            out += wrapWifiAsFffa(ie.dataHex)
+        }
+        return out
+    }
+
+    internal fun wrapWifiAsFffa(dataHex: String): List<String> {
+        val b = hex(dataHex) ?: return emptyList()
+        if (b.isEmpty()) return emptyList()
+        val bleShaped = b.size >= 2 + MSG && b[0] == 0x0D.toByte()
+        val start = if (bleShaped) 2 else 1
+        if (start > b.size) return emptyList()
+        val counter = (if (bleShaped) b[1] else b[0]).toInt() and 0xFF
+        return framedMessages(b, start).map { msg ->
+            buildString(2 + 2 + msg.size * 2) {
+                append("0D")
+                append("%02X".format(counter))
+                for (byte in msg) append("%02X".format(byte.toInt() and 0xFF))
+            }
+        }
+    }
+
     internal fun messagesBle(dataHex: String): List<ByteArray> {
         val b = hex(dataHex) ?: return emptyList()
-        if (b.size < 2 + MSG) return emptyList()
-        val start = if (b[0] == 0x0D.toByte()) 2 else 0
-        return chunks(b, start)
+        if (b.isEmpty()) return emptyList()
+        val start = if (b.size >= 2 + MSG && b[0] == 0x0D.toByte()) 2 else 0
+        return framedMessages(b, start)
     }
 
     internal fun messagesWifi(dataHex: String): List<ByteArray> {
         val b = hex(dataHex) ?: return emptyList()
         if (b.isEmpty()) return emptyList()
-        // Some stacks send BLE-shaped [0x0D][counter][msg]; ASTM is [counter][msgs].
+        // BLE-shaped [0x0D][counter][msgs], else ASTM [counter][msgs].
         val start = if (b.size >= 2 + MSG && b[0] == 0x0D.toByte()) 2 else 1
+        return framedMessages(b, start)
+    }
+
+    /** Single 25-byte messages, or an ASTM message pack (type nibble 0xF). */
+    private fun framedMessages(b: ByteArray, start: Int): List<ByteArray> {
+        if (start >= b.size) return emptyList()
+        val head = b[start].toInt() and 0xFF
+        if (head shr 4 == 0xF && start + 3 <= b.size) {
+            val size = (b[start + 1].toInt() and 0xFF).coerceAtLeast(MSG)
+            val count = b[start + 2].toInt() and 0xFF
+            val out = ArrayList<ByteArray>(count)
+            var i = start + 3
+            repeat(count) {
+                if (i + MSG > b.size) return@repeat
+                out += b.copyOfRange(i, i + MSG)
+                i += size
+            }
+            return out
+        }
         return chunks(b, start)
     }
 

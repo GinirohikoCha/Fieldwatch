@@ -110,6 +110,9 @@ data class ExportUi(
     val saved: Boolean = false,
     val noticeTitle: String? = null,
     val noticeMessage: String? = null,
+    /** Shown after the user dismisses [noticeTitle]. Catalog import skip-decode only. */
+    val followUpTitle: String? = null,
+    val followUpMessage: String? = null,
 )
 
 data class FieldwatchUi(
@@ -1245,8 +1248,9 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                         userAgent = "Fieldwatch/${BuildConfig.VERSION_NAME}",
                     )
                 }
-                val pack = SignatureExchange.parse(text)
-                val result = app.config.overlayStockCatalog(pack)
+                val parsed = SignatureExchange.parsePack(text)
+                val result = app.config.overlayStockCatalog(parsed.pack)
+                    .copy(skippedDecode = parsed.skippedDecode)
                 result.error?.let { throw IllegalStateException(it) }
                 if (!result.alreadyLatest) {
                     app.devices.refresh(
@@ -1269,10 +1273,18 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                     if (result.added > 0) bits += "added ${result.added}"
                     val change = if (bits.isEmpty()) "No stock rows changed."
                     else bits.joinToString(" · ").replaceFirstChar { it.uppercase() } + "."
+                    val skip = result.skippedDecode > 0
                     ExportUi(
                         noticeTitle = "Catalog updated",
                         noticeMessage = "Stock catalog is now ${result.catalogVersion}. $change " +
                             "Bookmarks and Settings were not changed.",
+                        followUpTitle = if (skip) "Signature decoding skipped" else null,
+                        followUpMessage = if (skip) {
+                            "Some signature field maps in this catalog need a newer Fieldwatch. " +
+                                "Signatures still match. Install a newer APK to decode those fields."
+                        } else {
+                            null
+                        },
                     )
                 }
             }.onFailure { err ->
@@ -1934,9 +1946,9 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
             publishExport(0.4f, "Writing ${kind.label} · ${rows.size} radios")
             return withContext(Dispatchers.Default) {
                 if (kind == LogExportKind.LOG_CSV) {
-                    SitExport.csv(win.devices, radios, custom, notes, extra)
+                    SitExport.csv(win.devices, radios, custom, notes, extra, fleets)
                 } else {
-                    SitExport.jsonl(win.devices, radios, custom, notes, extra)
+                    SitExport.jsonl(win.devices, radios, custom, notes, extra, fleets)
                 }
             }
         }
@@ -2112,7 +2124,15 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun consumeExportNotice() {
-        _export.value = ExportUi()
+        val cur = _export.value
+        _export.value = if (cur.followUpTitle != null) {
+            ExportUi(
+                noticeTitle = cur.followUpTitle,
+                noticeMessage = cur.followUpMessage,
+            )
+        } else {
+            ExportUi()
+        }
     }
 
     private suspend fun reportCopy(copied: Long, total: Long) {

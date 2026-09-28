@@ -214,6 +214,44 @@ class SitTest {
     }
 
     @Test
+    fun debriefOmitsUnmatchedRandomBleFromListsKeepsCounts() {
+        val now = System.currentTimeMillis()
+        val rand = radio(
+            "BLE:AA:AA:AA:11:22:33",
+            firstSeen = now - 14 * 60_000L,
+            lastSeen = now,
+            rssi = -40,
+        )
+        val named = radio(
+            "BLE:BB:BB:BB:11:22:33",
+            fleetIds = setOf("fleet-axon"),
+            firstSeen = now - 60_000L,
+            lastSeen = now,
+            rssi = -55,
+        )
+        val text = DebriefReport.document(
+            devices = listOf(rand, named),
+            fleets = fleets,
+            settings = AppSettings(tagLocation = false),
+            operatorPath = emptyList(),
+            now = now,
+        ).toPlainText()
+        assertTrue(text.contains("2 BLE advertisers"))
+        assertTrue(text.contains("1 with randomized addresses") || text.contains("randomized"))
+        assertTrue(text.contains("Unmatched rotating BLE omitted"))
+        assertFalse(text.contains("AA:AA:AA:11:22:33"))
+        assertTrue(text.contains("BB:BB:BB:11:22:33"))
+        val shown = DebriefReport.document(
+            devices = listOf(rand, named),
+            fleets = fleets,
+            settings = AppSettings(tagLocation = false, debriefShowUnmatchedRandomBle = true),
+            operatorPath = emptyList(),
+            now = now,
+        ).toPlainText()
+        assertTrue(shown.contains("AA:AA:AA:11:22:33"))
+    }
+
+    @Test
     fun rollingDebriefUnchangedWithoutSit() {
         val cam = radio("BLE:AA:AA:AA:AA:AA:01", firstSeen = 1L, lastSeen = System.currentTimeMillis())
         val doc = DebriefReport.document(
@@ -269,18 +307,21 @@ class SitTest {
         gone: Boolean = false,
         payloadLat: Double? = null,
         payloadLon: Double? = null,
+        randomized: Boolean = true,
+        rssi: Int = -60,
+        name: String = "",
     ) = Sighting(
         key = key,
         kind = RadioKind.BLE,
         mac = mac,
-        name = "",
-        rssi = -60,
-        rssiMin = -60,
-        rssiMax = -60,
+        name = name,
+        rssi = rssi,
+        rssiMin = rssi,
+        rssiMax = rssi,
         channel = 0,
         frequencyMhz = 2402,
         vendor = null,
-        randomized = true,
+        randomized = randomized,
         hiddenSsid = false,
         serviceUuids = emptyList(),
         manufacturerId = null,

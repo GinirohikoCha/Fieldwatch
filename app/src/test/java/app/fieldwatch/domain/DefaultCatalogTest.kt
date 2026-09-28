@@ -51,7 +51,16 @@ class DefaultCatalogTest {
         val fsOuis = fs.rules.filter { it.kind == RuleKind.OUI }.map { it.text.uppercase() }.toSet()
         assertFalse(flockOuis.contains("A4:CF:12"))
         assertFalse(flockOuis.contains("3C:71:BF"))
+        assertFalse(flockOuis.contains("E0:4F:43"))
+        assertFalse(flockOuis.contains("70:C9:4E"))
         assertTrue(flockOuis.contains("B4:1E:52"))
+        val lite = DefaultCatalog.fleets().single { it.id == "fleet-liteon-camera-radio" }
+        val liteOuis = lite.rules.filter { it.kind == RuleKind.OUI }.map { it.text.uppercase() }.toSet()
+        assertTrue(liteOuis.contains("70:C9:4E"))
+        assertFalse(liteOuis.contains("E0:4F:43"))
+        assertFalse(liteOuis.contains("B4:1E:52"))
+        assertTrue(lite.attentionNote.isBlank())
+        assertEquals(SignatureClass.CAMERA, lite.kind)
         assertFalse(fsOuis.contains("90:35:EA"))
         assertFalse(fsOuis.contains("58:8E:81"))
         assertFalse(fsOuis.contains("EC:1B:BD"))
@@ -93,6 +102,26 @@ class DefaultCatalogTest {
         )
         assertTrue("Find Hub", "fleet-find-hub" in engine.match(listOf(hub), stock).getValue(hub.key))
         assertFalse("Eddystone-UID is not Find Hub", "fleet-find-hub" in engine.match(listOf(uid), stock).getValue(uid.key))
+    }
+
+    @Test
+    fun dultMatchesFcb2ServiceDataNotUuidList() {
+        val stock = DefaultCatalog.fleets()
+        val engine = SignatureEngine()
+        val tagged = ble(name = "", serviceUuids = listOf("FCB2")).copy(
+            facts = RadioFacts(serviceData = listOf(ServiceDataRecord("FCB2", "0100"))),
+        )
+        val uuidOnly = ble(name = "", serviceUuids = listOf("FCB2"))
+        val hub = ble(name = "", serviceUuids = listOf("FEAA")).copy(
+            facts = RadioFacts(serviceData = listOf(ServiceDataRecord("FEAA", "41" + "11".repeat(20)))),
+        )
+        assertTrue("DULT", "fleet-dult" in engine.match(listOf(tagged), stock).getValue(tagged.key))
+        assertFalse("UUID list is not DULT", "fleet-dult" in engine.match(listOf(uuidOnly), stock).getValue(uuidOnly.key))
+        assertFalse("Find Hub is not DULT", "fleet-dult" in engine.match(listOf(hub), stock).getValue(hub.key))
+        assertTrue("Find Hub still matches", "fleet-find-hub" in engine.match(listOf(hub), stock).getValue(hub.key))
+        val fleet = stock.single { it.id == "fleet-dult" }
+        assertEquals(SignatureClass.FINDER, fleet.kind)
+        assertTrue(fleet.attentionNote.isBlank())
     }
 
     @Test

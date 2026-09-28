@@ -176,7 +176,7 @@ object DeviceDetailText {
             }
         }
 
-        if (device.kind == RadioKind.BLE && fleets.isNotEmpty()) {
+        if (fleets.isNotEmpty() && (device.kind == RadioKind.BLE || device.kind == RadioKind.WIFI)) {
             val decoded = SignatureFieldDecoder.decodeSighting(device, fleets)
             if (decoded.isNotEmpty()) {
                 section("Decoded fields")
