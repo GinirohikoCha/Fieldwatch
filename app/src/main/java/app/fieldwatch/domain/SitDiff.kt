@@ -11,6 +11,7 @@ object SitDiff {
         val named: Boolean,
         val bookmarked: Boolean = false,
         val fleetNames: List<String>,
+        val fleetIds: List<String> = emptyList(),
         val randomized: Boolean = false,
         val lat: Double? = null,
         val lon: Double? = null,
@@ -18,6 +19,16 @@ object SitDiff {
         val gpsTrail: List<GpsSample> = emptyList(),
         val firstSeen: Long = 0L,
         val lastSeen: Long = 0L,
+        val liveDecode: List<LiveDecodeChip> = emptyList(),
+        val payloadLat: Double? = null,
+        val payloadLon: Double? = null,
+        val payloadAlt: Double? = null,
+        val payloadHeading: Double? = null,
+        val payloadSpeed: Double? = null,
+        val payloadOpLat: Double? = null,
+        val payloadOpLon: Double? = null,
+        val payloadUasId: String = "",
+        val payloadTrail: List<PayloadFix> = emptyList(),
     )
 
     data class Side(
@@ -57,6 +68,7 @@ object SitDiff {
         named = device.key in customNames,
         bookmarked = device.key in bookmarkedKeys,
         fleetNames = device.fleetIds.map { id -> fleets.firstOrNull { it.id == id }?.name ?: id },
+        fleetIds = device.fleetIds.toList(),
         randomized = device.randomized,
         lat = SitPathPlot.loudestFix(device)?.lat ?: device.latitude,
         lon = SitPathPlot.loudestFix(device)?.lon ?: device.longitude,
@@ -64,6 +76,16 @@ object SitDiff {
         gpsTrail = device.gpsTrail,
         firstSeen = device.firstSeen,
         lastSeen = device.lastSeen,
+        liveDecode = device.liveDecode,
+        payloadLat = device.payloadLat,
+        payloadLon = device.payloadLon,
+        payloadAlt = device.payloadAlt,
+        payloadHeading = device.payloadHeading,
+        payloadSpeed = device.payloadSpeed,
+        payloadOpLat = device.payloadOpLat,
+        payloadOpLon = device.payloadOpLon,
+        payloadUasId = device.payloadUasId?.trim().orEmpty(),
+        payloadTrail = device.payloadTrail,
     )
 
     fun fromSitRadio(
@@ -81,6 +103,7 @@ object SitDiff {
         named = row.key in customNames,
         bookmarked = row.key in bookmarkedKeys,
         fleetNames = row.fleetIds.map { id -> fleets.firstOrNull { it.id == id }?.name ?: id },
+        fleetIds = row.fleetIds.toList(),
         randomized = row.randomized,
         lat = SitPathPlot.loudestFix(row.gpsTrail)?.lat,
         lon = SitPathPlot.loudestFix(row.gpsTrail)?.lon,
@@ -88,6 +111,16 @@ object SitDiff {
         gpsTrail = row.gpsTrail,
         firstSeen = row.firstSeen,
         lastSeen = row.lastSeen,
+        liveDecode = row.liveDecode,
+        payloadLat = row.payloadLat,
+        payloadLon = row.payloadLon,
+        payloadAlt = row.payloadAlt,
+        payloadHeading = row.payloadHeading,
+        payloadSpeed = row.payloadSpeed,
+        payloadOpLat = row.payloadOpLat,
+        payloadOpLon = row.payloadOpLon,
+        payloadUasId = row.payloadUasId?.trim().orEmpty(),
+        payloadTrail = row.payloadTrail,
     )
 
     fun report(
@@ -100,7 +133,11 @@ object SitDiff {
     }
 
     /** Same shape as Debrief so Compare (PDF) uses the Debrief letter layout. */
-    fun document(thisSit: Side, second: Side): DebriefDoc {
+    fun document(
+        thisSit: Side,
+        second: Side,
+        watchedFleetIds: Set<String> = emptySet(),
+    ): DebriefDoc {
         val thisKeys = thisSit.keys
         val secondKeys = second.keys
         val byKey = (thisSit.radios + second.radios).associateBy { it.key }
@@ -130,6 +167,12 @@ object SitDiff {
                 append("Radios this phone heard. Kind + MAC. BLE rotation is a new row. Not a radio fix.")
             },
         )
+        val thisCraft = AircraftTrail.pictures(thisSit.radios.mapNotNull { it.toCraftSource() }, thisSit.path)
+        val secondCraft = AircraftTrail.pictures(second.radios.mapNotNull { it.toCraftSource() }, second.path)
+        val aircraftBody = AircraftTrail.compareBody(thisSit.name, thisCraft, second.name, secondCraft)
+        if (aircraftBody.isNotEmpty()) {
+            sections += DebriefSection(next(), "Aircraft", aircraftBody)
+        }
         observerNotesSection(thisSit, second)?.let { body ->
             sections += DebriefSection(next(), "Observer notes", body)
         }
@@ -143,7 +186,7 @@ object SitDiff {
         }
         sections += DebriefSection(next(), "Only in this sit (${onlyThis.size})", listBody(onlyThis, byKey))
         sections += DebriefSection(next(), "Only in second sit (${onlySecond.size})", listBody(onlySecond, byKey))
-        sections += DebriefSection(next(), "In both (${both.size})", listBody(both, byKey))
+        sections += DebriefSection(next(), "In both (${both.size})", bothBody(both, thisSit, second))
         val meta = buildList {
             add("This sit" to thisSit.name)
             add("Second sit" to second.name)
@@ -163,13 +206,23 @@ object SitDiff {
             heading = "FIELDWATCH SIT COMPARE",
             pdfKicker = "SIT COMPARE",
             pdfTitle = "Sit compare",
-            pathFigure = pathFigure(thisSit, second),
+            pathFigure = AircraftTrail.applyWalk(
+                AircraftTrail.applyWalk(
+                    pathFigure(thisSit, second, watchedFleetIds),
+                    thisCraft,
+                    secondary = false,
+                ),
+                secondCraft,
+                secondary = true,
+            ),
+            extraFigures = AircraftTrail.compareOwnFigures(thisCraft, secondCraft),
         )
     }
 
     private fun pathFigure(
         thisSit: Side,
         second: Side,
+        watchedFleetIds: Set<String>,
     ): SitPathPlot.Figure? {
         val tracks = listOfNotNull(
             Geo.despikePath(thisSit.path).takeIf { it.size >= 2 }?.let {
@@ -180,33 +233,54 @@ object SitDiff {
             },
         )
         if (tracks.isEmpty()) return null
-        val points = ArrayList<SitPathPlot.Dot>()
-        (thisSit.radios + second.radios)
-            .filter { it.extraAttention || it.bookmarked }
+        val pinNote = "A MAC alert or a signature alert is drawn once. A decoded latitude and longitude is the last advertised position. Anything else is the strongest hear. A number is that place (Path key)."
+        val points = (thisSit.radios + second.radios)
+            .filter { it.bookmarked || it.fleetIds.any { id -> id in watchedFleetIds } }
             .distinctBy { it.key }
-            .forEach { r ->
-                val lat = r.lat ?: return@forEach
-                val lon = r.lon ?: return@forEach
+            .mapNotNull { r ->
+                val advertised = r.advertisedCoord()
+                val pin = advertised ?: r.hearCoord() ?: return@mapNotNull null
                 val notes = if (r.bookmarked) r.observerNotes else ""
-                points += SitPathPlot.Dot(
+                val label = r.name.ifBlank { r.mac }
+                val kept = r.payloadTrail.lastOrNull { PayloadLocation.validCoord(it.lat, it.lon) }
+                SitPathPlot.Dot(
                     key = r.key,
-                    lat = lat,
-                    lon = lon,
-                    label = r.name.ifBlank { r.mac },
+                    lat = pin.first,
+                    lon = pin.second,
+                    label = label,
                     extraAttention = r.extraAttention,
                     named = r.bookmarked || r.named,
                     kind = r.kind,
                     mac = r.mac,
                     fleetNames = r.fleetNames,
                     observerNotes = notes,
+                    advertised = advertised != null,
+                    advertisedNote = if (advertised != null) {
+                        AircraftTrail.advertisedNote(
+                            status = r.liveDecode.reportLabels().joinToString(", "),
+                            uasId = r.payloadUasId,
+                            label = label,
+                            lat = pin.first,
+                            lon = pin.second,
+                            alt = kept?.alt ?: r.payloadAlt,
+                            heading = kept?.heading ?: r.payloadHeading,
+                            speed = kept?.speed ?: r.payloadSpeed,
+                            pilotLat = r.payloadOpLat,
+                            pilotLon = r.payloadOpLon,
+                        )
+                    } else {
+                        ""
+                    },
                 )
             }
-        val dots = points.take(24)
+            .sortedBy { it.label }
+            .take(48)
+        val dots = points
         val all = tracks.flatMap { it.samples }
         val cap = if (tracks.size == 2) {
-            "Two walks on one north-up frame. Green = this sit. Slate = second sit. A number is a place on this phone's path; stacked radios share a number (Path key). Hear-points, not radio fixes."
+            "Two walks on one north-up frame. Green = this sit. Slate = second sit. $pinNote"
         } else {
-            "North-up. Line is this phone. A number is a place on this path; stacked radios share a number (Path key). Hear-points, not radio fixes."
+            "North-up. Line is this phone. $pinNote"
         }
         return SitPathPlot.Figure(
             kicker = if (tracks.size == 2) "OPERATOR PATHS" else "OPERATOR PATH",
@@ -215,6 +289,43 @@ object SitDiff {
             lengthM = Geo.pathLengthM(all),
             spanM = Geo.spanM(all),
             caption = cap,
+        )
+    }
+
+    private fun Radio.advertisedCoord(): Pair<Double, Double>? {
+        val kept = payloadTrail.lastOrNull { PayloadLocation.validCoord(it.lat, it.lon) }
+        if (kept != null) return kept.lat to kept.lon
+        if (PayloadLocation.validCoord(payloadLat, payloadLon)) return payloadLat!! to payloadLon!!
+        return null
+    }
+
+    private fun Radio.hearCoord(): Pair<Double, Double>? {
+        val la = lat ?: return null
+        val lo = lon ?: return null
+        return if (PayloadLocation.validCoord(la, lo)) la to lo else null
+    }
+
+    private fun Radio.toCraftSource(): AircraftTrail.Source? {
+        val fixes = payloadTrail.ifEmpty {
+            val lat = payloadLat ?: return null
+            val lon = payloadLon ?: return null
+            listOf(PayloadFix(lastSeen, lat, lon, payloadAlt, payloadHeading, payloadSpeed))
+        }.filter { PayloadLocation.validCoord(it.lat, it.lon) }
+        if (fixes.isEmpty()) return null
+        val last = fixes.last()
+        return AircraftTrail.Source(
+            uasId = payloadUasId,
+            title = name.ifBlank { mac },
+            lastSeen = lastSeen,
+            status = liveDecode.reportLabels().joinToString(", "),
+            fixes = fixes,
+            alt = last.alt ?: payloadAlt,
+            heading = last.heading ?: payloadHeading,
+            speed = last.speed ?: payloadSpeed,
+            pilotLat = payloadOpLat,
+            pilotLon = payloadOpLon,
+            key = key,
+            mac = mac,
         )
     }
 
@@ -256,7 +367,39 @@ object SitDiff {
             .joinToString("\n") { line(it) }
     }
 
-    private fun line(row: Radio): String = buildString {
+    /** Kind + MAC is the same radio. A live label can still change between windows. */
+    private fun bothBody(keys: Set<String>, thisSit: Side, second: Side): String {
+        if (keys.isEmpty()) return "(none)"
+        val earlier = thisSit.radios.associateBy { it.key }
+        val later = second.radios.associateBy { it.key }
+        return keys.mapNotNull { key ->
+            val a = earlier[key] ?: return@mapNotNull null
+            val b = later[key] ?: return@mapNotNull null
+            a to b
+        }.sortedWith(
+            compareByDescending<Pair<Radio, Radio>> { it.second.extraAttention }
+                .thenByDescending { it.second.named }
+                .thenBy { it.second.kind.name }
+                .thenBy { it.second.mac },
+        ).joinToString("\n") { (a, b) -> bothLine(a, b) }
+    }
+
+    private fun bothLine(earlier: Radio, later: Radio): String = buildString {
+        append(line(later, chips = false))
+        val left = earlier.liveDecode.reportLabels()
+        val right = later.liveDecode.reportLabels()
+        when {
+            left.isNotEmpty() && right.isNotEmpty() && left != right -> {
+                append("  decoded value changed: ")
+                append(left.joinToString(", "))
+                append(" → ")
+                append(right.joinToString(", "))
+            }
+            else -> append(chipSuffix(if (right.isNotEmpty()) later.liveDecode else earlier.liveDecode))
+        }
+    }
+
+    private fun line(row: Radio, chips: Boolean = true): String = buildString {
         append(if (row.kind == RadioKind.WIFI) "WIFI" else "BLE ")
         append("  ")
         append(row.mac)
@@ -270,6 +413,23 @@ object SitDiff {
             append(name)
         }
         if (row.extraAttention) append("  Extra attention")
+        if (chips) append(chipSuffix(row.liveDecode))
+    }
+
+    private fun chipSuffix(chips: List<LiveDecodeChip>): String {
+        val labels = chips.reportLabels()
+        val notes = chips.map { it.note.trim() }.filter { it.isNotEmpty() }.distinct()
+        if (labels.isEmpty() && notes.isEmpty()) return ""
+        return buildString {
+            if (labels.isNotEmpty()) {
+                append("  ")
+                append(labels.joinToString(", "))
+            }
+            if (notes.isNotEmpty()) {
+                append("  ")
+                append(notes.joinToString(" "))
+            }
+        }
     }
 
     private fun observerNotesSection(thisSit: Side, second: Side): String? {

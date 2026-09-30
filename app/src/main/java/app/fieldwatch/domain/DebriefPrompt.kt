@@ -72,6 +72,8 @@ object DebriefPrompt {
             appendLine("- RSSI is loudness at the phone, not meters.")
             appendLine("- Live RAM cap is about 400 radios; unnamed BLE evicts after ~3 min. A named sit keeps more. This is not a complete capture.")
             appendLine("- Do not claim a tracker is following unless the onboard GPS co-travel section supports it. A radio with you the whole sit is not automatically yours — it may be planted. Do not dismiss it. Do not invent a tail the onboard test did not flag. Do not treat a retail beacon as a Find My tail.")
+            appendLine("- A decoded live value on a tracking row is catalog text for that advertisement. Quote the catalog sentence when the onboard report includes one. Do not stitch that value onto a different MAC.")
+            appendLine("- An aircraft block and an amber track are positions the radio advertised. Trails with the same UAS id are one aircraft. They are not this phone's GPS and they are not a finding that the aircraft followed the operator.")
             appendLine("- Do not give safety advice. Do not tell the operator they are safe or in danger.")
             appendLine("- Treat this paste as operationally sensitive.")
             appendLine()
@@ -198,6 +200,10 @@ object DebriefPrompt {
         if (d.fleetIds.isNotEmpty()) {
             append(" sig=").append(d.fleetIds.joinToString("+") { names[it] ?: it })
         }
+        val labels = d.liveDecode.reportLabels()
+        if (labels.isNotEmpty()) append(" decoded=").append(labels.joinToString(","))
+        val notes = d.liveDecode.map { it.note.trim() }.filter { it.isNotEmpty() }.distinct()
+        if (notes.isNotEmpty()) append(" decodeNote=").append(notes.joinToString(" "))
         append(" dwell=").append(fmtDur(dwellMs(d, windowStart, now)))
     }
 

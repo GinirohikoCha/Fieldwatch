@@ -180,7 +180,10 @@ object DeviceDetailText {
             val decoded = SignatureFieldDecoder.decodeSighting(device, fleets)
             if (decoded.isNotEmpty()) {
                 section("Decoded fields")
-                decoded.forEach { row -> line(row.label, row.display) }
+                decoded.forEach { row ->
+                    line(row.label, row.display)
+                    if (row.note.isNotBlank()) line("Note", row.note)
+                }
             }
         }
 

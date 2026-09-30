@@ -471,6 +471,13 @@ fun DeviceDetailScreen(
                     val multi = decoded.map { it.fleetId }.distinct().size > 1
                     decoded.forEach { row ->
                         Meta(if (multi) "${row.fleetName} · ${row.label}" else row.label, row.display)
+                        if (row.note.isNotBlank()) {
+                            Text(
+                                row.note,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 } else if (mapped.isNotEmpty()) {
                     val govee = mapped.any { it.id == "fleet-govee" }

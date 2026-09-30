@@ -44,6 +44,45 @@ class SitPathPlotTest {
     }
 
     @Test
+    fun oneAdvertisedFixStillFrames() {
+        val model = SitPathPlot.Model(
+            samples = emptyList(),
+            dots = emptyList(),
+            lengthM = 0.0,
+            spanM = 0.0,
+            title = "AIRCRAFT",
+            frameSamples = listOf(GpsSample(1L, 28.78, -81.36)),
+            minHalfSpanM = 140f,
+        )
+        val layout = SitPathPlot.layout(model, 400f, 300f, pad = 12f, scaleBarReserve = 0f)
+        assertNotNull(layout)
+        val pt = layout!!.project(28.78, -81.36)
+        assertTrue(pt.x > layout.plotLeft && pt.x < layout.plotRight)
+        assertTrue(pt.y > layout.plotTop && pt.y < layout.plotBottom)
+        assertTrue(layout.path.isEmpty())
+    }
+
+    @Test
+    fun advertisedFixDoesNotExtendThePhoneLine() {
+        val model = SitPathPlot.Model(
+            samples = listOf(
+                GpsSample(1L, 28.78, -81.37),
+                GpsSample(2L, 28.781, -81.37),
+            ),
+            dots = emptyList(),
+            lengthM = 100.0,
+            spanM = 100.0,
+            title = "walk",
+            frameSamples = listOf(GpsSample(3L, 28.80, -81.37)),
+        )
+        val layout = SitPathPlot.layout(model, 400f, 300f)!!
+        assertEquals(2, layout.path.size)
+        val craft = layout.project(28.80, -81.37)
+        assertTrue(craft.y < layout.path[0].y)
+        assertTrue(craft.y > layout.plotTop)
+    }
+
+    @Test
     fun scaleBarIsANiceMeterValue() {
         assertEquals(50.0, SitPathPlot.niceMeters(47.0), 0.01)
         assertEquals(100.0, SitPathPlot.niceMeters(80.0), 0.01)
@@ -67,6 +106,27 @@ class SitPathPlotTest {
         val pile = stacked.first { it.stacked }
         assertEquals(2, pile.members.size)
         assertTrue(stacked.any { !it.stacked && it.members.single().dot.key == "c" })
+    }
+
+    @Test
+    fun startLabelOpensTheDetectionItCovers() {
+        val dot = SitPathPlot.Dot("a", 0.0, 0.0, "A", extraAttention = false, named = true)
+        val cluster = SitPathPlot.clusters(listOf(dot to SitPathPlot.Pt(100f, 100f))).single()
+        val start = SitPathPlot.HitMarker(
+            x = 100f,
+            y = 100f,
+            radius = 12f,
+            labelLeft = 108f,
+            labelTop = 94f,
+            labelRight = 180f,
+            labelBottom = 112f,
+        )
+        val onTheWord = SitPathPlot.clusterAt(listOf(cluster), 160f, 100f, listOf(start))
+        assertEquals(cluster.id, onTheWord?.id)
+        val onTheDot = SitPathPlot.clusterAt(listOf(cluster), 100f, 100f, listOf(start))
+        assertEquals(cluster.id, onTheDot?.id)
+        val elsewhere = SitPathPlot.clusterAt(listOf(cluster), 160f, 40f, listOf(start))
+        assertEquals(null, elsewhere)
     }
 
     @Test
@@ -213,6 +273,88 @@ class SitPathPlotTest {
         assertEquals(1, dots.points.size)
         assertEquals("van", dots.points[0].label)
         assertTrue(dots.points[0].extraAttention)
+    }
+
+    @Test
+    fun pathPlotsMacAlertsAndSignatureAlerts() {
+        val axon = Fleet(
+            id = "fleet-axon",
+            name = "Axon",
+            kind = SignatureClass.LAW_ENFORCEMENT,
+            attentionNote = "Body-worn.",
+            colorIndex = 7,
+        )
+        val tagged = Sighting(
+            key = "WIFI:AA:AA:AA:AA:AA:01",
+            kind = RadioKind.WIFI,
+            mac = "AA:AA:AA:AA:AA:01",
+            name = "cam",
+            rssi = -50,
+            rssiMin = -50,
+            rssiMax = -50,
+            channel = 6,
+            frequencyMhz = 2437,
+            vendor = null,
+            randomized = false,
+            hiddenSsid = false,
+            serviceUuids = emptyList(),
+            manufacturerId = null,
+            manufacturerDataHex = "",
+            rawHex = "",
+            extras = "",
+            firstSeen = 1L,
+            lastSeen = 1L,
+            hitCount = 1,
+            fleetIds = setOf("fleet-axon"),
+            rssiHistory = emptyList(),
+            presence = emptyList(),
+            gpsTrail = listOf(GpsSample(1L, 28.78, -81.37)),
+        )
+        val report = SitPathPlot.dotsFrom(listOf(tagged), listOf(axon), namedKeys = emptySet())
+        assertEquals(1, report.points.size)
+        val bare = SitPathPlot.dotsFrom(
+            listOf(tagged), listOf(axon), namedKeys = emptySet(), alertsOnly = true,
+        )
+        assertTrue(bare.points.isEmpty())
+        val signature = SitPathPlot.dotsFrom(
+            listOf(tagged),
+            listOf(axon),
+            namedKeys = emptySet(),
+            watchedFleetIds = setOf(axon.id),
+            alertsOnly = true,
+        )
+        assertEquals(1, signature.points.size)
+        assertEquals(SignatureClass.LAW_ENFORCEMENT, signature.points[0].classKind)
+        assertEquals(Palette.color(7), signature.points[0].accentArgb)
+        val mac = SitPathPlot.dotsFrom(
+            listOf(tagged),
+            listOf(axon),
+            namedKeys = emptySet(),
+            bookmarkedKeys = setOf(tagged.key),
+            alertsOnly = true,
+        )
+        assertEquals(1, mac.points.size)
+        assertTrue(mac.points[0].named)
+        val decoded = tagged.copy(
+            payloadLat = 29.5,
+            payloadLon = -81.37,
+            payloadTrail = listOf(
+                PayloadFix(1L, 29.1, -81.37),
+                PayloadFix(2L, 29.4, -81.37),
+            ),
+        )
+        val pinned = SitPathPlot.dotsFrom(
+            listOf(decoded),
+            listOf(axon),
+            namedKeys = emptySet(),
+            watchedFleetIds = setOf(axon.id),
+            alertsOnly = true,
+        )
+        assertEquals(29.4, pinned.points.single().lat, 1e-6)
+        assertTrue(pinned.points.single().advertised)
+        val letter = SitPathPlot.dotsFrom(listOf(decoded), listOf(axon), namedKeys = emptySet())
+        assertEquals(28.78, letter.points.single().lat, 1e-6)
+        assertFalse(letter.points.single().advertised)
     }
 
     @Test

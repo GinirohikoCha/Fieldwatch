@@ -1000,6 +1000,38 @@ class ConfigStore(context: Context) {
             if (extras.isNotEmpty()) fleets = (fleets + extras).sortedBy { it.name.lowercase() }
             version = CATALOG_V84
         }
+        if (version < CATALOG_V85) {
+            fleets = fleets.map { fleet ->
+                if (!fleet.builtIn || fleet.id != "fleet-dult") return@map fleet
+                val stock = catalog[fleet.id] ?: return@map fleet
+                fleet.copy(decode = stock.decode, notes = stock.notes)
+            }
+            version = CATALOG_V85
+        }
+        if (version < CATALOG_V86) {
+            fleets = fleets.map { fleet ->
+                if (!fleet.builtIn || fleet.id != "fleet-dult") return@map fleet
+                val stock = catalog[fleet.id] ?: return@map fleet
+                fleet.copy(decode = stock.decode, notes = stock.notes)
+            }
+            version = CATALOG_V86
+        }
+        if (version < CATALOG_V87) {
+            fleets = fleets.map { fleet ->
+                if (!fleet.builtIn || fleet.id != "fleet-find-hub") return@map fleet
+                val stock = catalog[fleet.id] ?: return@map fleet
+                fleet.copy(decode = stock.decode, notes = stock.notes)
+            }
+            version = CATALOG_V87
+        }
+        if (version < CATALOG_V88) {
+            fleets = fleets.map { fleet ->
+                if (!fleet.builtIn || fleet.id != "fleet-remote-id") return@map fleet
+                val stock = catalog[fleet.id] ?: return@map fleet
+                fleet.copy(decode = stock.decode, notes = stock.notes)
+            }
+            version = CATALOG_V88
+        }
         if (!settings.darkTheme) settings = settings.copy(darkTheme = true)
         if (settings.scanControlsExpanded) settings = settings.copy(scanControlsExpanded = false)
         presets = presets.filterNot { it.isBuiltIn() && it.id in hiddenPresetIds }
@@ -1044,7 +1076,7 @@ class ConfigStore(context: Context) {
 
     companion object {
         /** Stock catalog generation. Settings footer and the GitHub pack use this. */
-        const val CATALOG_VERSION = 84
+        const val CATALOG_VERSION = 88
         private const val CATALOG_V2 = 2
         private const val CATALOG_V3 = 3
         private const val CATALOG_V4 = 4
@@ -1127,7 +1159,11 @@ class ConfigStore(context: Context) {
         private const val CATALOG_V81 = 81
         private const val CATALOG_V82 = 82
         private const val CATALOG_V83 = 83
-        private const val CATALOG_V84 = CATALOG_VERSION
+        private const val CATALOG_V84 = 84
+        private const val CATALOG_V85 = 85
+        private const val CATALOG_V86 = 86
+        private const val CATALOG_V87 = 87
+        private const val CATALOG_V88 = CATALOG_VERSION
         private val GENERIC_GATT_UUIDS = setOf("180A", "180D", "180F")
         private val POLICY_FLEET_IDS = setOf(
             "fleet-flock-cameras",

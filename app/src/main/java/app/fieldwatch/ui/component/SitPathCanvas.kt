@@ -7,11 +7,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,17 +27,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -40,7 +54,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.fieldwatch.data.PathTiles
 import app.fieldwatch.domain.Geo
+import app.fieldwatch.domain.SignatureClass
 import app.fieldwatch.domain.SitPathPlot
+import app.fieldwatch.ui.ClassGlyphs
+import app.fieldwatch.ui.RadioClassBadge
 import app.fieldwatch.ui.theme.Cyan
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.PhosphorActive
@@ -60,8 +77,10 @@ fun SitPathCanvas(
     onOpenRadio: (String) -> Unit = {},
 ) {
     val track = MaterialTheme.colorScheme.onSurface
-    val extra = MaterialTheme.colorScheme.error
-    val named = Cyan.nightIf(LocalNightMode.current)
+    val night = LocalNightMode.current
+    val you = Cyan.nightIf(night)
+    val glyphs = classGlyphPainters()
+    val pilotPainter = rememberVectorPainter(Icons.Outlined.Person)
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val surface = MaterialTheme.colorScheme.surface
     val outline = MaterialTheme.colorScheme.outline
@@ -73,10 +92,22 @@ fun SitPathCanvas(
         if (boxSize.width < 8 || boxSize.height < 8) null
         else SitPathPlot.layout(model, boxSize.width.toFloat(), boxSize.height.toFloat())
     }
-    val clusters = remember(layout) {
-        layout?.let { SitPathPlot.clusters(it.dots) } ?: emptyList()
+    val clusters = remember(layout, model) {
+        val lay = layout
+        if (lay == null) {
+            emptyList()
+        } else {
+            val numberOf: (SitPathPlot.Dot) -> Int = { dot ->
+                val i = model.dots.indexOfFirst { it.key == dot.key }
+                if (i < 0) 1 else i + 1
+            }
+            SitPathPlot.clusters(lay.dots, numberOf = numberOf)
+        }
     }
-    val selected = clusters.firstOrNull { it.id == selectedId && it.stacked }
+    val selected = clusters.firstOrNull { it.id == selectedId }
+    val markers = remember(layout, model.live, boxSize.width) {
+        pathMarkers(layout, model.live, boxSize.width.toFloat(), measurer, labelStyle)
+    }
     Box(
         modifier.then(
             Modifier
@@ -88,21 +119,13 @@ fun SitPathCanvas(
         Canvas(
             Modifier
                 .matchParentSize()
-                .pointerInput(clusters) {
+                .pointerInput(clusters, markers) {
                     detectTapGestures { pos ->
-                        val hit = clusters.minByOrNull { c ->
-                            hypot((c.center.x - pos.x).toDouble(), (c.center.y - pos.y).toDouble())
-                        }
-                        val dist = hit?.let {
-                            hypot((it.center.x - pos.x).toDouble(), (it.center.y - pos.y).toDouble())
-                        } ?: 999.0
+                        val hit = SitPathPlot.clusterAt(clusters, pos.x, pos.y, markers)
                         selectedId = when {
-                            hit == null || dist > 40.0 -> null
-                            hit.stacked -> if (selectedId == hit.id) null else hit.id
-                            else -> {
-                                onOpenRadio(hit.members.single().dot.key)
-                                null
-                            }
+                            hit == null -> null
+                            selectedId == hit.id -> null
+                            else -> hit.id
                         }
                     }
                 },
@@ -136,6 +159,8 @@ fun SitPathCanvas(
                     color = track.copy(alpha = 0.85f),
                     style = Stroke(width = 4f, cap = StrokeCap.Round, join = StrokeJoin.Round),
                 )
+            }
+            if (lay.path.size >= 2) {
                 val trace = if (lay.samples.size >= 2) lay.samples else model.samples
                 val stays = Geo.legs(trace).filter { it.stay }
                 for (i in 1 until lay.path.size) {
@@ -172,8 +197,7 @@ fun SitPathCanvas(
                 }
                 val start = lay.path.first()
                 val end = lay.path.last()
-                drawCircle(track, radius = 6f, center = Offset(start.x, start.y))
-                drawCircle(track, radius = 8f, center = Offset(end.x, end.y))
+                drawStartDot(start.x, start.y)
                 val startT = measurer.measure("Start", labelStyle)
                 drawText(startT, topLeft = Offset((start.x + 8f).coerceAtMost(size.width - startT.size.width), start.y - 6f))
                 val endLabel = if (model.live) "Now" else "End"
@@ -186,30 +210,22 @@ fun SitPathCanvas(
                     ),
                 )
             }
+            drawAdvertised(lay, model.craft, model.pilots, model.dots, pilotPainter)
             clusters.forEach { cluster ->
                 val pt = Offset(cluster.center.x, cluster.center.y)
-                val color = when {
-                    cluster.members.any { it.dot.extraAttention } -> extra
-                    cluster.members.any { it.dot.named } -> named
-                    else -> track
-                }
                 if (cluster.stacked) {
                     val hot = selected?.id == cluster.id
-                    drawCircle(color, radius = if (hot) 18f else 16f, center = pt)
-                    val num = measurer.measure(
-                        "${cluster.members.size}",
-                        labelStyle.copy(color = Color.White, fontSize = 11.sp),
-                    )
-                    drawText(num, topLeft = Offset(pt.x - num.size.width / 2f, pt.y - num.size.height / 2f))
+                    drawCountBadge(pt, cluster.members.size, if (hot) 18f else 15f, measurer)
                 } else {
                     val m = cluster.members.single()
-                    drawCircle(color, radius = 9f, center = pt)
-                    val num = measurer.measure(
-                        "${m.number}",
-                        labelStyle.copy(color = Color.White, fontSize = 9.sp),
-                    )
-                    drawText(num, topLeft = Offset(pt.x - num.size.width / 2f, pt.y - num.size.height / 2f))
+                    val fill = discColor(m.dot, night)
+                    val painter = glyphs[m.dot.classKind] ?: glyphs[null]!!
+                    drawClassDisc(pt, 12f, fill, painter)
                 }
+            }
+            if (lay.path.size >= 2) {
+                val end = lay.path.last()
+                drawYouDot(end.x, end.y, 6.2f, you)
             }
             if (selected != null) {
                 val insetOnRight = selected.center.x < size.width / 2f
@@ -243,35 +259,218 @@ fun SitPathCanvas(
                 Modifier
                     .align(if (onRight) Alignment.TopEnd else Alignment.TopStart)
                     .padding(8.dp)
-                    .widthIn(max = 200.dp)
+                    .widthIn(max = 248.dp)
                     .background(surface, RoundedCornerShape(8.dp))
                     .border(1.dp, outline, RoundedCornerShape(8.dp))
                     .padding(8.dp),
             ) {
                 Text(
-                    "${selected.members.size} stacked",
+                    if (selected.members.size == 1) "1 alert here" else "${selected.members.size} alerts here",
                     style = MaterialTheme.typography.labelSmall,
                     color = muted,
                 )
                 selected.members.forEach { m ->
-                    val tag = if (m.dot.extraAttention) "Extra attention" else ""
+                    val accent = discColor(m.dot, night)
                     val obs = m.dot.observerNotes.trim()
-                    Text(
-                        "${m.number}. ${m.dot.label}" +
-                            (if (tag.isNotEmpty()) " · $tag" else "") +
-                            (if (obs.isNotEmpty()) " · Observer: $obs" else ""),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = when {
-                            m.dot.extraAttention -> extra
-                            m.dot.named -> named
-                            else -> track
-                        },
+                    Row(
                         modifier = Modifier
                             .clickable { onOpenRadio(m.dot.key) }
-                            .padding(vertical = 2.dp),
-                    )
+                            .padding(vertical = 3.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            "${m.number}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = muted,
+                            modifier = Modifier.width(16.dp),
+                        )
+                        RadioClassBadge(m.dot.classKind, accent, compact = true)
+                        Spacer(Modifier.width(6.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                m.dot.label,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = track,
+                                maxLines = 2,
+                            )
+                            if (obs.isNotEmpty()) {
+                                Text(
+                                    obs,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = you,
+                                    maxLines = 2,
+                                )
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+}
+
+internal val AircraftAmber = Color(0xFFC47A00)
+
+private val ClusterFill = Color(0xFF1A2330)
+private val ClusterInk = Color(0xFFF4F7FB)
+private val UnmatchedDisc = Color(0xFF8D6E63)
+
+@Composable
+private fun classGlyphPainters(): Map<SignatureClass?, Painter> {
+    val out = LinkedHashMap<SignatureClass?, Painter>()
+    out[null] = rememberVectorPainter(ClassGlyphs.unmatched)
+    for (kind in SignatureClass.entries) {
+        out[kind] = rememberVectorPainter(ClassGlyphs.of(kind))
+    }
+    return out
+}
+
+private fun discColor(dot: SitPathPlot.Dot, night: Boolean): Color {
+    val raw = if (dot.accentArgb != 0) Color(dot.accentArgb) else UnmatchedDisc
+    return raw.nightIf(night)
+}
+
+private fun pathMarkers(
+    layout: SitPathPlot.Layout?,
+    live: Boolean,
+    width: Float,
+    measurer: TextMeasurer,
+    labelStyle: TextStyle,
+): List<SitPathPlot.HitMarker> {
+    val lay = layout ?: return emptyList()
+    if (lay.path.size < 2 || width < 8f) return emptyList()
+    val start = lay.path.first()
+    val end = lay.path.last()
+    val startText = measurer.measure("Start", labelStyle)
+    val endText = measurer.measure(if (live) "Now" else "End", labelStyle)
+    return listOf(
+        hitMarker(start, 12f, startText, width, dx = 8f, dy = -6f),
+        hitMarker(end, 12f, endText, width, dx = 10f, dy = -(endText.size.height + 4f).toFloat()),
+    )
+}
+
+private fun hitMarker(
+    dot: SitPathPlot.Pt,
+    radius: Float,
+    text: androidx.compose.ui.text.TextLayoutResult,
+    width: Float,
+    dx: Float,
+    dy: Float,
+): SitPathPlot.HitMarker {
+    val left = (dot.x + dx).coerceAtMost((width - text.size.width).coerceAtLeast(0f))
+    val top = (dot.y + dy).coerceAtLeast(0f)
+    return SitPathPlot.HitMarker(
+        x = dot.x,
+        y = dot.y,
+        radius = radius,
+        labelLeft = left,
+        labelTop = top,
+        labelRight = left + text.size.width,
+        labelBottom = top + text.size.height,
+    )
+}
+
+private fun DrawScope.drawStartDot(x: Float, y: Float) {
+    drawCircle(Color.White, radius = 8.4f, center = Offset(x, y))
+    drawCircle(Color.Black, radius = 6.2f, center = Offset(x, y))
+}
+
+private fun DrawScope.drawYouDot(x: Float, y: Float, radius: Float, you: Color) {
+    drawCircle(Color.White, radius = radius + 2.2f, center = Offset(x, y))
+    drawCircle(you, radius = radius, center = Offset(x, y))
+}
+
+private fun DrawScope.drawClassDisc(center: Offset, radius: Float, fill: Color, painter: Painter) {
+    drawCircle(Color.White, radius = radius + 1.6f, center = center)
+    drawCircle(fill, radius = radius, center = center)
+    val icon = radius * 1.25f
+    translate(center.x - icon / 2f, center.y - icon / 2f) {
+        with(painter) {
+            draw(Size(icon, icon), colorFilter = ColorFilter.tint(Color.White))
+        }
+    }
+}
+
+private fun DrawScope.drawCountBadge(center: Offset, count: Int, radius: Float, measurer: TextMeasurer) {
+    drawCircle(ClusterInk, radius = radius + 2f, center = center)
+    drawCircle(ClusterFill, radius = radius, center = center)
+    val measured = measurer.measure(
+        "$count",
+        TextStyle(color = ClusterInk, fontSize = 12.sp, fontWeight = FontWeight.Bold),
+    )
+    drawText(
+        measured,
+        topLeft = Offset(center.x - measured.size.width / 2f, center.y - measured.size.height / 2f),
+    )
+}
+
+private val PilotInk = Color(0xFF3D4A55)
+
+private val AircraftDots = PathEffect.dashPathEffect(floatArrayOf(4f, 9f), 0f)
+private val AircraftInk = Color.White
+
+private fun DrawScope.drawAdvertised(
+    lay: SitPathPlot.Layout,
+    tracks: List<SitPathPlot.FigureTrack>,
+    pilots: List<SitPathPlot.Mark>,
+    dots: List<SitPathPlot.Dot>,
+    pilotPainter: Painter,
+) {
+    tracks.forEach { track ->
+        val samples = track.samples
+        if (samples.isEmpty()) return@forEach
+        val pts = samples.map { lay.project(it.lat, it.lon) }
+        if (pts.size >= 2) {
+            val path = Path().apply {
+                moveTo(pts[0].x, pts[0].y)
+                for (i in 1 until pts.size) lineTo(pts[i].x, pts[i].y)
+            }
+            drawPath(
+                path,
+                AircraftInk,
+                style = Stroke(
+                    width = 4.2f,
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round,
+                    pathEffect = AircraftDots,
+                ),
+            )
+            val start = pts.first()
+            drawCircle(Color.White, radius = 4.6f, center = Offset(start.x, start.y))
+            drawCircle(
+                AircraftInk,
+                radius = 4.6f,
+                center = Offset(start.x, start.y),
+                style = Stroke(width = 1.8f),
+            )
+        }
+        val end = pts.last()
+        val covered = dots.any { SitPathPlot.sitsOnCraft(it, listOf(track)) }
+        if (!covered) {
+            drawCircle(Color.White, radius = 4.6f, center = Offset(end.x, end.y))
+            drawCircle(
+                AircraftInk,
+                radius = 4.6f,
+                center = Offset(end.x, end.y),
+                style = Stroke(width = 1.8f),
+            )
+        }
+    }
+    pilots.forEach { pilot ->
+        val pt = lay.project(pilot.lat, pilot.lon)
+        drawPilotMark(Offset(pt.x, pt.y), pilotPainter)
+    }
+}
+
+private fun DrawScope.drawPilotMark(center: Offset, painter: Painter) {
+    val radius = 11f
+    drawCircle(Color.White, radius = radius + 1.6f, center = center)
+    drawCircle(Color(0xFFF4F7FB), radius = radius, center = center)
+    drawCircle(PilotInk, radius = radius, center = center, style = Stroke(width = 1.5f))
+    val icon = radius * 1.35f
+    translate(center.x - icon / 2f, center.y - icon / 2f) {
+        with(painter) {
+            draw(Size(icon, icon), colorFilter = ColorFilter.tint(PilotInk))
         }
     }
 }

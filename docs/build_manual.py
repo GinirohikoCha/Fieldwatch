@@ -479,8 +479,8 @@ def draw_cover(c, doc):
         y -= 16
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 9)
-    c.drawString(48, 108, "Version 1.1.15")
-    c.drawString(48, 94, "28 September 2026")
+    c.drawString(48, 108, "Version 1.1.16")
+    c.drawString(48, 94, "30 September 2026")
     c.drawString(48, 80, "Package  app.fieldwatch   ·   Android 10+ (API 29)   ·   Target API 35")
     c.setStrokeColor(colors.HexColor("#2A3340"))
     c.setLineWidth(0.6)
@@ -520,7 +520,7 @@ def draw_body(c, doc):
     c.line(48, 40, PAGE_W - 48, 40)
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 8)
-    c.drawString(48, 28, "v1.1.15  ·  Off Grid Pete LLC")
+    c.drawString(48, 28, "v1.1.16  ·  Off Grid Pete LLC")
     draw_ig_mark(c, 148, 30, 5.2, MUTED)
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 8)
@@ -657,6 +657,7 @@ def story():
                 ["Who is walking or driving with me", "§8.5 (how the test works) and §12.2 (the playbook)"],
                 ["Turn a pattern family on or off", "Chapter 9"],
                 ["Read cleartext BLE bytes (temp, Remote ID, …)", "§9.6 Decode fields"],
+                ["See separated on a tag, or air / ground / emergency on a drone", "§5.4.1"],
                 ["Hear Remote ID on BLE and Wi-Fi", "§5.8.3, §9.6.6, §12.16"],
                 ["Build my own decode map from a payload spec", "§9.6.1–§9.6.5"],
                 ["Overlay radios on ATAK / TAK (CoT feed)", "§5.8 (configure), §12.15 (sit), §12.16 (Remote ID)"],
@@ -756,7 +757,7 @@ def story():
             "<b>Stale / gone.</b> No packet for longer than Settings → Stale after (and Display → Brief hold). The row can stay on screen dimmed. It does not mean the gadget is powered off forever.",
             "<b>Watch / bookmark.</b> A pip and/or spoken phrase when that signature family or that one MAC appears. Voice can say the class, the signature name, or both (Settings → What to say). Detail bookmark is one radio; it does not auto-delete when the radio leaves (§5.5, §10.1–10.2.1).",
             "<b>Sit.</b> One session of watching radios — a room, a walk, or a drive. Reports → Start sit names the window. Path, Debrief, Sit export, Compare this-sit, and AI Export use it. If you never start one, those reports use last 15 minutes in memory. Log export is still the session file. §5.6.",
-            "<b>Chip.</b> The colored signature name on a Live display row. A pattern hit, not identity.",
+            "<b>Chip.</b> The colored signature name on a Live display row. A pattern hit, not identity. A second chip in that color can be one decoded word (Separated, Airborne, …). §5.4.1.",
             "<b>OUI.</b> The first three bytes of a MAC, assigned to a vendor. The same module vendor shows up in many products, so an OUI-only match is a weak guess.",
         ]),
         P("1.2 Design philosophy", "h2"),
@@ -1432,7 +1433,8 @@ def story():
             "<b>Class glyph</b> in the circle: signature class of the first match (Finder tags, Phones / PCs, Audio, …). Unmatched radios show a question mark. The same glyphs sit on Filters class chips and on By class headers.",
             "<b>Radio kind</b> (Wi-Fi / Bluetooth icon) at the start of the subtitle: Wi-Fi access point versus BLE advertiser. AP means the radio is beaconing a network (or acting as a hotspot / soft-AP), not that it is a Wi-Fi client. Detail spells those words. Subtitle None drops the icon with the second line so the title stays a MAC or name.",
             "<b>Colored chips</b>: matched signature names when Signature names is on. List / Hybrid / Timeline show up to three. Radar labels the blip with the first match only. Four or more matches: extra names are on the detail page.",
-            "<b>Decode hexagon</b>: inside a signature chip, in that chip’s color, when <i>that</i> signature has a Decode fields map (§9.6). Dual-chip radios mark only the mapped name(s). That mark is a catalog check: the Live display does not parse the bytes. Values are on detail. Extra attention “!” is its own chip. A cyan notes chip means this radio has Observer notes. A phosphor bell means this radio already alerted this session. Display → Signature names off hides the names and the hexagon; “!”, the notes chip, and the bell still show.",
+            "<b>Decode hexagon</b>: inside a signature chip, in that chip’s color, when <i>that</i> signature has a Decode fields map (§9.6). Dual-chip radios mark only the mapped name(s). The hexagon means a map exists. It is not the parsed word. Extra attention “!” is its own chip. A cyan notes chip means this radio has Observer notes. A phosphor bell means this radio already alerted this session. Display → Signature names off hides the names and the hexagon. “!”, the notes chip, the bell, and a live value chip still show.",
+            "<b>Live value</b>: a chip in the signature color with one decoded word (Separated, Near owner, Airborne, Emergency, …). It appears when a Decode fields entry has <b>Live row</b> on and this advertisement produced that word. A heavier chip is a value marked <b>Strong</b>. Strength list, Hybrid, Timeline, and By class show it. Radar does not. §5.4.1.",
             "<b>&gt;&gt; &gt; = &lt; &lt;&lt;</b>: RSSI trend from recent packets (much stronger / stronger / steady / weaker / much weaker). Green approaching, red fading. Blank until a few samples exist.",
             "<b>New only · N hidden</b>: Live display hint while New detections only is on. Mark seen / Reset seen sit above the tabs.",
             "<b>Follow · path N m</b>: Live display hint while Moving with you is on. Start over (above the tabs) clears the GPS path and trails.",
@@ -1444,6 +1446,58 @@ def story():
             "<b>Scan notification</b>: “N Wi-Fi · N BLE · N signatures”, updated about every 2.5 s. Home leaves scanning running. Swiping Fieldwatch out of Recents (or Stop on the notification) ends the service so it does not keep alerting in the background.",
             "<b>Watchlist</b>: pip and/or spoken phrase on media volume, row flash, optional jump. Beep and Voice are independent (Settings). Voice can say the class, the signature name, or both; not Hunt. Fires once when a watched radio first appears (or returns after gone). After the one-second flash, a phosphor bell stays on that list row (list, hybrid, timeline, By class) for the rest of the session — not Extra attention “!”. Newest alert sorts by the same event. On By class the matching class and signature open so the row can flash, and the jump keeps those headers on screen when the radio is close enough. On radar the blip pings (expanding rings and a bright core) for any of those cues, including voice-only; after the ping a phosphor ring stays on that blip (drawn on top). Test alert plays whatever is on. System shade card is off unless Settings → System notification is on.",
         ]),
+        P("5.4.1 Values on the list", "h3"),
+        P(
+            "Some signatures print one decoded word on the list, beside the signature name. "
+            "You do not have to open the row. The hexagon still only means a map exists. "
+            "The extra chip is the word itself. It updates when the advertisement changes, "
+            "not on every RSSI tick. It is still a pattern match, not an identity and not a finding."
+        ),
+        P(
+            "<b>Tags that speak the protocol.</b> DULT (service data FCB2) and Google Find Hub "
+            "(FEAA frames 40 and 41) put the mode on the row. <b>Separated</b> is the heavier chip. "
+            "<b>Near owner</b> and <b>Nearby</b> stay quieter. "
+            "AirTag, SmartTag, and Tile do not carry this bit, so those rows stay a name only. "
+            "Chipolo and Pebblebee can show their own name and the mode together. "
+            "The mode comes from the DULT or Find Hub decode."
+        ),
+        P(
+            "Separated can hold the same MAC for about a day. That is the glance. "
+            "A separated tag that stays with you is the row to account for. "
+            "A near-owner tag with you the whole sit is often your own. "
+            "One first heard after the sit started is more often someone who arrived with their own keys. "
+            "A separated tag you only passed is not a tail. "
+            "Open detail for the catalog sentence on that value. "
+            "Debrief and Compare quote the same sentence. "
+            "Compare says when the mode changed between two sits, such as Separated to Near owner."
+        ),
+        P(
+            "<b>Drones.</b> While the stored Remote ID advertisement is a Location message, "
+            "the list shows the operational status: Undeclared, Ground, Airborne, Emergency, or RID failure. "
+            "<b>Emergency</b> is the heavier chip. Ground and Airborne are the quick read of what the aircraft is advertising. "
+            "The chip clears when the next advertisement is Basic ID or System. "
+            "It comes back on the next Location message. "
+            "A Location message buried in a BLE message pack does not light the chip. "
+            "Wi-Fi Remote ID packs are split, so a Wi-Fi location can. "
+            "Detail still has latitude, heading, speed, and UAS id when those messages are current. "
+            "The TAK pin does not depend on this chip."
+        ),
+        P(
+            "<b>How to use it.</b> Strength list, Hybrid, Timeline, or By class. "
+            "Leave Signature names on if you want the family name next to the word. "
+            "The value chip still shows if Signature names is off. "
+            "Filters → Show only, then Finder tags or Drones, keeps the list to those rows. "
+            "Start a sit before a flight if you want the advertised track. "
+            "Debrief and Compare then add an <b>Aircraft</b> section after Where you were. "
+            "Reports → Path draws the same track on that sit. "
+            "A track within 2 km of your walk shares that map as a white dotted line. "
+            "The last position is a class icon. Tap it for that radio. "
+            "When it shares a spot with other alerts, the count lists every radio there. "
+            "A farther aircraft with a UAS id gets its own map, up to three. "
+            "The pilot on that map is a person icon. "
+            "Sits saved before this change keep that single last position. "
+            "Last 15 minutes marks the current advertised position and does not keep a track. §5.6.1, §11.4, §12.6, §12.16."
+        ),
         P("5.5 Device detail", "h2"),
         figure_wrap(
             "fig-detail.png",
@@ -1529,7 +1583,7 @@ def story():
             "<b>Signal</b> — RSSI plus min/max this session, claimed TX power, channel / MHz, Wi-Fi standard and channel width when the OS reports them.",
             "<b>BLE</b> — PHY (1M / 2M / Coded), connectable, advertising interval, decoded Flags, GAP Appearance, Class of Device (major / minor / service classes), named 16-bit service UUIDs, service data, manufacturer payload. Connectable stays Yes once any advertisement from this radio was connectable — scan responses from the same MAC are not connectable and no longer flip the line.",
             "<b>Known payloads</b> — iBeacon (UUID / major / minor / calibrated TX); Google Fast Pair (pairing-mode 24-bit model ID with a local name list, or account-key broadcast); Apple Continuity (AirPods/Beats model, battery, in-ear/in-case; Find My / Offline Finding; Nearby Info activity; Nearby Action; AirDrop; Handoff; Hey Siri; AirPlay; Instant Hotspot). Eddystone UID / URL / TLM / EID (service 0xFEAA) <b>accumulate</b> on this page: each frame type stays once heard, labeled on the raw line (UID, URL, TLM, EID). Frames do not replace each other. Microsoft Swift Pair / Nearby Sharing when present. Unknown 0xFF blobs stay company + hex — there is no official database of proprietary payloads.",
-            "<b>Decoded fields</b> — Catalog maps read BLE manufacturer or service data (§9.6): labels and values from the <i>current</i> advertisement (temperature, model, Remote ID location, …). Remote ID is the same map on BLE UUID FFFA and on Wi-Fi vendor IE FA:0B:BC (framed as FFFA): UAS ID, Location lat/lon/heading/speed, operator. The heading carries the same hexagon as the Live display chip. Encrypted or short payloads stay hex; a note appears if a map exists but did not apply to this packet (Govee lights often only send a name). Matched signatures lists a hexagon next to names that have a map. Apple / Fast Pair / Eddystone / Microsoft stay in Known payloads and Maker data. Share as text, AI Export, and Debrief notable BLE print the same lines.",
+            "<b>Decoded fields</b> — Catalog maps read BLE manufacturer or service data (§9.6): labels and values from the <i>current</i> advertisement (temperature, model, Remote ID location, …). Remote ID is the same map on BLE UUID FFFA and on Wi-Fi vendor IE FA:0B:BC (framed as FFFA): UAS ID, Location lat/lon/heading/speed, operator. The heading carries the same hexagon as the Live display chip. Encrypted or short payloads stay hex; a note appears if a map exists but did not apply to this packet (Govee lights often only send a name). Matched signatures lists a hexagon next to names that have a map. A Live row word is already on the list. Its catalog note prints here under that value (§5.4.1). Apple / Fast Pair / Eddystone / Microsoft stay in Known payloads and Maker data. Share as text, AI Export, and Debrief notable BLE print the same lines.",
             "<b>Wi-Fi AP</b> — SSID (or Hidden), RSN/WPA/AKM/cipher from information elements in plain language, supported rates, capability string, vendor-specific IEs (OUI + type + payload) looked up in IEEE OUI/CID.",
             "<b>Session</b> — first/last seen, hit count, optional GPS (operator phone at hear-time), <b>every</b> matched signature (not capped at three), raw advertisement bytes, RSSI sparkline, 15-minute presence. Bookmark (top bar) watches this radio — see below. BLE: Hunt. Signature family card. Then Create signature from device.",
         ]),
@@ -1653,9 +1707,9 @@ def story():
         bullets([
             "<b>While it runs.</b> Live title FIELDWATCH · SIT and a status banner. Path, Debrief, Sit export, Compare’s this-sit side, and AI Export use this window, not 15 minutes. Filters, Hunt, TAK, and the 400-radio Live list stay as they are. Start and End sit stay on Reports.",
             "<b>After End sit.</b> The sit appears in the list on Reports. Pick it for Path / Debrief / Sit export / Compare this-sit, or leave Last 15 minutes selected. Rename / Delete sit under the list.",
-            "<b>Path</b> — North-up plot of the selected sit (open, saved, or last 15 minutes). Leave Reports in front to watch an open sit grow, or the last-15-minute snake move. Full write-up: §5.6.1.",
-            "<b>Debrief (text) / Debrief (PDF)</b> — Same sit report, two formats. Uses the selected sit (up to 6000 unique radios), or last 15 minutes in RAM (~400, hard ceiling 900). Unmatched rotating BLE omitted from lists by default; counts still include them. Show unmatched rotating BLE is on the Sit report card. Sit export has every radio. Full cap / drop / list rules just above. Hobby / as-is disclaimer at the top. Custom names. Observer notes after Where you were. Filters and Live view do not change what Debrief sees. On a drive without a sit, tap Debrief more than once (§11.4.1). PDF adds bold stay/transit lines, Label: kickers, and a letter-size path figure when GPS recorded a walk.",
-            "<b>Compare (text) / Compare (PDF)</b> — This sit vs a second saved sit. Presence only: only here, only there, in both. Kind + MAC. Same window as Debrief. Observer notes after Windows. Last 15 minutes vs a named sit is a different net (RAM ~400 vs sit 6000). PDF overlays both walks when both have GPS.",
+            "<b>Path</b> — North-up plot of the selected sit (open, saved, or last 15 minutes). Leave Reports in front to watch an open sit grow, or the last-15-minute snake move. An open or saved sit draws an advertised aircraft track as a white dotted line on this card. Full write-up: §5.6.1.",
+            "<b>Debrief (text) / Debrief (PDF)</b> — Same sit report, two formats. Uses the selected sit (up to 6000 unique radios), or last 15 minutes in RAM (~400, hard ceiling 900). Unmatched rotating BLE omitted from lists by default; counts still include them. Show unmatched rotating BLE is on the Sit report card. Sit export has every radio. Full cap / drop / list rules just above. Hobby / as-is disclaimer at the top. Custom names. Observer notes after Where you were. An Aircraft section follows when a radio advertised a position (§5.4.1). Filters and Live view do not change what Debrief sees. On a drive without a sit, tap Debrief more than once (§11.4.1). PDF adds bold stay/transit lines, Label: kickers, and a letter-size path figure when GPS recorded a walk. A nearby advertised track is a black dotted line on that figure. The last position is a class icon. The pilot is a person icon.",
+            "<b>Compare (text) / Compare (PDF)</b> — This sit vs a second saved sit. Presence only: only here, only there, in both. Kind + MAC. Same window as Debrief. Observer notes after Windows. A live value that changed is stated (Separated → Near owner, Airborne → Ground). Last 15 minutes vs a named sit is a different net (RAM ~400 vs sit 6000). PDF overlays both walks when both have GPS. This sit’s advertised track is a black dotted line. The second sit’s is a blue dotted line.",
             "<b>Compare AI Export</b> — Paste-ready addendum for a chat. Embeds the onboard Compare, then overlap (both/union), Wi-Fi vs BLE in each bucket, RAND BLE among exclusives, exclusive Extra attention / Named radios, and Observer notes if any. Instructs the model not to reprint the lists. Sit report AI Export stays this window.",
             "<b>AI Export</b> — Sit-level paste-ready addendum (the open or selected sit, otherwise last 15 minutes with a 5-minute slice). Onboard Debrief verbatim, then rates, RSSI bands, Extra attention, finder-tag IDs, and Observer notes — not a second inventory. Instructs the model not to reprint Debrief. For a <i>single</i> radio, use AI Export on the device-detail page instead.",
             "<b>Sit export</b> — Own card under Sit report. Same Format chips as Log export, for a different file. Full write-up: §5.6.2.",
@@ -1666,7 +1720,7 @@ def story():
         P("5.6.1 Path", "h3"),
         figure_wrap(
             "fig-path.png",
-            "Fig. 6 — Reports → Path. Drive through target area sit. Extra attention (red) at strongest RSSI. Privacy mode: north-up trace, no tiles, MAC tails masked.",
+            "Fig. 6 — Reports → Path. North-up plot of this phone for the selected sit. Privacy mode: no tiles, MAC tails masked.",
             "Reports → Path is a north-up plot of <b>this phone</b> for the sit you selected "
             "(open sit, a saved sit, or last 15 minutes). "
             "Tag detections with GPS must have been on, and the path must be about 10 m or more, "
@@ -1680,25 +1734,47 @@ def story():
             "Last 15 minutes (no sit running): a sliding 15-minute window. The tail drops off; the head "
             "is labeled Now. An open sit: the line grows from Start to Now for that window. "
             "While a sit is running, Path follows it (saved sits and Last 15 minutes are disabled until End sit). "
-            "Extra attention (red) and bookmarked (blue) dots appear as those radios are heard, "
-            "each KIND+MAC once at the strongest RSSI so far. Leave Reports and the last draw holds until you come back. "
-            "After End sit, pick the saved sit to review a still — the head is labeled End."
+            "A MAC alert or a signature alert appears as you hear it, once. "
+            "A decoded latitude and longitude uses the last position that radio sent. "
+            "Anything else uses the strongest RSSI so far. "
+            "Extra attention alone does not plot unless that signature is bookmarked. Leave Reports and the last draw holds until you come back. "
+            "After End sit, pick the saved sit to review a still — the head is labeled End. "
+            "An advertised track stored on that sit redraws with the walk."
         ),
         P(
-            "The line is this phone. Header counts stops. "
-            "Red dots are Extra attention; blue dots are bookmarked radios (Alert on that MAC). "
-            "A custom name without a bookmark does not plot. "
-            "Each KIND+MAC plots once, at the strongest RSSI hear-point. "
-            "Observer notes on a bookmarked radio list after the numbered roster "
-            "(plot number, custom name, MAC, the note). Live list still shows only the cyan notes chip, not the text. "
+            "The line is this phone. The black dot is the start. The blue dot is you, at the last point. "
+            "Header counts alerts. "
+            "A MAC alert or a signature alert is drawn once. "
+            "A decoded latitude and longitude is the last advertised position. "
+            "Anything else is a class icon at the strongest RSSI hear-point. "
+            "A lone class icon has no number box. Tap it for that one radio. "
+            "A count, in a dark disc, is several alerts in one place. "
+            "A custom name with Alert off does not plot. Extra attention alone does not plot unless that signature is bookmarked. "
+            "The list puts the Wi-Fi or BLE icon next to the MAC. "
+            "The class icon matches the map. Observer notes sit on that row. "
+            "Live list still shows only the cyan notes chip, not the text. "
             "Thick green on the line is a stay (~40 m, same as Debrief Where you were). Time ticks (HH:mm) sit along the path. "
-            "When several radios stack at one place, the plot shows one number and a count badge. "
-            "Tap that number for a single inset; tap again to close. Isolated dots and the roster open detail. "
+            "Tap a count for the radios there. Tap a single icon for that one radio. Tap again to close. "
+            "Tap a row in that list, or a row below, to open that radio. "
             "The distance scale sits under the plot. The route is inset so Start/End do not sit on the frame. "
             "GPS jumps that shoot out and back, or that imply more than about 150 km/h, are dropped from the trace."
         ),
         P(
-            "Settings → <b>Online place names and maps</b> (on by default) also loads OpenStreetMap tiles under this trace when the phone has internet. "
+            "On an open or saved sit, a white dotted line is an advertised aircraft track. "
+            "A track within 2 km of this walk shares the plot. "
+            "The last advertised position is a class icon, the same as the other alerts. "
+            "Tap that icon for that one radio. "
+            "One stored fix is that icon, with no line. "
+            "When it shares a spot with other alerts, the count stands in for the icon and the popup lists every radio there. "
+            "A farther aircraft with a UAS id gets its own map under the walk, up to three, and that map lists the alert. "
+            "The pilot is a person icon when that pin is within 2 km of the track. There is no word label on the map. "
+            "A position with no UAS id stays in the sit report when it is far from the walk. "
+            "Sits recorded before the trail was stored keep a single last position. "
+            "Last 15 minutes marks the current advertised position and does not keep a track. "
+            "These positions were broadcast by the radio."
+        ),
+        P(
+            "Settings → <b>Online place names and maps</b> (on by default) also loads OpenStreetMap tiles under this plot when the phone has internet. "
             "Tiles fill the plot box, then clip; extra map shows around the route. "
             "Offline, no tiles, or Privacy mode: the north-up plot only — no error dialog. Airplane mode is fine. "
             "Turn that switch off to keep streets out of Debrief/AI Export and maps off Path together."
@@ -1707,9 +1783,16 @@ def story():
             "Debrief PDF and Compare PDF include a letter-size operator-path figure of the same walk, "
             "full width of the report frame. When Online place names and maps is on, Privacy is off, "
             "and the phone is online, OpenStreetMap tiles fill that frame the same way Reports → Path does. "
-            "Thick green is a stay; Extra attention is red; bookmarked is blue; stacked radios at one place "
-            "share a Path-key number. Offline or Privacy: the north-up trace only. Compare overlays this sit "
-            "(solid) and the second sit (dashed) when both have enough GPS samples. Caption stays inside the panel outline."
+            "Thick green is a stay. A MAC alert or a signature alert is drawn once, the same radios as Reports → Path. "
+            "A decoded latitude and longitude is the last advertised position. Anything else is the strongest hear. "
+            "Extra attention is red, a MAC alert is blue, and a signature alert with neither is green. "
+            "Stacked radios at one place share a Path-key number. "
+            "An advertised aircraft on that figure is the drone class icon in the Path key, not a number, with the live status, UAS id, last position, motion, and the pilot position when the radio sent them. "
+            "The letter figure draws that advertised track as a black dotted line, "
+            "with a class icon at the last position. The pilot is a person icon, with no word on the figure. "
+            "Offline or Privacy: the north-up trace only. Compare overlays this sit "
+            "(solid) and the second sit (dashed) when both have enough GPS samples. "
+            "This sit’s advertised track is black dots. The second sit’s is blue dots. Caption stays inside the panel outline."
         ),
         P("Compare sits", "h3"),
         figure_wrap(
@@ -1903,6 +1986,13 @@ def story():
             "broadcasts. Fieldwatch hears it on <b>both Bluetooth Low Energy and Wi-Fi</b>. "
             "The Live display chip, Decoded fields, and TAK advertised pin are the same row "
             "either way. Not a tail number. Not DF. Not a Remote ID plugin."
+        ),
+        P(
+            "On the list, a Location message adds a status chip: Undeclared, Ground, Airborne, "
+            "Emergency, or RID failure. Emergency is the heavier chip. "
+            "That is the quick read of what the aircraft is advertising right now. "
+            "The chip follows the Location message only. A later Basic ID or System advertisement clears it until the next Location. "
+            "§5.4.1."
         ),
         P(
             "BLE UUID FFFA and Wi-Fi vendor IE FA:0B:BC are both identity for the stock Remote ID "
@@ -3185,10 +3275,13 @@ def story():
             "Remote ID uses this map on BLE FFFA and on Wi-Fi FA:0B:BC (framed as FFFA). "
             "The editor itself is still BLE manufacturer / service data for custom maps (§5.8.3). "
             "Identity match stays on the rule list: Decode fields do not help the matcher. "
-            "The Live display does not parse the bytes (that path stays cheap). A small hexagon "
+            "The list does not re-parse the payload while it draws. A small hexagon "
             "in the signature chip — same color as the name — means that signature has a map; "
             "dual-chip radios mark only the mapped name(s). Display → Signature names off hides "
-            "the chips, so the hexagon goes with them. Values fill in on device detail "
+            "the name chips, so the hexagon goes with them. "
+            "A field with <b>Live row</b> on also prints its current word on the list (§5.4.1). "
+            "That word stays if Signature names is off. "
+            "Other values fill in on device detail "
             "(Decoded fields), Share as text, AI Export for that radio, and Debrief’s "
             "notable BLE lines.",
         ),
@@ -3204,8 +3297,9 @@ def story():
         P(
             "You need two things, in this order: a signature whose rules hit the radio, and "
             "a field map for the payload you already understand from a vendor spec, a "
-            "reverse-engineering note, or the hex on detail. The map does not print values on "
-            "the Live display; the hexagon on that chip only means a map exists. "
+            "reverse-engineering note, or the hex on detail. The map does not print every value on "
+            "the list. Turn <b>Live row</b> on for the one field you want beside the name (§5.4.1). "
+            "The hexagon on that chip only means a map exists. "
             "If the radio is unmatched, create the signature first (§9.2 / §9.3), Save, "
             "then open Decode fields on that row."
         ),
@@ -3321,11 +3415,17 @@ def story():
             "still show as the number (or scaled number). GoPro / Osmo / Nest Weave / Remote ID "
             "message type ship these tables. Add value for each known id; Remove clears the table."
         ),
+        P(
+            "With <b>Live row</b> on, each named value can be marked <b>Strong</b> and can carry a <b>Note</b>. "
+            "Strong is the heavier chip on the list. The note is one sentence on detail and in Debrief. "
+            "Stock DULT and Find Hub mark Separated strong. Near owner and Nearby stay quiet, with their own sentences. "
+            "Stock Remote ID marks Emergency strong and still shows Undeclared, Ground, Airborne, and RID failure."
+        ),
         P("9.6.5 Preview, detail, and reports", "h3"),
         bullets([
             "<b>Preview</b> (bottom of Decode fields) uses a radio this signature already matches that is on the air now. You see the source hex and the parsed rows. No matching radio: Save anyway. A matching radio with empty hex: wrong source or that advertisement has no manufacturer/service bytes. Parsed empty: offset/length/gate — the usual miss is counting the company ID as offset 0.",
             "<b>Device detail → Decoded fields</b> is the same parse on the current advertisement. Several matched signatures with maps: each row is prefixed with the signature name. A map that exists but produced nothing prints a short note (Govee lights usually only send a name); raw hex stays below.",
-            "<b>Live display chip</b> shows a hexagon when the signature has a map — not the parsed values. Radar labels do not carry the hexagon. TAK / CoT (§5.8) also reads the numeric values for ids latitude / longitude (and alt_geo) to pin advertised position; that is not shown on the Live display.",
+            "<b>Live display</b> shows a hexagon when the signature has a map. A Live row field also shows its current word beside the name (§5.4.1). Radar does not draw the word or the hexagon. TAK / CoT (§5.8) reads latitude / longitude (and alt_geo) for the advertised pin. That pin is separate from the list chip.",
             "<b>Share as text / AI Export</b> on detail include Decoded fields. Reports → Debrief notable BLE prints label: value under those radios.",
             "Save on Decode fields writes the map onto this signature (stock or custom). Back without Save discards the editor. <b>Remove decode map</b> (confirm) clears the whole map; empty fields + Save also stores None. Export / Import signatures includes the map. Restore default signatures &amp; presets reloads stock maps and wipes custom rows — export first.",
         ]),
@@ -3340,7 +3440,7 @@ def story():
             ["Signature", "Source", "What detail can show"],
             [
                 ["Ruuvi", "Mfr 0x0499", "Format 5: temp / humidity / pressure / accel / battery / TX / movement / sequence / MAC in payload. Format 3: humidity / pressure / accel / battery (Format 3 temperature is sign-magnitude, not a plain int)."],
-                ["Remote ID", "BLE FFFA and Wi-Fi FA:0B:BC", "Same Decode fields map on both. Open Drone ID app code, counter, message type. Protocol 0–2: Basic ID, location (latitude / longitude / alt_geo / heading / hspeed). Heading is direction 0–179 plus 180 when flags bit 1 (east/west) is set — not ×2. hspeed is ×0.25, or ×0.75 + 63.75 when flags bit 0 (SpeedMult) is set. Self ID, System (op_lat / op_lon = pilot). Wi-Fi packs are framed as FFFA. TAK Payload location uses those ids plus track course/speed. Not a tail number."],
+                ["Remote ID", "BLE FFFA and Wi-Fi FA:0B:BC", "Same Decode fields map on both. Open Drone ID app code, counter, message type. Protocol 0–2: Basic ID, location (latitude / longitude / alt_geo / heading / hspeed). Heading is direction 0–179 plus 180 when flags bit 1 (east/west) is set — not ×2. hspeed is ×0.25, or ×0.75 + 63.75 when flags bit 0 (SpeedMult) is set. Self ID, System (op_lat / op_lon = pilot). Wi-Fi packs are framed as FFFA. Location status is a Live row chip while that message is stored: Undeclared, Ground, Airborne, Emergency, RID failure. Emergency is strong. TAK Payload location uses the lat/lon ids plus track course/speed. Not a tail number. §5.4.1."],
                 ["Blue Maestro", "Mfr 0x0133", "Tempo Disc battery, log interval, stored logs, temperature, humidity."],
                 ["GoPro", "Mfr 0xF202", "Schema, processor awake/asleep, Wi-Fi AP, pairing, model name, media offload."],
                 ["Osmo / DJI", "Mfr 0x08AA", "Model id (Osmo Action / Pocket / 360 and some aircraft). Osmo and DJI rows share the map; identity rules still split cameras from drones."],
@@ -3350,7 +3450,8 @@ def story():
                 ["Nest Weave", "Service FEAF", "Weave device-identification block: vendor (Nest Labs / Yale), product (Protect / thermostat / cam / Guard / Detect when the enum hits), pairing, 64-bit Weave device id. A 2-byte FEAF payload is the product id alone."],
                 ["Tuya", "Mfr 0x07D0", "Bound flag and protocol version. UUID bytes stay encrypted."],
                 ["Tile", "Service FEED", "Rotating private id (8 bytes of hex). Not a serial and not a stable identity."],
-                ["DULT tracker", "Service FCB2", "IETF DULT location-enabled advertisement: Network ID, then near owner vs separated (least-significant bit of the next byte). Partner tags (Chipolo, Pebblebee, moto) may dual-label. A UUID list without service data does not match."],
+                ["DULT tracker", "Service FCB2", "IETF DULT location-enabled advertisement: Network ID, then near owner vs separated (least-significant bit of the next byte). Mode is a Live row chip. Separated is strong. Near owner is quiet. Partner tags (Chipolo, Pebblebee, moto) may dual-label. A UUID list without service data does not match. §5.4.1."],
+                ["Google Find Hub", "Service FEAA", "Frames 40 (nearby) and 41 (separated). Mode is a Live row chip. Separated is strong and can hold a MAC about a day. Nearby is quiet. Not Eddystone UID/URL/TLM. §5.4.1."],
                 ["Penguin", "Mfr 0x09C8", "XUNTONG manufacturer data: MAC in payload, ASCII serial starting TN (e.g. TN72023022000771). Newer packs often advertise a 10-digit name instead of Penguin-."],
                 ["Aftermarket TPMS", "Mfr 0x0001", "Valve-cap kits after the TPMS* / FBB0 / data 80–83 match: wheel, pressure kPa, temperature, battery, alarm. A bare Nokia 0x0001 radio does not hit this row."],
                 ["SYTPMS", "Mfr (7-byte BR blob)", "Bicycle / scooter BR sensors: gauge psi, temperature, battery volts, alarm / rotating / standing still."],
@@ -3363,6 +3464,7 @@ def story():
             "A decoded value is still a pattern",
             "Temperature, model, or a Remote ID location is what that advertisement contained, "
             "not proof of a serial, an owner, or that a drone is overhead. "
+            "Separated, Airborne, and Emergency are the same kind of word: what that advertisement contained. "
             "A miss (map did not apply) is common: different firmware, a short scan response, "
             "or a family that encrypts the rest of the payload. Raw bytes stay on the page.",
             "note",
@@ -3702,7 +3804,9 @@ def story():
             "settings, GPS-tag on/off, overall distance traveled (along-track path length and "
             "straight-line span when tagging is on), then (1) executive summary, (2) <b>Where you were</b> "
             "(stays vs transit along the operator path — coordinates once per stay, not on every radio line; "
-            "street names on those stays if Online place names ran), (3) <b>Observer notes</b> when any heard radio in this window has a Named-radio note "
+            "street names on those stays if Online place names ran), then an <b>Aircraft</b> section when a radio advertised a latitude and longitude "
+            "(status word, last position, altitude, course, speed, how many fixes; the map is §5.6.1), "
+            "then (3) <b>Observer notes</b> when any heard radio in this window has a Named-radio note "
             "(custom name, MAC, RSSI, the note — quieter radios still appear here even if they are not in Loudest APs), "
             "then tracking assessment, "
             "then optional amber callouts <b>Possible trackers with you</b> and <b>Possible tail</b> (finder tags) when those lists are non-empty, " +
@@ -3712,7 +3816,8 @@ def story():
             "pattern match, not a skimmer detector), anomalies, privacy, "
             "recommended actions, and a one-line takeaway. "
             "When GPS tagging recorded a walk, a full-width operator-path figure sits with the report "
-            "(OSM tiles when maps are on and Privacy is off; stacked radios at one place share a Path-key number). "
+            "(OSM tiles when maps are on and Privacy is off; stacked radios at one place share a Path-key number; "
+            "a nearby advertised aircraft track is a black dotted line on that figure, with a class icon at the last position and a person icon for the pilot). "
             "<b>Anomalies</b> is not a second inventory: Extra attention, Signature hits, and tracking callouts already list named matches. "
             "Anomalies only keeps cues that are not those sections (Fast Pair in pairing mode, a very loud unnamed radio, a high randomized-BLE count). "
             "AirTag / SmartTag / Tile rosters and Extra attention reprints are omitted."
@@ -3735,6 +3840,8 @@ def story():
             "Store beacons are usually fixtures — they do not typically move with you. If one did, account for a test tag, a badge, or a short overlap with a fixture. Not a Find My tail. "
             "<b>Wearables with you</b> (amber, separate): Garmin, Fitbit, Oura that stayed with the path. Usually your own watch/ring or someone walking with you. Not typically a planted tracker. "
             "Find My and iPhone addresses rotate; each MAC is this session, not a unique ID. "
+            "When the radio has a live value, Debrief quotes that catalog sentence instead (Separated keeps the about-a-day line; Near owner says it is often your own tag). "
+            "Compare states a change between sits. "
             "GPS tagging off, or a sit in one place, cannot run this test — the report says so. "
             "Car drive-bys still need three GPS stamps on that radio (unchanged). "
             "This is a heuristic, not a legal finding and not identity. "
@@ -3978,7 +4085,7 @@ def story():
         ),
         P("12.6 Is this my own tag?", "h2"),
         P(
-            "Bag-check, not accusation. Turn on Moving with you after ~50 m. If the only tracker-like row is the one you put in the bag or the car, the filter is doing its job. Bookmark that MAC or hide the family so it stops competing with a real candidate.",
+            "Bag-check, not accusation. Turn on Moving with you after ~50 m. If the only tracker-like row is the one you put in the bag or the car, the filter is doing its job. Bookmark that MAC or hide the family so it stops competing with a real candidate. On a DULT or Find Hub row, read the mode chip first. Separated is heavier and can hold one MAC about a day. Near owner or Nearby with you the whole sit is often your own tag. §5.4.1.",
             "body_left",
         ),
         P(
@@ -4099,7 +4206,7 @@ def story():
                 ["ATAK overlay (Remote ID / Extra attention)", "§5.8 configure, §12.15 sit, §12.16 hear RID. Settings → TAK / CoT feed. Extra attention + Payload location. BLE FFFA and Wi-Fi FA:0B:BC. Same Wi-Fi LAN. Privacy mode off."],
                 ["Long sit / parked vehicle", "Balanced or Saver. Timeline. RSSI floor −80 if unreadable. Logging on. Watchlist, not a stare."],
                 ["Drive, then arrive home", "Moving with you is BLE only — house APs stay off. If a bag tag still does not show, the path was too short or GPS only stamped at the destination."],
-                ["Watch the path grow", "Reports → Path, stay on that tab. Open sit grows Start → Now; last 15 minutes is a sliding snake (tail drops off). Red / blue dots plot Extra attention and bookmarked radios as you hear them. Redraws about every 3 s. §5.6.1."],
+                ["Watch the path grow", "Reports → Path, stay on that tab. Open sit grows Start → Now; last 15 minutes is a sliding snake (tail drops off). An open sit also draws an advertised aircraft track as a white dotted line when the sit has one. The last position is a class icon. The pilot is a person icon. Black dot is the start. Blue dot is you, at the last point. MAC alerts and signature alerts are drawn once. A decoded latitude and longitude uses the last advertised position. Anything else is a class icon at the strongest hear. A count is several in one place. A lone class icon has no number box; tap it for that one radio. Redraws about every 3 s. §5.6.1."],
                 ["Long drive (several km)", "Start sit for a 6000-radio window (unnamed BLE drops first when full). Tap Debrief every 10–15 min or at stops and keep the shares (§11.4.1). Live RAM is still ~400. Debrief lists skip unmatched RAND BLE by default; Sit export has the roster. Log export is the hear-by-hear tape. Path on Reports can stay in front for the live trace."],
                 ["List too fast to tap", "Pause. Then detail. Resume. Or Display → Subtitle None so more of the list fits without Pause."],
                 ["Fit the row to the job", "§5.3. Display is look (Title/Subtitle, extras). Filters are who. Plaza: Subtitle None. Copy MAC: Title → MAC. Channel sit: Frequency on."],
@@ -4377,7 +4484,9 @@ def story():
             "<b>What you should see.</b> A Remote ID chip on the Live display when BLE FFFA or "
             "a Wi-Fi AP beacon with vendor IE FA:0B:BC is in earshot. Detail Decoded fields can "
             "show UAS ID, Self ID, Location lat/lon/alt, heading, and operator lat/lon as those "
-            "message types rotate in. On TAK, Location becomes a Yellow UAV at the advertised "
+            "message types rotate in. On Strength list, Hybrid, Timeline, or By class, a Location "
+            "message also shows Undeclared, Ground, Airborne, Emergency, or RID failure. "
+            "Emergency is the heavier chip. On TAK, Location becomes a Yellow UAV at the advertised "
             "point; Basic ID sticks the uid so one marker moves; System can add an Orange pilot "
             "pin; track course/speed point the aircraft icon. Skydio / Autel / Parrot name rows "
             "are still the setup/RC radios — in-flight license plate is this Remote ID row.",
@@ -4392,6 +4501,7 @@ def story():
                 ["Fast pass, no Wi-Fi chip", "OS scan throttle. Slow down or hover. BLE may still catch FFFA."],
                 ["Cloud of BLE dots on ATAK", "UAS ID not heard yet. First Basic ID jumps the uid onto one marker."],
                 ["Pin is kilometers away", "Advertised GPS on the aircraft. Not a Fieldwatch fix."],
+                ["No Ground / Airborne / Emergency chip", "The stored advertisement is not a Location message, or Location is inside an unsplit BLE pack. Wait for the next Location advertisement. Wi-Fi packs can still show the status."],
             ],
             [2.0 * inch, 4.5 * inch],
         ),
@@ -4554,8 +4664,9 @@ def story():
             ["BLE", "Bluetooth Low Energy. Advertisements are connectionless broadcast packets."],
             ["Classic Bluetooth", "BR/EDR (headsets, file-send, HC-05/HC-06 serial). Fieldwatch does not run Classic inquiry. A dual-mode BLE advertiser may claim Classic in flags or CoD; that is not a Classic scan. §2.2, §3.5, §7.2."],
             ["Signature", "A named bundle of match rules plus optional cluster flags."],
-            ["Decode fields", "Optional cleartext map on a signature (Signatures → row → Decode fields). After the rules hit, device detail / Share / AI Export / Debrief parse manufacturer or service-data bytes into labels (temp, model, Remote ID, …). TAK / CoT also reads numeric ids latitude / longitude for advertised-position pins. Remote ID uses this map on BLE FFFA and on Wi-Fi FA:0B:BC (framed as FFFA). Not a matcher. Not pairing or GATT. Encrypted ads stay hex. The Live display does not parse these; a hexagon on that signature’s chip means a map exists (§5.4). Byte 0 is after the company ID (manufacturer) or the first service-data byte. How to build a map: §9.6.1–§9.6.5. Stock maps: §9.6.6. TAK ids: §5.8.4. Remote ID: §5.8.3."],
-            ["Decode hexagon", "Small hexagon inside a signature name chip (same color as the name) when that signature has a Decode fields map. Dual-chip radios mark only the mapped name(s). Catalog check, not a parse of this packet. Hidden when Display → Signature names is off. Extra attention “!”, the cyan Observer notes chip, and the phosphor alerted bell are separate chips. Same mark on the Signatures list, By class signature rows, and detail Decoded fields. §5.4, §9.6."],
+            ["Decode fields", "Optional cleartext map on a signature (Signatures → row → Decode fields). After the rules hit, device detail / Share / AI Export / Debrief parse manufacturer or service-data bytes into labels (temp, model, Remote ID, …). A field with Live row on also prints that one word on the list (§5.4.1). Strong marks the heavier chip. Note is the sentence on detail and in Debrief. TAK / CoT also reads numeric ids latitude / longitude for advertised-position pins. Remote ID uses this map on BLE FFFA and on Wi-Fi FA:0B:BC (framed as FFFA). Not a matcher. Not pairing or GATT. Encrypted ads stay hex. A hexagon on that signature’s chip means a map exists (§5.4). Byte 0 is after the company ID (manufacturer) or the first service-data byte. How to build a map: §9.6.1–§9.6.5. Stock maps: §9.6.6. TAK ids: §5.8.4. Remote ID: §5.8.3."],
+            ["Decode hexagon", "Small hexagon inside a signature name chip (same color as the name) when that signature has a Decode fields map. Dual-chip radios mark only the mapped name(s). Catalog check, not a parse of this packet. Hidden when Display → Signature names is off. Extra attention “!”, the cyan Observer notes chip, the phosphor alerted bell, and a live value chip are separate. Same mark on the Signatures list, By class signature rows, and detail Decoded fields. §5.4, §9.6."],
+            ["Live value", "One decoded word on a Live list row, in the signature color. Live row must be on for that Decode fields entry, and this advertisement must have produced the word. Strong values use a heavier chip. Stock: DULT and Find Hub Separated; Remote ID Emergency, plus Ground, Airborne, Undeclared, and RID failure. Strength list, Hybrid, Timeline, By class. Not radar. Signature names off still shows the word. §5.4.1."],
             ["Signature family (detail)", "Card on device detail, above Create signature from device. Same on-air ID rules as Signature candidates, for this radio: Strong family, Possible family, This radio only, or Already tagged. Counts distinct MACs in the log and on the air now. Verdict only — Create from device still pins this MAC. Already tagged is not a veto: a second UUID/OUI signature can dual-label (iBeacon + store). Candidates skip tagged radios. §5.5, §9.2, §9.2.1."],
             ["Named radios", "Settings list of one-MAC custom names, optional Observer notes (up to 280 characters), and optional alerts (detail Save name / Save notes, or the bookmark icon). Rename, notes, Alert on/off, remove one, or Clear all. Does not include signature bookmarks. Privacy mode masks MAC tails. Orphans (gone or rotated) stay until you delete them. Filters → Named radios only (any custom name). Watched only needs Alert on. Path plots a Named radio only when Alert is on (bookmarked). Debrief, Compare, and AI Export list heard radios with notes. §5.5, §5.7, §8.1, §10.1."],
             ["Privacy mode", "Settings switch, off by default. Masks the last three octets of MACs on the screen and in Debrief / AI Export / detail Share (AA:BB:CC:**:**:**). GPS last-fix and sit-report coordinates show as masked; street names omitted. Logs, matching, filters, Hunt math, Moving with you, and saved signatures stay full. Pauses a TAK / CoT feed so full MACs and coordinates are not sent. §5.7, §5.8."],
@@ -4563,11 +4674,11 @@ def story():
             ["Night mode", "Settings → Appearance, off by default. Red-on-black field display: text, chips, RSSI, Hunt, Extra attention. Phone brightness is unchanged. Fig. 9, §5.7."],
             ["Heard here (TAK)", "CoT pin at this phone’s GPS at the loudest hear so far. The other radio is in earshot, not on that point. Walking away does not drag it. Callsign ends in (here); Extra attention is Maroon. Needs GPS tagging and a live fix. Extra attention uses this unless a payload lat/lon exists. Not DF."],
             ["Advertised position (TAK)", "CoT pin from decode field ids latitude / longitude (optional alt_geo). Stock Remote ID fills them from the same Decode fields map on BLE FFFA and Wi-Fi FA:0B:BC. Sticky across ASTM message types. UAS ID is the TAK uid so one aircraft moves instead of leaving MAC dots. op_lat / op_lon are a second (pilot) pin. Heading/speed go in track. GPS tagging can be off. §5.8.3."],
-            ["Remote ID", "ASTM F3411 / OpenDroneID digital license plate. Stock Drones-class row. Works on BLE UUID FFFA and on Wi-Fi vendor IE FA:0B:BC type 0x0D (same Decode fields map). Protocol 0–2 Location / Basic ID / System / Self ID. TAK Payload location pins advertised aircraft; track course/speed when present. Android 11+ for Wi-Fi IEs. NAN still misses. Not a tail number, not DF. §5.8.3, §9.6.6, §12.16."],
+            ["Remote ID", "ASTM F3411 / OpenDroneID digital license plate. Stock Drones-class row. Works on BLE UUID FFFA and on Wi-Fi vendor IE FA:0B:BC type 0x0D (same Decode fields map). Protocol 0–2 Location / Basic ID / System / Self ID. A Location message puts Undeclared, Ground, Airborne, Emergency, or RID failure on the list. Emergency is the heavier chip. TAK Payload location pins advertised aircraft; track course/speed when present. A sit can keep a short advertised track. Reports → Path and the sit report both draw it (§5.4.1, §5.6.1). Android 11+ for Wi-Fi IEs. NAN still misses. Not a tail number, not DF. §5.8.3, §9.6.6, §12.16."],
             ["Payload location", "TAK What-to-send chip, on by default when you turn the feed on. Selects radios with sticky advertised lat/lon. Required for stock Remote ID (no Extra attention mark). BLE FFFA and Wi-Fi FA:0B:BC both qualify."],
             ["Reports", "Bottom tab. Sits (optional named window), Path, Debrief (text/PDF), Sit export, Compare sits, AI Export, Signature candidates, Log export (Format + radios), Reset / clear log. The selected sit drives Path, Debrief, Sit export, and Compare’s this-sit side. Config for GPS, place names, and logging on/off stays on Settings. §5.6."],
             ["Sit (named)", "Optional window of watching, started from Reports → Start sit. Path, Debrief, Compare this-sit, Sit export, and AI Export use that start/end instead of the last 15 minutes in RAM. Cap 6000 unique radios. Extra attention / payload / bookmarks / watched signatures stay when full; unnamed BLE drops first. Checkpoints to app storage about every 10 s. One at a time; keep 10 closed. Live list stays ~400. Not DF. §5.6."],
-            ["Path", "Reports card. North-up plot of this phone for the selected sit (or last 15 minutes). Leave Reports in front to watch an open sit grow, or the last-15-minute snake move; the plot redraws about every three seconds. Extra attention (red) and bookmarked (blue) dots at strongest RSSI. Observer notes only if that radio is bookmarked. Thick green = stay. Time ticks. Head labeled Now while live, End on a saved sit. OSM tiles when Online place names and maps is on and the phone is online; Privacy mode or offline: the trace only. Debrief / Compare PDF uses the same map, stays, and numbered hits, full width of the letter frame. §5.6.1."],
+            ["Path", "Reports card. North-up plot of this phone for the selected sit (or last 15 minutes). Leave Reports in front to watch an open sit grow, or the last-15-minute snake move; the plot redraws about every three seconds. Black dot is the start. Blue dot is you, at the last point. MAC alerts and signature alerts are drawn once. A decoded latitude and longitude uses the last advertised position. Anything else is a class icon at the strongest RSSI. A count is several in one place. A lone class icon has no number box; tap it for that one radio. Extra attention alone does not plot unless that signature is bookmarked. The list puts the Wi-Fi or BLE icon next to the MAC. Observer notes sit on a MAC-alert row. Thick green = stay. Time ticks. Head labeled Now while live, End on a saved sit. On an open or saved sit, an advertised aircraft track within 2 km is a white dotted line on that plot. The letter figure draws the same track in black dots, with a class icon at the last position and a person icon for the pilot. The last position is a class icon. Tap it for that one radio. A count means it shares that spot. One stored fix is that icon, with no line. The pilot is a person icon. A farther aircraft with a UAS id gets its own map, up to three. Last 15 minutes stays this phone. OSM tiles when Online place names and maps is on and the phone is online; Privacy mode or offline: the trace only. The Debrief and Compare path figures use those same MAC alerts and signature alerts. A decoded position is the last advertised fix. An advertised aircraft on that figure is the drone class icon in the Path key, with the live status, UAS id, last position, motion, and pilot position. Extra attention on that figure is red, a MAC alert is blue, and another signature alert is green. §5.6.1."],
             ["Sit export", "Reports card under Sit report. Same Format chips as Log export, different file: one row per unique radio in the selected sit (or last 15 minutes). CSV / JSON lines include matched signatures and Extra attention families. Logging can be off. GPX/KML include the operator path as a track. Not the rotating log. Privacy mode does not mask the file. §5.6.2."],
             ["Log export", "Reports card. Share/Save of the rotating session file (JSON lines on disk; CSV / GPX / KML / WiGLE at export). One line per hear while logging was on. Needs Write to disk. Clearing the log does not delete sits. §5.6.3, §11.6."],
             ["Observer notes", "Optional 280-character field on a Named radio (same KIND+MAC as the custom name). Cyan block on detail; cyan notes chip on Live next to Extra attention “!”. Debrief lists them after Where you were; Compare after Windows. Path lists the note only if that radio is bookmarked. AI Export lists heard radios with the note. Not catalog Notes and not Extra attention gold. BLE privacy addresses hide the pencil. Settings backup includes the note. §5.5, §5.6."],
@@ -4703,7 +4814,7 @@ def story():
             ["Osmo", "0x08AA model IDs 0x0006–0x0022; OsmoAction* / OsmoPocket* / Osmo360* / OsmoNano* / XtraEdgePro*", "DJI Osmo Action / Pocket / 360 / Nano cameras. Not Osmo Mobile gimbals. Not DJI aircraft (those stay DJI). Cameras class. Decode fields: 0x08AA model id (§9.6)."],
             ["Insta360", "Company 0x10D7; Insta360* / X3 * / X4 * / X5 * / Ace Pro* / GO 3* / ONE X* / ONE RS*", "Arashi Vision action / 360 cameras. Cameras class, not Surveillance."],
             ["DJI", "Company 0x08AA; DJI* on BLE and Wi-Fi", "Drones / RC / setup AP. Osmo cameras are the Osmo row. OcuSync is not an AP. In-flight ASTM Remote ID is the Remote ID row. Drones class. Decode fields: 0x08AA model id (§9.6). Stock bookmark."],
-            ["Remote ID", "BLE UUID FFFA and Wi-Fi vendor IE FA:0B:BC (ASTM F3411 / FAA Remote ID)", "In-flight digital license plate on both radios. DJI, Skydio, Autel, Parrot, HOVERAir, Dronetag / Aerobits / BlueMark modules. Same Decode fields map: protocol 0–2 Basic ID / location (lat/lon/alt_geo/heading/speed) / Self ID / System (op_lat / op_lon = pilot). Wi-Fi packs framed as FFFA. TAK Payload location plus track course/speed. NAN still misses; AP beacons need Android 11+. Not FIDO FFF9 or Thread FFFB. Not a tail number. Drones class. §5.8.3, §9.6, §12.16. Stock bookmark."],
+            ["Remote ID", "BLE UUID FFFA and Wi-Fi vendor IE FA:0B:BC (ASTM F3411 / FAA Remote ID)", "In-flight digital license plate on both radios. DJI, Skydio, Autel, Parrot, HOVERAir, Dronetag / Aerobits / BlueMark modules. Same Decode fields map: protocol 0–2 Basic ID / location (lat/lon/alt_geo/heading/speed) / Self ID / System (op_lat / op_lon = pilot). A Location message shows Undeclared, Ground, Airborne, Emergency, or RID failure on the list. Emergency is heavier. Wi-Fi packs framed as FFFA. TAK Payload location plus track course/speed. A new sit can draw the advertised track on Reports → Path and in the sit report. NAN still misses; AP beacons need Android 11+. Not FIDO FFF9 or Thread FFFB. Not a tail number. Drones class. §5.4.1, §5.8.3, §9.6, §12.16. Stock bookmark."],
             ["Skydio", "Names Skydio*", "US public-safety / enterprise drones. In-flight RID is the Remote ID row (BLE FFFA or Wi-Fi FA:0B:BC). NAN still misses. Drones class. Stock bookmark."],
             ["Autel", "Names Autel*", "Autel Robotics drones. Not EVO* and not SSID default-ssid. Drones class. Stock bookmark."],
             ["Parrot", "Names ANAFI* / Bebop*", "Parrot drones. Not company 0x0043 (automotive). Disco* not used. Drones class. Stock bookmark."],
@@ -4776,8 +4887,8 @@ def story():
             ["WAVLINK", "Wi-Fi WAVLINK* plus Winstars IEEE OUI 80:3F:5D", "Consumer APs. ISP / routers class."],
             ["Samsung SmartTags", "Names SmartTag / Smart Tag / Galaxy SmartTag; UUID FD5A; mfg 0x0075", "FD5A is the usual SmartTag service."],
             ["Tile Trackers", "Name Tile; UUIDs FEED, FEDD; mfg 0x00C7", "Older Tiles are noisier on name than on UUID. Decode fields: FEED 8-byte rotating private id (not a serial). §9.6."],
-            ["Google Find Hub", "BLE service FEAA, data prefix 40 (nearby) or 41 (separated)", "Google Find Hub tags. Not generic Eddystone UID/URL/TLM. Separated mode can hold a MAC about a day. Finder tags class. Decode: mode plus 20-byte EID. Chipolo / Pebblebee / moto tag name rows may dual-label."],
-            ["DULT tracker", "BLE service data FCB2 (any payload). Finder tags class. No Extra attention.", "IETF Detecting Unwanted Location Trackers location-enabled advertisement. Decode: Network ID plus near owner vs separated. Separated mode can hold a MAC about a day. A bare FCB2 UUID list does not match. Chipolo / Pebblebee / moto tag names may dual-label."],
+            ["Google Find Hub", "BLE service FEAA, data prefix 40 (nearby) or 41 (separated)", "Google Find Hub tags. Not generic Eddystone UID/URL/TLM. The list shows Nearby or Separated. Separated is the heavier chip and can hold a MAC about a day. Finder tags class. Decode: mode plus 20-byte EID. Chipolo / Pebblebee / moto tag name rows may dual-label. §5.4.1."],
+            ["DULT tracker", "BLE service data FCB2 (any payload). Finder tags class. No Extra attention.", "IETF Detecting Unwanted Location Trackers location-enabled advertisement. The list shows Near owner or Separated. Separated is the heavier chip and can hold a MAC about a day. Decode: Network ID plus that bit. A bare FCB2 UUID list does not match. Chipolo / Pebblebee / moto tag names may dual-label. §5.4.1."],
             ["iBeacon", "Apple 0x004C type 0x02 length 0x15; names *iBeacon*", "Protocol, not a vendor. Dropped when a product signature already labeled the radio (Sony TV, Tesla phone-key). Minew / Estimote / Kontakt / Target Atrius basket still dual-label. Not Nearby Info 0x10 / AirTags 0x12 / AirPods 0x07. Not Eddystone FEAA."],
             ["Target Atrius basket", "Apple iBeacon UUID 5993A94C-7D97-4DF7-9ABF-E493BFD5D000; service 0xB1BB", "Target shopping-basket / Atrius tags. Two stores: hundreds of unnamed radios, unique major/minor, TX 0xC3. Not Acuity company 0x0346 on those radios. Dual-labels with iBeacon. Retail beacons class."],
             ["Minew", "IEEE OUI AC:23:3F; names Minew*", "Shenzhen Minew beacons / sensors. Field AC:23:3F often also iBeacon or Eddystone."],
@@ -5047,9 +5158,9 @@ def story():
                 ["X", "@OGridPete"],
                 ["Document", "User Manual and Technical Documentation"],
                 ["Application ID", "app.fieldwatch"],
-                ["Software version", "1.1.15 (versionCode 25), field build of 28 September 2026"],
-                ["Document version", "1.1.15"],
-                ["Document date", "28 September 2026"],
+                ["Software version", "1.1.16 (versionCode 26), field build of 30 September 2026"],
+                ["Document version", "1.1.16"],
+                ["Document date", "30 September 2026"],
                 ["License", "MIT License (see LICENSE); third-party: NOTICE"],
                 ["Platform", "Android 10+ (minSdk 29), targetSdk 35"],
                 ["Classification", "Unclassified. Operationally sensitive if filled with site logs."],

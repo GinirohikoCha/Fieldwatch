@@ -360,6 +360,12 @@ internal object CatalogDecodes {
                     "64" to "nearby",
                     "65" to "separated",
                 ),
+                live = true,
+                liveEmphasis = listOf("65"),
+                enumNotes = mapOf(
+                    "65" to "Separated from its owner. The address can hold still for about a day.",
+                    "64" to "Nearby its owner. With you the whole sit, this is often your own tag. First heard after the sit started, it is more often someone who joined with their own keys.",
+                ),
             ),
             hex("eid", "Ephemeral ID", 1, length = 20),
         ),
@@ -380,6 +386,12 @@ internal object CatalogDecodes {
                 enumLabels = mapOf(
                     "0" to "separated",
                     "1" to "near owner",
+                ),
+                live = true,
+                liveEmphasis = listOf("0"),
+                enumNotes = mapOf(
+                    "0" to "Separated from its owner. The address can hold still for about a day.",
+                    "1" to "Near its owner. With you the whole sit, this is often your own tag. First heard after the sit started, it is more often someone who joined with their own keys.",
                 ),
             ),
         ),
@@ -457,6 +469,8 @@ internal object CatalogDecodes {
                 "3" to "Emergency",
                 "4" to "RID failure",
             ),
+            live = true,
+            liveEmphasis = listOf("3"),
         ),
         u8(
             "heading", "Heading", 4, offsetAdd = 180.0, unit = "°",
@@ -562,10 +576,15 @@ internal object CatalogDecodes {
     private fun u8(
         id: String, label: String, offset: Int,
         scale: Double? = null, offsetAdd: Double? = null, unit: String? = null,
-        enumLabels: Map<String, String>? = null, gate: DecodeWhen? = null,
+        enumLabels: Map<String, String>? = null,
+        live: Boolean = false,
+        liveEmphasis: List<String> = emptyList(),
+        enumNotes: Map<String, String>? = null,
+        gate: DecodeWhen? = null,
     ) = DecodeField(
         id, label, offset, type = DecodeType.U8, scale = scale, offsetAdd = offsetAdd,
-        unit = unit, enumLabels = enumLabels, gate = gate,
+        unit = unit, enumLabels = enumLabels, live = live, liveEmphasis = liveEmphasis,
+        enumNotes = enumNotes, gate = gate,
     )
 
     private fun u16be(
@@ -646,10 +665,15 @@ internal object CatalogDecodes {
         length: Int? = null, bitOffset: Int, bitWidth: Int,
         endian: DecodeEndian = DecodeEndian.LE,
         scale: Double? = null, offsetAdd: Double? = null, unit: String? = null,
-        enumLabels: Map<String, String>? = null, gate: DecodeWhen? = null,
+        enumLabels: Map<String, String>? = null,
+        live: Boolean = false,
+        liveEmphasis: List<String> = emptyList(),
+        enumNotes: Map<String, String>? = null,
+        gate: DecodeWhen? = null,
     ) = DecodeField(
         id, label, offset, length = length, type = DecodeType.BITS, endian = endian,
         bitOffset = bitOffset, bitWidth = bitWidth, scale = scale, offsetAdd = offsetAdd,
-        unit = unit, enumLabels = enumLabels, gate = gate,
+        unit = unit, enumLabels = enumLabels, live = live, liveEmphasis = liveEmphasis,
+        enumNotes = enumNotes, gate = gate,
     )
 }

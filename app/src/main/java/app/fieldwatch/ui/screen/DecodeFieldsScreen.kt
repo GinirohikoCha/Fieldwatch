@@ -29,6 +29,7 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -389,7 +390,24 @@ private fun FieldCard(
                 }
             }
             OnlyIfBlock(field.gate, onChange = { onChange(field.copy(gate = it)) })
-            NamedValuesBlock(field.id, field.enumLabels, onChange = { onChange(field.copy(enumLabels = it)) })
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Live row", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "Show this value next to the signature name. Strong values use a heavier chip.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = field.live,
+                    onCheckedChange = { onChange(field.copy(live = it)) },
+                )
+            }
+            NamedValuesBlock(field, onChange)
             if (!more) {
                 TextButton(onClick = { more = true }) { Text("More") }
             } else {
@@ -473,14 +491,28 @@ private fun OnlyIfBlock(gate: DecodeWhen?, onChange: (DecodeWhen?) -> Unit) {
 
 @Composable
 private fun NamedValuesBlock(
-    fieldId: String,
-    labels: Map<String, String>?,
-    onChange: (Map<String, String>?) -> Unit,
+    field: DecodeField,
+    onChange: (DecodeField) -> Unit,
 ) {
+    val fieldId = field.id
+    val labels = field.enumLabels
     var rows by remember(fieldId) {
         mutableStateOf(labels?.toList() ?: emptyList())
     }
     var open by remember(fieldId) { mutableStateOf(rows.isNotEmpty()) }
+    fun publish(
+        nextRows: List<Pair<String, String>>,
+        emphasis: List<String> = field.liveEmphasis,
+        notes: Map<String, String>? = field.enumNotes,
+    ) {
+        onChange(
+            field.copy(
+                enumLabels = nextRows.toEnumMap(),
+                liveEmphasis = emphasis,
+                enumNotes = notes?.filterValues { it.isNotBlank() }?.ifEmpty { null },
+            ),
+        )
+    }
     if (!open) {
         TextButton(onClick = {
             open = true
@@ -490,42 +522,78 @@ private fun NamedValuesBlock(
     }
     Text("Named values", style = MaterialTheme.typography.titleSmall)
     rows.forEachIndexed { index, (raw, shown) ->
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            CompactField(
-                raw,
-                { next ->
-                    val nextRows = rows.toMutableList().also { it[index] = next to shown }
-                    rows = nextRows
-                    onChange(nextRows.toEnumMap())
-                },
-                "Raw",
-                modifier = Modifier.width(88.dp),
-            )
-            CompactField(
-                shown,
-                { next ->
-                    val nextRows = rows.toMutableList().also { it[index] = raw to next }
-                    rows = nextRows
-                    onChange(nextRows.toEnumMap())
-                },
-                "Show as",
-                modifier = Modifier.weight(1f),
-            )
-            IconButton(
-                onClick = {
-                    val nextRows = rows.filterIndexed { i, _ -> i != index }
-                    rows = nextRows
-                    if (nextRows.isEmpty()) {
-                        open = false
-                        onChange(null)
-                    } else {
-                        onChange(nextRows.toEnumMap())
-                    }
-                },
-            ) { Icon(Icons.Outlined.Delete, "Delete value") }
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CompactField(
+                    raw,
+                    { next ->
+                        val nextRows = rows.toMutableList().also { it[index] = next to shown }
+                        rows = nextRows
+                        val emphasis = field.liveEmphasis.map { if (it == raw) next else it }
+                        val notes = field.enumNotes?.mapKeys { (key, _) -> if (key == raw) next else key }
+                        publish(nextRows, emphasis, notes)
+                    },
+                    "Raw",
+                    modifier = Modifier.width(88.dp),
+                )
+                CompactField(
+                    shown,
+                    { next ->
+                        val nextRows = rows.toMutableList().also { it[index] = raw to next }
+                        rows = nextRows
+                        publish(nextRows)
+                    },
+                    "Show as",
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(
+                    onClick = {
+                        val nextRows = rows.filterIndexed { i, _ -> i != index }
+                        rows = nextRows
+                        val emphasis = field.liveEmphasis.filter { it != raw }
+                        val notes = field.enumNotes?.filterKeys { it != raw }
+                        if (nextRows.isEmpty()) {
+                            open = false
+                            onChange(field.copy(enumLabels = null, liveEmphasis = emphasis, enumNotes = notes?.ifEmpty { null }))
+                        } else {
+                            publish(nextRows, emphasis, notes)
+                        }
+                    },
+                ) { Icon(Icons.Outlined.Delete, "Delete value") }
+            }
+            if (field.live && raw.isNotBlank()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val strong = field.liveEmphasis.any { it == raw }
+                    FieldwatchFilterChip(
+                        selected = strong,
+                        onClick = {
+                            val emphasis = if (strong) {
+                                field.liveEmphasis.filter { it != raw }
+                            } else {
+                                field.liveEmphasis + raw
+                            }
+                            publish(rows, emphasis)
+                        },
+                        label = { Text("Strong") },
+                    )
+                    CompactField(
+                        field.enumNotes?.get(raw).orEmpty(),
+                        { note ->
+                            val notes = (field.enumNotes ?: emptyMap()).toMutableMap()
+                            if (note.isBlank()) notes.remove(raw) else notes[raw] = note
+                            publish(rows, notes = notes)
+                        },
+                        "Note",
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
         }
     }
     Row {
@@ -534,7 +602,7 @@ private fun NamedValuesBlock(
             onClick = {
                 open = false
                 rows = emptyList()
-                onChange(null)
+                onChange(field.copy(enumLabels = null, liveEmphasis = emptyList(), enumNotes = null))
             },
         ) { Text("Remove") }
     }

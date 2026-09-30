@@ -13,6 +13,7 @@ import app.fieldwatch.domain.FastPair
 import app.fieldwatch.domain.Fleet
 import app.fieldwatch.domain.PayloadLocation
 import app.fieldwatch.domain.Rssi
+import app.fieldwatch.domain.withLiveDecode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -208,7 +209,7 @@ class DeviceStore(
             val cur = live[d.key] ?: continue
             val ids = matches[cur.key] ?: emptySet()
             val labeled = if (ids == cur.fleetIds) cur else cur.copy(fleetIds = ids)
-            val next = PayloadLocation.applySticky(labeled, fleets)
+            val next = PayloadLocation.applySticky(labeled, fleets).withLiveDecode(fleets)
             if (next !== cur) live[cur.key] = next
             matchStamp[cur.key] = matchIdentity(next)
         }

@@ -2,6 +2,7 @@ package app.fieldwatch.domain
 
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.serialization.Serializable
 
 data class DecodedFieldValue(
     val fleetId: String,
@@ -13,7 +14,33 @@ data class DecodedFieldValue(
     val length: Int,
     /** Scaled numeric value when the field is an integer, float, bits, or bool. */
     val number: Double? = null,
+    /** Catalog sentence for this named value. Empty when the signature did not write one. */
+    val note: String = "",
+    /** Signature asked for this field on the live row. */
+    val live: Boolean = false,
+    /** This value uses the stronger live chip. */
+    val emphasis: Boolean = false,
 )
+
+/** One decoded label drawn next to the signature name. Text is the catalog's own wording. */
+@Serializable
+data class LiveDecodeChip(
+    val text: String,
+    val emphasis: Boolean,
+    val note: String = "",
+) {
+    /** Title-case for reports and the live chip. Catalog text is stored lowercase. */
+    fun reportLabel(): String {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return trimmed
+        return trimmed.replaceFirstChar { ch ->
+            if (ch.isLowerCase()) ch.titlecase(Locale.US) else ch.toString()
+        }
+    }
+}
+
+fun List<LiveDecodeChip>.reportLabels(): List<String> =
+    map { it.reportLabel() }.filter { it.isNotEmpty() }
 
 /**
  * Parses [Fleet.decode] maps from a BLE advertisement, or from Wi-Fi Remote ID
@@ -38,6 +65,20 @@ object SignatureFieldDecoder {
         return out
     }
 
+    /** Labels for decode fields marked live. Cached with the field parse. No fleet id is special. */
+    fun liveChips(device: Sighting, fleets: List<Fleet>): List<LiveDecodeChip> {
+        if (device.fleetIds.isEmpty()) return emptyList()
+        val out = ArrayList<LiveDecodeChip>()
+        val seen = HashSet<String>()
+        for (row in decodeSighting(device, fleets)) {
+            if (!row.live) continue
+            val text = row.display.trim()
+            if (text.isEmpty() || !seen.add(text.lowercase())) continue
+            out += LiveDecodeChip(text, row.emphasis, row.note.trim())
+        }
+        return out
+    }
+
     fun payloadHex(decode: FleetDecode, device: Sighting): String? = payloads(decode, device).firstOrNull()?.second
 
     fun decodeFleet(fleet: Fleet, decode: FleetDecode, device: Sighting): List<DecodedFieldValue> {
@@ -56,7 +97,9 @@ object SignatureFieldDecoder {
     }
 
     private fun cacheKey(fleetId: String, decode: FleetDecode, hex: String): String {
-        val fp = decode.fields.joinToString(",") { "${it.id}:${it.offset}:${it.type}:${it.resolvedLength()}" }
+        val fp = decode.fields.joinToString(",") {
+            "${it.id}:${it.offset}:${it.type}:${it.resolvedLength()}:${it.live}:${it.liveEmphasis}:${it.enumNotes}"
+        }
         return "$fleetId|${decode.source}|$hex|$fp"
     }
 
@@ -112,6 +155,9 @@ object SignatureFieldDecoder {
                 offset = field.offset,
                 length = len,
                 number = parsed.number,
+                note = enumNote(field, parsed.rawKey),
+                live = field.live,
+                emphasis = field.live && emphasized(field, parsed.rawKey),
             )
         }
         return out
@@ -155,7 +201,22 @@ object SignatureFieldDecoder {
         }
     }
 
-    private data class ParsedField(val display: String, val number: Double?)
+    private data class ParsedField(val display: String, val number: Double?, val rawKey: String)
+
+    private fun emphasized(field: DecodeField, rawKey: String): Boolean {
+        if (field.liveEmphasis.isEmpty() || rawKey.isEmpty()) return false
+        val want = field.liveEmphasis.map { normalizeEnumKey(it) }.toSet()
+        return normalizeEnumKey(rawKey) in want || rawKey in field.liveEmphasis
+    }
+
+    private fun enumNote(field: DecodeField, rawKey: String): String {
+        val notes = field.enumNotes ?: return ""
+        if (rawKey.isEmpty()) return ""
+        notes[rawKey]?.let { return it.trim() }
+        val key = normalizeEnumKey(rawKey)
+        notes[key]?.let { return it.trim() }
+        return notes.entries.firstOrNull { normalizeEnumKey(it.key) == key }?.value?.trim().orEmpty()
+    }
 
     private fun formatField(field: DecodeField, payload: ByteArray): ParsedField? {
         val len = field.resolvedLength()
@@ -243,7 +304,7 @@ object SignatureFieldDecoder {
         }
         val shown = mapped ?: scaled
         val display = if (unit.isEmpty()) shown else "$shown $unit"
-        return ParsedField(display, scaledNum?.takeIf { it.isFinite() })
+        return ParsedField(display, scaledNum?.takeIf { it.isFinite() }, rawKey)
     }
 
     private fun readU(bytes: ByteArray, offset: Int, len: Int, le: Boolean): Long {
@@ -333,6 +394,12 @@ fun normalizeEnumKey(raw: String): String {
         hex.toLongOrNull(16)?.let { return it.toString() }
     }
     return t
+}
+
+/** Keep [Sighting.liveDecode] in step with the signature's live flags. Same instance when nothing changed. */
+fun Sighting.withLiveDecode(fleets: List<Fleet>): Sighting {
+    val chips = SignatureFieldDecoder.liveChips(this, fleets)
+    return if (chips == liveDecode) this else copy(liveDecode = chips)
 }
 
 fun normalizeEnumLabels(map: Map<String, String>?): Map<String, String>? {

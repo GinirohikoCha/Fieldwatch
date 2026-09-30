@@ -12,6 +12,15 @@ import android.graphics.pdf.PdfDocument
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.VectorGroup
+import androidx.compose.ui.graphics.vector.VectorNode
+import androidx.compose.ui.graphics.vector.VectorPath
+import androidx.compose.ui.graphics.vector.toPath
 import app.fieldwatch.domain.DebriefDoc
 import app.fieldwatch.domain.ExtraAttentionHit
 import app.fieldwatch.domain.Geo
@@ -47,9 +56,22 @@ object DebriefPdf {
     private val PLOT_INNER = Color.parseColor("#FFFFFF")
     private val PLOT_GRID = Color.parseColor("#E4EBE6")
     private val PATH_OTHER = Color.parseColor("#4A6FA5")
+    private val AIRCRAFT = Color.parseColor("#C47A00")
+    private val AIRCRAFT_INK = Color.parseColor("#111111")
+    private val CLASS_DISC = Color.parseColor("#FFB020")
+    private val PILOT_INK = Color.parseColor("#3D4A55")
+    private val PILOT_FILL = Color.parseColor("#F4F7FB")
     private val PATH_STAY = Color.parseColor("#35D683")
     private val DOT_ATTENTION = Color.parseColor("#E53935")
     private val DOT_BOOKMARK = Color.parseColor("#0288D1")
+    private const val MARK_STAY = 1
+    private const val MARK_SLATE = 2
+    private const val MARK_AMBER = 3
+    private const val MARK_AMBER_DASH = 4
+    private const val MARK_RED = 5
+    private const val MARK_BLUE = 6
+    private const val MARK_PILOT = 7
+    private const val MARK_ALERT = 8
     private val CONTENT_W = (PAGE_W - 2 * MARGIN).toInt()
     private val TIME_FMT = SimpleDateFormat("HH:mm", Locale.getDefault())
     private val BODY_TOP = HEADER_H + 18f
@@ -60,11 +82,12 @@ object DebriefPdf {
         doc: DebriefDoc,
         file: File,
         tiles: List<PathTiles.Tile> = emptyList(),
+        extraTiles: List<List<PathTiles.Tile>> = emptyList(),
         onProgress: (Float) -> Unit = {},
     ) {
         file.parentFile?.mkdirs()
         onProgress(0.08f)
-        val blocks = layoutBlocks(doc, tiles)
+        val blocks = layoutBlocks(doc, tiles, extraTiles)
         onProgress(0.18f)
         val pages = paginate(blocks)
         val pdf = PdfDocument()
@@ -95,7 +118,11 @@ object DebriefPdf {
         val draw: (Canvas, Float) -> Unit,
     )
 
-    private fun layoutBlocks(doc: DebriefDoc, tiles: List<PathTiles.Tile>): List<Block> {
+    private fun layoutBlocks(
+        doc: DebriefDoc,
+        tiles: List<PathTiles.Tile>,
+        extraTiles: List<List<PathTiles.Tile>>,
+    ): List<Block> {
         val out = ArrayList<Block>()
         out += titleBlock(doc.pdfTitle)
         out += spacer(6f)
@@ -116,6 +143,11 @@ object DebriefPdf {
             out += pathFigureBlock(figure, tiles)
             out += spacer(4f)
             pathKeyBlocks(figure).forEach { out += it }
+            out += spacer(10f)
+        }
+        doc.extraFigures.forEachIndexed { index, extra ->
+            if (!extra.drawable) return@forEachIndexed
+            out += pathFigureBlock(extra, extraTiles.getOrElse(index) { emptyList() })
             out += spacer(10f)
         }
         for (section in doc.sections) {
@@ -231,7 +263,8 @@ object DebriefPdf {
     private fun figurePlotSize(): Pair<Float, Float> = (PAGE_W - 2 * MARGIN - 16f) to 300f
 
     private fun pathFigureBlock(fig: SitPathPlot.Figure, tiles: List<PathTiles.Tile>): Block {
-        val headerH = 36f
+        val legend = legendRows(fig)
+        val headerH = 20f + legend.size * 13f + 6f
         val (plotW, plotH) = figurePlotSize()
         val cap = layout(fig.caption, CONTENT_W - 24, 8f, muted = true)
         val scaleH = 20f
@@ -245,13 +278,13 @@ object DebriefPdf {
             canvas.drawRoundRect(panel, 7f, 7f, fill)
             canvas.drawRoundRect(panel, 7f, 7f, stroke)
             val kicker = Paint().apply {
-                color = PHOS
+                color = if (fig.kicker == "AIRCRAFT") AIRCRAFT else PHOS
                 textSize = 8f
                 typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
                 isAntiAlias = true
                 letterSpacing = 0.12f
             }
-            canvas.drawText(fig.kicker, MARGIN + 8f, y + 16f, kicker)
+            canvas.drawText(fig.kicker, MARGIN + 8f, y + 15f, kicker)
             val stats = Paint().apply { color = MUTED; textSize = 8f; isAntiAlias = true }
             val span = if (fig.spanM >= 1000) {
                 "${"%.1f".format(Locale.US, fig.spanM / 1000)} km span"
@@ -263,27 +296,19 @@ object DebriefPdf {
             } else {
                 "${fig.lengthM.toInt()} m path"
             }
-            val right = "$len  ·  $span"
-            canvas.drawText(right, PAGE_W - MARGIN - 8f - stats.measureText(right), y + 16f, stats)
-            val lg = Paint().apply { color = MUTED; textSize = 7.5f; isAntiAlias = true }
-            val legend = if (fig.tracks.size == 2) {
-                "Green = this sit (thick = stay)   ·   Slate = second sit   ·   Red = Extra attention   ·   Blue = Bookmarked"
+            val fixes = fig.tracks.filter { it.aircraft }.sumOf { it.samples.size }
+            val right = if (fig.tracks.all { it.aircraft } && fixes == 1) {
+                "1 advertised fix"
             } else {
-                "Thick green = stay   ·   Red = Extra attention   ·   Blue = Bookmarked"
+                "$len  ·  $span"
             }
-            canvas.drawText(legend, MARGIN + 8f, y + 28f, lg)
+            canvas.drawText(right, PAGE_W - MARGIN - 8f - stats.measureText(right), y + 15f, stats)
+            drawLegend(canvas, MARGIN + 8f, y + 22f, PAGE_W - MARGIN - 8f, legend)
             val plotTop = y + headerH
             val plot = RectF(MARGIN + 8f, plotTop, MARGIN + 8f + plotW, plotTop + plotH)
             val inner = Paint().apply { color = PLOT_INNER; style = Paint.Style.FILL }
             canvas.drawRect(plot, inner)
-            val all = fig.tracks.flatMap { it.samples }
-            val model = SitPathPlot.Model(
-                samples = all,
-                dots = fig.dots,
-                lengthM = fig.lengthM,
-                spanM = fig.spanM,
-                title = fig.kicker,
-            )
+            val model = figureModel(fig)
             val lay = SitPathPlot.layout(model, plot.width(), plot.height(), pad = 12f, scaleBarReserve = 0f)
             if (lay != null) {
                 drawPathMap(canvas, plot, lay, fig, tiles, stroke)
@@ -335,9 +360,17 @@ object DebriefPdf {
         fig.tracks.forEach { track ->
             drawPathTrack(canvas, lay, track, ::ox, ::oy)
         }
-        val primary = fig.tracks.firstOrNull { !it.secondary } ?: fig.tracks.firstOrNull()
-        if (primary != null && primary.samples.size >= 2 && fig.tracks.size == 1) {
-            drawPathTicks(canvas, lay, primary.samples, ::ox, ::oy)
+        val phonePrimary = fig.tracks.firstOrNull { !it.aircraft && !it.secondary }
+        if (phonePrimary != null && phonePrimary.samples.size >= 2 && fig.tracks.count { !it.aircraft } == 1) {
+            drawPathTicks(canvas, lay, phonePrimary.samples, ::ox, ::oy, despike = true)
+        }
+        val craftPrimary = fig.tracks.firstOrNull { it.aircraft && !it.secondary && it.samples.size >= 2 }
+        if (phonePrimary == null && craftPrimary != null) {
+            drawPathTicks(canvas, lay, craftPrimary.samples, ::ox, ::oy, despike = false)
+        }
+        fig.pilots.forEach { mark ->
+            val pt = lay.project(mark.lat, mark.lon)
+            drawPilot(canvas, ox(pt.x), oy(pt.y))
         }
         val piles = SitPathPlot.clusters(lay.dots)
         piles.forEachIndexed { i, pile ->
@@ -379,8 +412,17 @@ object DebriefPdf {
             textSize = 8f
             typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
             isAntiAlias = true
+            textAlign = Paint.Align.CENTER
         }
-        canvas.drawText("N", plot.right - 14f, plot.top + 14f, nP)
+        val nx = plot.right - 12f
+        val ny = plot.top + 12f
+        val nDisc = Paint().apply {
+            color = Color.argb(230, 255, 255, 255)
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        canvas.drawCircle(nx, ny - 2f, 8f, nDisc)
+        canvas.drawText("N", nx, ny + 1f, nP)
         val barW = plot.width() * lay.scaleBarFrac
         val label = if (lay.scaleBarM >= 1000) {
             "${(lay.scaleBarM / 1000).toInt()} km"
@@ -409,22 +451,62 @@ object DebriefPdf {
         ox: (Float) -> Float,
         oy: (Float) -> Float,
     ) {
-        if (track.samples.size < 2) return
-        val cleaned = Geo.despikePath(track.samples).let { if (it.size >= 2) it else track.samples }
+        if (track.samples.isEmpty()) return
+        if (track.samples.size == 1) {
+            if (!track.aircraft) return
+            val only = lay.project(track.samples[0].lat, track.samples[0].lon)
+            drawClassMark(canvas, ox(only.x), oy(only.y))
+            return
+        }
+        val cleaned = if (track.aircraft) {
+            track.samples
+        } else {
+            Geo.despikePath(track.samples).let { if (it.size >= 2) it else track.samples }
+        }
         val pts = cleaned.map { lay.project(it.lat, it.lon) }
         val pth = Path()
         pth.moveTo(ox(pts[0].x), oy(pts[0].y))
         for (i in 1 until pts.size) pth.lineTo(ox(pts[i].x), oy(pts[i].y))
         val tp = Paint().apply {
-            color = if (track.secondary) PATH_OTHER else Color.parseColor("#2A3340")
+            color = when {
+                track.aircraft && track.secondary -> PATH_OTHER
+                track.aircraft -> AIRCRAFT_INK
+                track.secondary -> PATH_OTHER
+                else -> Color.parseColor("#2A3340")
+            }
             style = Paint.Style.STROKE
-            strokeWidth = if (track.secondary) 1.8f else 2.4f
+            strokeWidth = when {
+                track.aircraft -> 1.8f
+                track.secondary -> 1.8f
+                else -> 2.4f
+            }
             strokeCap = Paint.Cap.ROUND
             strokeJoin = Paint.Join.ROUND
             isAntiAlias = true
-            if (track.secondary) pathEffect = DashPathEffect(floatArrayOf(8f, 5f), 0f)
+            if (track.aircraft) {
+                pathEffect = DashPathEffect(floatArrayOf(2.2f, 3.8f), 0f)
+            } else if (track.secondary) {
+                pathEffect = DashPathEffect(floatArrayOf(7f, 4.5f), 0f)
+            }
         }
         canvas.drawPath(pth, tp)
+        if (track.aircraft) {
+            val start = Paint().apply {
+                color = Color.WHITE
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
+            val ring = Paint().apply {
+                color = if (track.secondary) PATH_OTHER else AIRCRAFT_INK
+                style = Paint.Style.STROKE
+                strokeWidth = 1.4f
+                isAntiAlias = true
+            }
+            canvas.drawCircle(ox(pts.first().x), oy(pts.first().y), 3.2f, start)
+            canvas.drawCircle(ox(pts.first().x), oy(pts.first().y), 3.2f, ring)
+            drawClassMark(canvas, ox(pts.last().x), oy(pts.last().y))
+            return
+        }
         val stays = Geo.legs(cleaned).filter { it.stay }
         val stayPaint = Paint().apply {
             color = if (track.secondary) PATH_OTHER else PATH_STAY
@@ -474,14 +556,235 @@ object DebriefPdf {
         }
     }
 
+    private class LegendSwatch(val label: String, val mark: Int)
+
+    private fun legendSwatches(fig: SitPathPlot.Figure): List<LegendSwatch> {
+        val phone = fig.tracks.filter { !it.aircraft }
+        val out = ArrayList<LegendSwatch>()
+        when {
+            phone.size >= 2 -> {
+                out += LegendSwatch("This sit", MARK_STAY)
+                out += LegendSwatch("Second sit", MARK_SLATE)
+            }
+            phone.any { it.samples.size >= 2 } -> out += LegendSwatch("Stay", MARK_STAY)
+        }
+        val craft = fig.tracks.filter { it.aircraft }
+        if (craft.isNotEmpty()) {
+            out += LegendSwatch("Advertised", MARK_AMBER)
+            if (craft.any { it.secondary }) out += LegendSwatch("Second advertised", MARK_AMBER_DASH)
+        }
+        if (fig.dots.any { it.extraAttention }) out += LegendSwatch("Extra attention", MARK_RED)
+        if (fig.dots.any { it.named }) out += LegendSwatch("MAC alert", MARK_BLUE)
+        if (fig.dots.any { !it.extraAttention && !it.named }) out += LegendSwatch("Signature alert", MARK_ALERT)
+        if (fig.pilots.isNotEmpty()) out += LegendSwatch("Pilot", MARK_PILOT)
+        return out
+    }
+
+    private fun legendRows(fig: SitPathPlot.Figure): List<List<LegendSwatch>> {
+        val bits = legendSwatches(fig)
+        if (bits.isEmpty()) return emptyList()
+        val paint = legendLabelPaint()
+        val maxW = PAGE_W - 2 * MARGIN - 16f
+        val rows = ArrayList<List<LegendSwatch>>()
+        var row = ArrayList<LegendSwatch>()
+        var used = 0f
+        for (bit in bits) {
+            val w = swatchAdvance(paint, bit.label)
+            if (row.isNotEmpty() && used + w > maxW) {
+                rows += row
+                row = ArrayList()
+                used = 0f
+            }
+            row += bit
+            used += w
+        }
+        if (row.isNotEmpty()) rows += row
+        return rows
+    }
+
+    private fun legendLabelPaint() = Paint().apply {
+        color = MUTED
+        textSize = 7.5f
+        isAntiAlias = true
+    }
+
+    private fun swatchAdvance(paint: Paint, label: String) = 14f + paint.measureText(label) + 10f
+
+    private fun drawLegend(
+        canvas: Canvas,
+        left: Float,
+        top: Float,
+        right: Float,
+        rows: List<List<LegendSwatch>>,
+    ) {
+        val lab = legendLabelPaint()
+        rows.forEachIndexed { rowIndex, row ->
+            var x = left
+            val y = top + rowIndex * 13f
+            row.forEach { bit ->
+                drawSwatch(canvas, x + 5f, y + 3f, bit.mark)
+                canvas.drawText(bit.label, x + 14f, y + 6.5f, lab)
+                x += swatchAdvance(lab, bit.label)
+                if (x > right) return@forEach
+            }
+        }
+    }
+
+    private fun drawSwatch(canvas: Canvas, cx: Float, cy: Float, mark: Int) {
+        val stroke = Paint().apply {
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            isAntiAlias = true
+            strokeWidth = 2.2f
+        }
+        val fill = Paint().apply {
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        when (mark) {
+            MARK_STAY -> {
+                stroke.color = PATH_STAY
+                stroke.strokeWidth = 3.2f
+                canvas.drawLine(cx - 5f, cy, cx + 5f, cy, stroke)
+            }
+            MARK_SLATE -> {
+                stroke.color = PATH_OTHER
+                stroke.pathEffect = DashPathEffect(floatArrayOf(2.4f, 1.8f), 0f)
+                canvas.drawLine(cx - 5f, cy, cx + 5f, cy, stroke)
+            }
+            MARK_AMBER -> {
+                stroke.color = AIRCRAFT_INK
+                stroke.strokeWidth = 1.8f
+                stroke.pathEffect = DashPathEffect(floatArrayOf(1.6f, 2.4f), 0f)
+                canvas.drawLine(cx - 6f, cy, cx + 6f, cy, stroke)
+            }
+            MARK_AMBER_DASH -> {
+                stroke.color = PATH_OTHER
+                stroke.strokeWidth = 1.8f
+                stroke.pathEffect = DashPathEffect(floatArrayOf(1.6f, 2.4f), 0f)
+                canvas.drawLine(cx - 6f, cy, cx + 6f, cy, stroke)
+            }
+            MARK_RED -> {
+                fill.color = DOT_ATTENTION
+                canvas.drawCircle(cx, cy, 2.6f, fill)
+            }
+            MARK_BLUE -> {
+                fill.color = DOT_BOOKMARK
+                canvas.drawCircle(cx, cy, 2.6f, fill)
+            }
+            MARK_ALERT -> {
+                fill.color = PHOS
+                canvas.drawCircle(cx, cy, 2.6f, fill)
+            }
+            MARK_PILOT -> drawPilot(canvas, cx, cy, radius = 4.4f)
+        }
+    }
+
+    private fun figureModel(fig: SitPathPlot.Figure): SitPathPlot.Model {
+        val phone = fig.tracks.filter { !it.aircraft }.flatMap { it.samples }
+        val craft = fig.tracks.filter { it.aircraft }.flatMap { it.samples } +
+            fig.pilots.map { GpsSample(0L, it.lat, it.lon, 0) }
+        return SitPathPlot.Model(
+            samples = phone,
+            frameSamples = craft,
+            dots = fig.dots,
+            lengthM = fig.lengthM,
+            spanM = fig.spanM,
+            title = fig.kicker,
+            minHalfSpanM = if (phone.isEmpty() && Geo.spanM(craft) < 80.0) 140f else 0f,
+        )
+    }
+
+    private fun drawClassMark(canvas: Canvas, x: Float, y: Float, radius: Float = 7.2f) {
+        val halo = Paint().apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        val fill = Paint().apply {
+            color = CLASS_DISC
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        canvas.drawCircle(x, y, radius + 1.1f, halo)
+        canvas.drawCircle(x, y, radius, fill)
+        drawGlyph(canvas, Icons.Outlined.Flight, x, y, radius * 1.25f, Color.WHITE)
+    }
+
+    private fun drawPilot(canvas: Canvas, x: Float, y: Float, radius: Float = 6.4f) {
+        val halo = Paint().apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        val fill = Paint().apply {
+            color = PILOT_FILL
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        val ring = Paint().apply {
+            color = PILOT_INK
+            style = Paint.Style.STROKE
+            strokeWidth = 1.1f
+            isAntiAlias = true
+        }
+        canvas.drawCircle(x, y, radius + 0.7f, halo)
+        canvas.drawCircle(x, y, radius, fill)
+        canvas.drawCircle(x, y, radius, ring)
+        drawGlyph(canvas, Icons.Outlined.Person, x, y, radius * 1.35f, PILOT_INK)
+    }
+
+    private fun drawGlyph(
+        canvas: Canvas,
+        vector: ImageVector,
+        cx: Float,
+        cy: Float,
+        size: Float,
+        color: Int,
+    ) {
+        canvas.save()
+        canvas.translate(cx - size / 2f, cy - size / 2f)
+        canvas.scale(size / vector.viewportWidth, size / vector.viewportHeight)
+        val paint = Paint().apply {
+            this.color = color
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        drawVector(canvas, vector.root, paint)
+        canvas.restore()
+    }
+
+    private fun drawVector(canvas: Canvas, node: VectorNode, paint: Paint) {
+        when (node) {
+            is VectorPath -> canvas.drawPath(node.pathData.toPath().asAndroidPath(), paint)
+            is VectorGroup -> {
+                canvas.save()
+                if (node.translationX != 0f || node.translationY != 0f) {
+                    canvas.translate(node.translationX, node.translationY)
+                }
+                if (node.rotation != 0f) canvas.rotate(node.rotation, node.pivotX, node.pivotY)
+                if (node.scaleX != 1f || node.scaleY != 1f) {
+                    canvas.scale(node.scaleX, node.scaleY, node.pivotX, node.pivotY)
+                }
+                node.forEach { drawVector(canvas, it, paint) }
+                canvas.restore()
+            }
+        }
+    }
+
     private fun drawPathTicks(
         canvas: Canvas,
         lay: SitPathPlot.Layout,
         samples: List<GpsSample>,
         ox: (Float) -> Float,
         oy: (Float) -> Float,
+        despike: Boolean,
     ) {
-        val trace = Geo.despikePath(samples).let { if (it.size >= 2) it else samples }
+        val trace = if (despike) {
+            Geo.despikePath(samples).let { if (it.size >= 2) it else samples }
+        } else {
+            samples
+        }
         if (trace.size < 2) return
         val dur = (trace.last().at - trace.first().at).coerceAtLeast(1L)
         val tick = Paint().apply {
@@ -490,34 +793,42 @@ object DebriefPdf {
             isAntiAlias = true
         }
         val lab = Paint().apply { color = MUTED; textSize = 7f; isAntiAlias = true }
+        val chip = Paint().apply {
+            color = Color.argb(228, 255, 255, 255)
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
         listOf(0.25, 0.5, 0.75).forEach { frac ->
             val want = trace.first().at + (dur * frac).toLong()
             val idx = trace.indices.minByOrNull { abs(trace[it].at - want) } ?: return@forEach
             if (idx == 0 || idx == trace.lastIndex) return@forEach
             val pt = lay.project(trace[idx].lat, trace[idx].lon)
+            val label = TIME_FMT.format(Date(trace[idx].at))
+            val tx = ox(pt.x) + 5f
+            val ty = oy(pt.y) - 3f
+            val tw = lab.measureText(label)
             canvas.drawCircle(ox(pt.x), oy(pt.y), 2.4f, tick)
-            canvas.drawText(TIME_FMT.format(Date(trace[idx].at)), ox(pt.x) + 5f, oy(pt.y) - 3f, lab)
+            canvas.drawRoundRect(tx - 1.5f, ty - 7.5f, tx + tw + 1.5f, ty + 2f, 2f, 2f, chip)
+            canvas.drawText(label, tx, ty, lab)
         }
     }
 
     private fun pathKeyBlocks(fig: SitPathPlot.Figure): List<Block> {
-        val all = fig.tracks.flatMap { it.samples }
-        val model = SitPathPlot.Model(
-            samples = all,
-            dots = fig.dots,
-            lengthM = fig.lengthM,
-            spanM = fig.spanM,
-            title = fig.kicker,
-        )
+        val model = figureModel(fig)
         val (plotW, plotH) = figurePlotSize()
         val lay = SitPathPlot.layout(model, plotW, plotH, pad = 12f, scaleBarReserve = 0f) ?: return emptyList()
         val piles = SitPathPlot.clusters(lay.dots)
-        if (piles.isEmpty()) return emptyList()
+        val craft = fig.craftKeys.filter { it.isNotBlank() }
+        if (piles.isEmpty() && craft.isEmpty()) return emptyList()
         val out = ArrayList<Block>()
         out += sectionHead("", "Path key", alert = false)
         out += spacer(4f)
         piles.forEachIndexed { i, pile ->
             out += pathKeyRow(i + 1, pile)
+            out += spacer(5f)
+        }
+        craft.forEach { line ->
+            out += pathKeyCraftRow(line)
             out += spacer(5f)
         }
         return out
@@ -530,8 +841,10 @@ object DebriefPdf {
             val tag = if (d.extraAttention) "Extra attention" else null
             val fleets = d.fleetNames.filter { it.isNotBlank() }.joinToString(", ")
             val obs = d.observerNotes.trim().takeIf { it.isNotEmpty() }?.let { "Observer: $it" }
-            listOfNotNull(kind, d.label.ifBlank { d.mac }, fleets.ifBlank { null }, tag, obs)
+            val who = listOfNotNull(kind, d.label.ifBlank { d.mac }, fleets.ifBlank { null }, tag, obs)
                 .joinToString(" ")
+            val advertised = d.advertisedNote.trim()
+            if (advertised.isEmpty()) who else "$who — $advertised"
         }
         return if (pile.stacked) {
             "$n  ${pile.members.size} radios at this stop — $radios"
@@ -616,6 +929,19 @@ object DebriefPdf {
                 isAntiAlias = true
             }
             canvas.drawText("$n", MARGIN, y + 11f, num)
+            canvas.save()
+            canvas.translate(MARGIN + 22f, y)
+            sl.draw(canvas)
+            canvas.restore()
+        }
+    }
+
+    /** Same flight disc the map draws at the end of an advertised track. */
+    private fun pathKeyCraftRow(line: String): Block {
+        val sl = layout(line, CONTENT_W - 28, 9f, muted = false)
+        val h = maxOf(18f, sl.height + 4f)
+        return Block(h) { canvas, y ->
+            drawClassMark(canvas, MARGIN + 7f, y + 8f, radius = 6.4f)
             canvas.save()
             canvas.translate(MARGIN + 22f, y)
             sl.draw(canvas)

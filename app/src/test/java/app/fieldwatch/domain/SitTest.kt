@@ -265,6 +265,79 @@ class SitTest {
     }
 
     @Test
+    fun sitKeepsLiveDecodeAndReplacesItWhenTheNextHearHasOne() {
+        val separated = LiveDecodeChip("separated", emphasis = true, note = "day")
+        val near = LiveDecodeChip("near owner", emphasis = false, note = "joined")
+        val session = SitSession.start(
+            name = "walk",
+            now = 1_000L,
+            heard = listOf(radio("BLE:AA:AA:AA:AA:AA:09").copy(liveDecode = listOf(separated))),
+            fleets = fleets,
+            watchDeviceKeys = emptySet(),
+            watchedFleetIds = emptySet(),
+        )
+        assertEquals("separated", session.sightings().single().liveDecode.single().text)
+        session.ingest(
+            radio("BLE:AA:AA:AA:AA:AA:09", lastSeen = 2_000L, rssi = -40),
+            fleets,
+            emptySet(),
+            emptySet(),
+        )
+        assertEquals("day", session.sightings().single().liveDecode.single().note)
+        session.ingest(
+            radio("BLE:AA:AA:AA:AA:AA:09", lastSeen = 3_000L).copy(liveDecode = listOf(near)),
+            fleets,
+            emptySet(),
+            emptySet(),
+        )
+        val kept = session.sightings().single().liveDecode.single()
+        assertEquals("near owner", kept.text)
+        assertEquals("joined", kept.note)
+    }
+
+    @Test
+    fun debriefQuotesCatalogSentenceAndKeepsRotationLineWithoutOne() {
+        val now = 120_000L
+        val path = listOf(
+            GpsSample(0L, 28.0, -81.0, -50),
+            GpsSample(60_000L, 28.0012, -81.0, -50),
+        )
+        val dult = listOf(Fleet(id = "fleet-dult", name = "DULT tracker", kind = SignatureClass.FINDER))
+        val day = "Separated from its owner. The address can hold still for about a day."
+        val separated = radio(
+            "BLE:11:22:33:44:55:66",
+            fleetIds = setOf("fleet-dult"),
+            firstSeen = 0L,
+            lastSeen = now,
+            rssi = -50,
+            randomized = false,
+        ).copy(
+            gpsTrail = path,
+            liveDecode = listOf(LiveDecodeChip("separated", emphasis = true, note = day)),
+        )
+        val plain = radio(
+            "BLE:11:22:33:44:55:77",
+            fleetIds = setOf("fleet-dult"),
+            firstSeen = 0L,
+            lastSeen = now,
+            rssi = -50,
+            randomized = false,
+        ).copy(gpsTrail = path)
+        val text = DebriefReport.document(
+            devices = listOf(separated, plain),
+            fleets = dult,
+            settings = AppSettings(tagLocation = true),
+            operatorPath = path,
+            now = now,
+            window = DebriefWindow(0L, now, "walk"),
+        ).toPlainText()
+        assertTrue(text.contains("11:22:33:44:55:66 (Separated)"))
+        assertTrue(text.contains("Account for it. $day"))
+        assertTrue(text.contains("Account for it. Find My / iPhone addresses rotate; this MAC is this session."))
+        assertFalse(text.contains("$day Find My"))
+    }
+
+    @Test
     fun endFreezesSummary() {
         val session = SitSession.start(
             name = "lot",

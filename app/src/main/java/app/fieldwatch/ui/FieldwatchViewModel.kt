@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import app.fieldwatch.BuildConfig
 import app.fieldwatch.FieldwatchApp
+import app.fieldwatch.domain.AircraftTrail
 import app.fieldwatch.domain.AppSettings
 import app.fieldwatch.domain.attentionNotes
 import app.fieldwatch.domain.signatureNotes
@@ -164,6 +165,8 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
     val sitPath: StateFlow<SitPathPlot.Model?> = _sitPath
     private val _pathTiles = MutableStateFlow<List<PathTiles.Tile>>(emptyList())
     val pathTiles: StateFlow<List<PathTiles.Tile>> = _pathTiles
+    private val _pathAircraftTiles = MutableStateFlow<List<List<PathTiles.Tile>>>(emptyList())
+    val pathAircraftTiles: StateFlow<List<List<PathTiles.Tile>>> = _pathAircraftTiles
     @Volatile private var pathRadios: List<Sighting> = emptyList()
     private val _liveFocus = MutableStateFlow(0)
     val liveFocus: StateFlow<Int> = _liveFocus
@@ -745,8 +748,9 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                 val file = File(dir, "fieldwatch-sit-compare-$stamp.pdf")
                 publishExport(0.32f, "Loading map tiles…")
                 val tiles = pathTilesForFigure(doc.pathFigure)
+                val extraTiles = doc.extraFigures.map { pathTilesForFigure(it) }
                 withContext(Dispatchers.Default) {
-                    DebriefPdf.write(doc, file, tiles) { p ->
+                    DebriefPdf.write(doc, file, tiles, extraTiles) { p ->
                         kotlinx.coroutines.runBlocking {
                             publishExport(0.38f + 0.55f * p, "Writing sit compare PDF…")
                         }
@@ -811,7 +815,11 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
     private suspend fun sitCompareDoc(): DebriefDoc {
         val (thisSide, second) = compareSides()
         val macs = (thisSide.radios + second.radios).map { it.mac }
-        return SitDiff.document(thisSide, second)
+        return SitDiff.document(
+            thisSide,
+            second,
+            RadioBookmarks.watchedFleetIds(app.config.watchlist),
+        )
             .withDemoMacs(macs, app.config.settings.demoMode)
     }
 
@@ -1469,7 +1477,9 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
 
     private suspend fun pathTilesForFigure(figure: SitPathPlot.Figure?): List<PathTiles.Tile> {
         if (figure == null || !figure.drawable) return emptyList()
-        val samples = Geo.despikePath(figure.tracks.flatMap { it.samples })
+        val phone = figure.tracks.filter { !it.aircraft }.flatMap { it.samples }
+        val craft = figure.tracks.filter { it.aircraft }.flatMap { it.samples }
+        val samples = Geo.despikePath(phone).let { if (it.size >= 2) it else phone } + craft
         if (samples.size < 2) return emptyList()
         val settings = app.config.settings
         return PathTiles.load(
@@ -1484,18 +1494,38 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
             val model = buildSitPath()
             _sitPath.value = model
             val settings = app.config.settings
-            if (model == null || model.samples.size < 2 || !settings.onlineLookup || settings.demoMode) {
+            if (model == null || !settings.onlineLookup || settings.demoMode) {
                 _pathTiles.value = emptyList()
+                _pathAircraftTiles.value = emptyList()
                 return@launch
             }
-            val tiles = runCatching {
-                PathTiles.load(
-                    app, model.samples,
-                    privacy = settings.demoMode,
-                    onlineLookup = settings.onlineLookup,
-                )
-            }.getOrDefault(emptyList())
-            _pathTiles.value = tiles
+            val phone = Geo.despikePath(model.samples).let { if (it.size >= 2) it else model.samples }
+            val walk = (if (phone.size >= 2) phone else emptyList()) + model.craft.flatMap { it.samples }
+            _pathTiles.value = if (walk.size >= 2) {
+                runCatching {
+                    PathTiles.load(
+                        app, walk,
+                        privacy = settings.demoMode,
+                        onlineLookup = settings.onlineLookup,
+                    )
+                }.getOrDefault(emptyList())
+            } else {
+                emptyList()
+            }
+            _pathAircraftTiles.value = model.aircraftCards.map { card ->
+                val samples = card.craft.flatMap { it.samples }
+                if (samples.size < 2) {
+                    emptyList()
+                } else {
+                    runCatching {
+                        PathTiles.load(
+                            app, samples,
+                            privacy = settings.demoMode,
+                            onlineLookup = settings.onlineLookup,
+                        )
+                    }.getOrDefault(emptyList())
+                }
+            }
         }
     }
 
@@ -1505,14 +1535,18 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
         val customNames = RadioBookmarks.labels(app.config.watchlist)
         val namedKeys = customNames.keys
         val bookmarkedKeys = RadioBookmarks.alertDeviceKeys(app.config.watchlist)
+        val watchedFleets = RadioBookmarks.watchedFleetIds(app.config.watchlist)
         val fleets = app.config.fleets
         val tagging = app.config.settings.tagLocation
         if (source != null) {
-            val samples = Geo.despikePath(source.operatorPath)
+            val raw = source.operatorPath
+            val samples = Geo.despikePath(raw)
             val plot = SitPathPlot.dotsFrom(
                 source.devices, fleets, namedKeys, customNames = customNames,
                 observerNotes = RadioBookmarks.notes(app.config.watchlist),
                 bookmarkedKeys = bookmarkedKeys,
+                watchedFleetIds = watchedFleets,
+                alertsOnly = true,
             )
             val empty = when {
                 !tagging -> "Tag detections with GPS (Settings) to record a path."
@@ -1520,14 +1554,26 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                 else -> null
             }
             pathRadios = source.devices
-            return SitPathPlot.Model(
-                samples = samples,
-                dots = if (samples.size >= 2) plot.points else emptyList(),
-                lengthM = Geo.pathLengthM(samples),
-                spanM = Geo.spanM(samples),
-                title = source.name,
-                emptyHint = empty,
-                live = app.sits.ui.value.open != null,
+            val pictures = AircraftTrail.pictures(
+                source.devices.mapNotNull { device ->
+                    AircraftTrail.source(
+                        device,
+                        device.payloadUasId?.trim().orEmpty().ifBlank { device.reportName(customNames) },
+                    )
+                },
+                if (empty == null) raw else emptyList(),
+            )
+            return AircraftTrail.overlay(
+                SitPathPlot.Model(
+                    samples = samples,
+                    dots = if (samples.size >= 2) plot.points else emptyList(),
+                    lengthM = Geo.pathLengthM(samples),
+                    spanM = Geo.spanM(samples),
+                    title = source.name,
+                    emptyHint = empty,
+                    live = app.sits.ui.value.open != null,
+                ),
+                pictures,
             )
         }
         val start = now - DebriefPrompt.WINDOW_MS
@@ -1544,18 +1590,32 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                 devices, fleets, namedKeys, customNames = customNames,
                 observerNotes = RadioBookmarks.notes(app.config.watchlist),
                 bookmarkedKeys = bookmarkedKeys,
+                watchedFleetIds = watchedFleets,
+                alertsOnly = true,
             )
         } else {
             SitPathPlot.PlotRadios(emptyList())
         }
-        return SitPathPlot.Model(
-            samples = samples,
-            dots = plot.points,
-            lengthM = Geo.pathLengthM(samples),
-            spanM = Geo.spanM(samples),
-            title = "Last 15 minutes",
-            emptyHint = empty,
-            live = true,
+        val windowPath = app.operatorPathCopy().filter { it.at >= start }
+        return AircraftTrail.overlay(
+            SitPathPlot.Model(
+                samples = samples,
+                dots = plot.points,
+                lengthM = Geo.pathLengthM(samples),
+                spanM = Geo.spanM(samples),
+                title = "Last 15 minutes",
+                emptyHint = empty,
+                live = true,
+            ),
+            AircraftTrail.pictures(
+                devices.mapNotNull { device ->
+                    AircraftTrail.source(
+                        device,
+                        device.payloadUasId?.trim().orEmpty().ifBlank { device.reportName(customNames) },
+                    )
+                },
+                if (empty == null) windowPath else emptyList(),
+            ),
         )
     }
 
@@ -1596,8 +1656,9 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                 val file = File(dir, "fieldwatch-debrief-$stamp.pdf")
                 publishExport(0.32f, "Loading map tiles…")
                 val tiles = pathTilesForFigure(doc.pathFigure)
+                val extraTiles = doc.extraFigures.map { pathTilesForFigure(it) }
                 withContext(Dispatchers.Default) {
-                    DebriefPdf.write(doc, file, tiles) { p ->
+                    DebriefPdf.write(doc, file, tiles, extraTiles) { p ->
                         kotlinx.coroutines.runBlocking {
                             publishExport(0.4f + 0.55f * p, "Writing debrief PDF…")
                         }
@@ -1685,6 +1746,7 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                 customNames = RadioBookmarks.labels(app.config.watchlist),
                 observerNotes = RadioBookmarks.notes(app.config.watchlist),
                 bookmarkedKeys = RadioBookmarks.alertDeviceKeys(app.config.watchlist),
+                watchedFleetIds = RadioBookmarks.watchedFleetIds(app.config.watchlist),
             ).withDemoMacs(devices.map { it.mac }, settings.demoMode)
         }
     }

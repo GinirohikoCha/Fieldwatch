@@ -1161,7 +1161,7 @@ fun DeviceRow(
                     )
                     val attention = vm.hasAttention(device)
                     val observed = vm.hasObserverNote(device)
-                    if (attention || observed || named || alerted) {
+                    if (attention || observed || named || alerted || device.liveDecode.isNotEmpty()) {
                         FleetNameChips(
                             device, vm, attention,
                             showNames = named,
@@ -1340,6 +1340,34 @@ private fun FleetNameChips(
                 }
             }
         }
+        device.liveDecode.forEach { chip ->
+            val id = device.fleetIds.firstOrNull()
+            val color = (id?.let { Color(Palette.color(vm.fleetColor(it))) }
+                ?: MaterialTheme.colorScheme.primary)
+                .nightIf(LocalNightMode.current)
+            Surface(
+                shape = RoundedCornerShape(99.dp),
+                color = color.copy(alpha = if (chip.emphasis) 0.42f else 0.18f),
+            ) {
+                Text(
+                    chip.reportLabel(),
+                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 0.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = TextStyle(
+                        color = color,
+                        fontSize = 10.sp,
+                        lineHeight = 11.sp,
+                        fontWeight = if (chip.emphasis) FontWeight.Bold else FontWeight.Normal,
+                        platformStyle = PlatformTextStyle(includeFontPadding = false),
+                        lineHeightStyle = LineHeightStyle(
+                            alignment = LineHeightStyle.Alignment.Center,
+                            trim = LineHeightStyle.Trim.Both,
+                        ),
+                    ),
+                )
+            }
+        }
     }
 }
 
@@ -1461,7 +1489,7 @@ private fun TimelineView(
                     val observed = vm.hasObserverNote(device)
                     val showNames = showFleet && device.fleetIds.isNotEmpty()
                     val alerted = device.key in alertedKeys
-                    if (attention || observed || showNames || alerted) {
+                    if (attention || observed || showNames || alerted || device.liveDecode.isNotEmpty()) {
                         Spacer(Modifier.height(3.dp))
                         FleetNameChips(
                             device, vm, attention,

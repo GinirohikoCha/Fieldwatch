@@ -180,6 +180,7 @@ class SitDiffTest {
         assertTrue(text.contains("RAND BLE"))
         assertTrue(text.contains("Cap note:"))
         assertTrue(text.contains("Takeaway:"))
+        assertTrue(text.contains("decoded live value"))
         assertTrue(text.contains("FIELDWATCH SIT COMPARE"))
         assertFalse(text.contains("Full Wi-Fi inventory"))
     }
@@ -196,6 +197,26 @@ class SitDiffTest {
         assertTrue(text.contains("Privacy mode"))
         assertTrue(text.contains("AA:BB:CC:**:**:**"))
         assertFalse(text.contains("11:22:33"))
+    }
+
+    @Test
+    fun bothStatesDecodedValueChangeAndQuotesAMatchingNoteOnce() {
+        val day = "Separated from its owner. The address can hold still for about a day."
+        val separated = LiveDecodeChip("separated", emphasis = true, note = day)
+        val near = LiveDecodeChip("near owner", emphasis = false, note = "Near its owner.")
+        val changedA = radio("BLE:AA:AA:AA:AA:AA:01", "tag", ble = true).copy(liveDecode = listOf(separated))
+        val changedB = radio("BLE:AA:AA:AA:AA:AA:01", "tag", ble = true).copy(liveDecode = listOf(near))
+        val held = radio("BLE:BB:BB:BB:BB:BB:02", "held", ble = true).copy(liveDecode = listOf(separated))
+        val text = SitDiff.report(
+            SitDiff.Side("today", ram = false, radios = listOf(changedA, held)),
+            SitDiff.Side("week", ram = false, radios = listOf(changedB, held)),
+            demoMode = false,
+        )
+        val change = text.lineSequence().first { it.contains("decoded value changed") }
+        assertTrue(change.contains("Separated → Near owner"))
+        assertFalse(change.contains("about a day"))
+        val heldLine = text.lineSequence().first { it.contains("BB:BB:BB:BB:BB:02") && it.contains("Separated") }
+        assertEquals(1, heldLine.split("about a day").size - 1)
     }
 
     private fun radio(

@@ -369,6 +369,21 @@ data class DecodeField(
     val modulo: Double? = null,
     val unit: String? = null,
     @SerialName("enum") val enumLabels: Map<String, String>? = null,
+    /**
+     * Show this field's decoded label on the live row. Any signature can set it.
+     * The list reads a value stored when the advertisement bytes change.
+     */
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val live: Boolean = false,
+    /**
+     * Raw enum keys whose label uses the stronger live chip.
+     * Empty means every live value uses the quiet chip.
+     */
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val liveEmphasis: List<String> = emptyList(),
+    /** Sentence for a named value, keyed like [enumLabels]. Detail shows it when that value is decoded. */
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val enumNotes: Map<String, String>? = null,
     @SerialName("when") val gate: DecodeWhen? = null,
 )
 
@@ -719,6 +734,10 @@ data class Sighting(
     val payloadHeading: Double? = null,
     val payloadSpeed: Double? = null,
     val payloadVspeed: Double? = null,
+    /** Advertised fixes kept by the sit. Empty on a live radio that has not been saved into one. */
+    val payloadTrail: List<PayloadFix> = emptyList(),
+    /** Decoded labels a signature asked to show on the live row. Empty for every other radio. */
+    val liveDecode: List<LiveDecodeChip> = emptyList(),
 ) {
     val displayName: String
         get() = name.ifBlank { if (hiddenSsid) "<hidden>" else mac }

@@ -1,6 +1,7 @@
 package app.fieldwatch.domain
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Locale
@@ -375,6 +376,15 @@ class SignatureFieldDecoderTest {
         val rows = SignatureFieldDecoder.decodeSighting(bleService("FFFA", payload, fleet.id), listOf(fleet))
         assertEquals("Location", rows.display("msg_type"))
         assertEquals("Airborne", rows.display("status"))
+        val airborne = SignatureFieldDecoder.liveChips(bleService("FFFA", payload, fleet.id), listOf(fleet))
+        assertEquals("Airborne", airborne.single().text)
+        assertFalse(airborne.single().emphasis)
+        val emergency = "0D001230" + payload.removePrefix("0D001220")
+        val strong = SignatureFieldDecoder.liveChips(bleService("FFFA", emergency, fleet.id), listOf(fleet))
+        assertEquals("Emergency", strong.single().text)
+        assertTrue(strong.single().emphasis)
+        val basicId = "0D000220" + payload.removePrefix("0D001220")
+        assertTrue(SignatureFieldDecoder.liveChips(bleService("FFFA", basicId, fleet.id), listOf(fleet)).isEmpty())
         assertEquals("40 °", rows.display("latitude"))
         assertEquals("-74 °", rows.display("longitude"))
         assertEquals("100 m", rows.display("alt_geo"))
@@ -441,6 +451,21 @@ class SignatureFieldDecoderTest {
         )
         assertEquals("separated", rows.display("mode"))
         assertEquals("11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11", rows.display("eid"))
+        val strong = SignatureFieldDecoder.liveChips(
+            bleService("FEAA", "41$eid" + "00", fleet.id),
+            listOf(fleet),
+        )
+        assertEquals("separated", strong.single().text)
+        assertTrue(strong.single().emphasis)
+        assertTrue(strong.single().note.contains("about a day"))
+        val quiet = SignatureFieldDecoder.liveChips(
+            bleService("FEAA", "40$eid" + "00", fleet.id),
+            listOf(fleet),
+        )
+        assertEquals("nearby", quiet.single().text)
+        assertFalse(quiet.single().emphasis)
+        assertTrue(quiet.single().note.contains("own tag"))
+        assertTrue(quiet.single().note.contains("joined"))
     }
 
     @Test
@@ -452,12 +477,48 @@ class SignatureFieldDecoderTest {
         )
         assertEquals("1", separated.display("network_id"))
         assertEquals("separated", separated.display("mode"))
+        val separatedDevice = bleService("FCB2", "0100", fleet.id)
+        val strong = SignatureFieldDecoder.liveChips(separatedDevice, listOf(fleet))
+        assertEquals("separated", strong.single().text)
+        assertTrue(strong.single().emphasis)
+        assertTrue(strong.single().note.contains("about a day"))
         val near = SignatureFieldDecoder.decodeSighting(
             bleService("FCB2", "0201", fleet.id),
             listOf(fleet),
         )
         assertEquals("2", near.display("network_id"))
         assertEquals("near owner", near.display("mode"))
+        val quiet = SignatureFieldDecoder.liveChips(bleService("FCB2", "0201", fleet.id), listOf(fleet))
+        assertEquals("near owner", quiet.single().text)
+        assertFalse(quiet.single().emphasis)
+        assertTrue(quiet.single().note.contains("own tag"))
+        assertTrue(quiet.single().note.contains("joined"))
+    }
+
+    @Test
+    fun liveFlagRoundTripsAndOlderPacksOmitIt() {
+        val fleet = DefaultCatalog.fleets().single { it.id == "fleet-dult" }
+        val encoded = SignatureExchange.encode(
+            SignatureExchange.pack(listOf(fleet), catalogVersion = 85, appVersion = "t", exportedAt = ""),
+        )
+        val mode = SignatureExchange.parse(encoded).fleets.single().decode!!.fields.single { it.id == "mode" }
+        assertTrue(mode.live)
+        assertEquals(listOf("0"), mode.liveEmphasis)
+        assertTrue(mode.enumNotes?.get("0")?.contains("about a day") == true)
+        assertTrue(mode.enumNotes?.get("1")?.contains("own tag") == true)
+        val older = """
+            {"format":"fieldwatch-signatures","formatVersion":1,"catalogVersion":1,"fleets":[
+              {"id":"fleet-x","name":"X","rules":[{"kind":"SERVICE_DATA","text":"FCB2"}],
+               "decode":{"source":"serviceData","serviceUuid":"FCB2","fields":[
+                 {"id":"mode","label":"Mode","offset":1,"type":"bits","bitOffset":0,"bitWidth":1,
+                  "enum":{"0":"separated","1":"near owner"}}
+               ]}}
+            ]}
+        """.trimIndent()
+        val parsed = SignatureExchange.parse(older).fleets.single().decode!!.fields.single()
+        assertFalse(parsed.live)
+        assertTrue(parsed.liveEmphasis.isEmpty())
+        assertEquals(null, parsed.enumNotes)
     }
 
     @Test

@@ -1,5 +1,7 @@
 package app.fieldwatch.domain
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -102,7 +104,27 @@ data class SitRadio(
     val payloadLat: Double? = null,
     val payloadLon: Double? = null,
     val payloadUasId: String? = null,
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val payloadAlt: Double? = null,
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val payloadHeading: Double? = null,
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val payloadSpeed: Double? = null,
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val payloadOpLat: Double? = null,
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val payloadOpLon: Double? = null,
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val payloadTrail: List<PayloadFix> = emptyList(),
     val gpsTrail: List<GpsSample> = emptyList(),
+    /** Live-row labels captured at hear-time. Saved sits do not keep the advertisement bytes. */
+    val liveDecode: List<LiveDecodeChip> = emptyList(),
 ) {
     fun toSighting(): Sighting = Sighting(
         key = key,
@@ -133,6 +155,13 @@ data class SitRadio(
         payloadLat = payloadLat,
         payloadLon = payloadLon,
         payloadUasId = payloadUasId,
+        payloadAlt = payloadAlt,
+        payloadHeading = payloadHeading,
+        payloadSpeed = payloadSpeed,
+        payloadOpLat = payloadOpLat,
+        payloadOpLon = payloadOpLon,
+        payloadTrail = payloadTrail,
+        liveDecode = liveDecode,
     )
 
     companion object {
@@ -157,7 +186,14 @@ data class SitRadio(
             payloadLat = device.payloadLat,
             payloadLon = device.payloadLon,
             payloadUasId = device.payloadUasId,
+            payloadAlt = device.payloadAlt,
+            payloadHeading = device.payloadHeading,
+            payloadSpeed = device.payloadSpeed,
+            payloadOpLat = device.payloadOpLat,
+            payloadOpLon = device.payloadOpLon,
+            payloadTrail = AircraftTrail.append(emptyList(), device),
             gpsTrail = trailSample(device),
+            liveDecode = device.liveDecode,
         )
 
         fun trailSample(device: Sighting): List<GpsSample> {
@@ -397,7 +433,14 @@ class SitSession(
             payloadLat = next.payloadLat ?: old.payloadLat,
             payloadLon = next.payloadLon ?: old.payloadLon,
             payloadUasId = next.payloadUasId ?: old.payloadUasId,
+            payloadAlt = next.payloadAlt ?: old.payloadAlt,
+            payloadHeading = next.payloadHeading ?: old.payloadHeading,
+            payloadSpeed = next.payloadSpeed ?: old.payloadSpeed,
+            payloadOpLat = next.payloadOpLat ?: old.payloadOpLat,
+            payloadOpLon = next.payloadOpLon ?: old.payloadOpLon,
+            payloadTrail = AircraftTrail.append(old.payloadTrail, next),
             gpsTrail = trail,
+            liveDecode = next.liveDecode.ifEmpty { old.liveDecode },
         )
     }
 

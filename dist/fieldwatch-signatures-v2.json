@@ -3,7 +3,7 @@
     "formatVersion": 1,
     "exportedAt": "",
     "appVersion": "stock",
-    "catalogVersion": 84,
+    "catalogVersion": 88,
     "fleets": [
         {
             "id": "fleet-actiontec",
@@ -21661,6 +21661,14 @@
                             "0": "separated",
                             "1": "near owner"
                         },
+                        "live": true,
+                        "liveEmphasis": [
+                            "0"
+                        ],
+                        "enumNotes": {
+                            "0": "Separated from its owner. The address can hold still for about a day.",
+                            "1": "Near its owner. With you the whole sit, this is often your own tag. First heard after the sit started, it is more often someone who joined with their own keys."
+                        },
                         "when": null
                     }
                 ]
@@ -25271,6 +25279,14 @@
                         "enum": {
                             "64": "nearby",
                             "65": "separated"
+                        },
+                        "live": true,
+                        "liveEmphasis": [
+                            "65"
+                        ],
+                        "enumNotes": {
+                            "65": "Separated from its owner. The address can hold still for about a day.",
+                            "64": "Nearby its owner. With you the whole sit, this is often your own tag. First heard after the sit started, it is more often someone who joined with their own keys."
                         },
                         "when": null
                     },
@@ -50771,6 +50787,10 @@
                             "3": "Emergency",
                             "4": "RID failure"
                         },
+                        "live": true,
+                        "liveEmphasis": [
+                            "3"
+                        ],
                         "when": {
                             "offset": 2,
                             "length": 1,
@@ -51056,6 +51076,10 @@
                             "3": "Emergency",
                             "4": "RID failure"
                         },
+                        "live": true,
+                        "liveEmphasis": [
+                            "3"
+                        ],
                         "when": {
                             "offset": 2,
                             "length": 1,
@@ -51341,6 +51365,10 @@
                             "3": "Emergency",
                             "4": "RID failure"
                         },
+                        "live": true,
+                        "liveEmphasis": [
+                            "3"
+                        ],
                         "when": {
                             "offset": 2,
                             "length": 1,

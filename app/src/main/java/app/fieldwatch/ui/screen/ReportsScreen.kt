@@ -1,12 +1,27 @@
 package app.fieldwatch.ui.screen
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -29,15 +44,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.fieldwatch.domain.MacUtil
-import app.fieldwatch.domain.RadioKind
+import app.fieldwatch.ui.RadioClassBadge
+import app.fieldwatch.ui.RadioKindMark
 import app.fieldwatch.domain.LogExportKind
 import app.fieldwatch.domain.LogExportRadios
 import app.fieldwatch.domain.Sit
 import app.fieldwatch.domain.SitDiff
 import app.fieldwatch.domain.SitPathPlot
+import app.fieldwatch.ui.component.AircraftAmber
 import app.fieldwatch.ui.component.FieldwatchDropdownField
 import app.fieldwatch.ui.component.SitPathCanvas
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -203,12 +224,14 @@ fun ReportsScreen(
             }
             SectionCard("Path") {
                 Text(
-                    "North up. This phone. Extra attention and bookmarked radios as dots — one hear-point each, at the strongest RSSI. Thick green on the line is a stay. Time ticks along the path. Map tiles use Settings → Online place names and maps; offline or Privacy mode keeps this trace.",
+                    "North up. The line is this phone. The black dot is the start. The blue dot is you, at the last point. A MAC or signature alert is one class icon. A decoded latitude and longitude uses the last position that radio sent. A count is several in one spot. Thick green is a stay. Time ticks along the path.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 val model = pathModel
-                if (model == null || model.emptyHint != null) {
+                val showWalk = model != null && model.emptyHint == null
+                val showAircraft = model != null && model.aircraftCards.isNotEmpty()
+                if (model == null || (!showWalk && !showAircraft)) {
                     Text(
                         model?.emptyHint ?: "Tag detections with GPS and walk, or open a sit that recorded a path.",
                         style = MaterialTheme.typography.bodySmall,
@@ -216,12 +239,21 @@ fun ReportsScreen(
                     )
                 } else {
                     val pathTiles by vm.pathTiles.collectAsStateWithLifecycle()
+                    val aircraftTiles by vm.pathAircraftTiles.collectAsStateWithLifecycle()
+                    if (!showWalk) {
+                        Text(
+                            model.emptyHint ?: "Tag detections with GPS and walk, or open a sit that recorded a path.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (showWalk) {
                     val stopN = model.dots.size
                     Text(
                         buildString {
                             append("${model.title} · ${model.lengthM.toInt()} m path · ${model.spanM.toInt()} m span")
                             if (stopN > 0) {
-                                append(" · $stopN stop")
+                                append(" · $stopN alert")
                                 if (stopN != 1) append("s")
                             }
                         },
@@ -229,76 +261,124 @@ fun ReportsScreen(
                     )
                     SitPathCanvas(model, tiles = pathTiles, onOpenRadio = onOpenPathRadio)
                     Text(
-                        "Stacked count: tap the number for names. Tap again to close. Isolated dots and the list still open the radio.",
+                        "Tap a count for the radios there. Tap a single icon for that one radio. Tap again to close. Tap a row in that list, or a row below, to open that radio.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(
-                            "Line = this phone",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                "Red = Extra attention",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                            Text(
-                                "Blue = Bookmarked",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Cyan.nightIf(LocalNightMode.current),
-                            )
-                        }
-                    }
-                    if (model.dots.isEmpty()) {
-                        Text(
-                            "No Extra attention or bookmarked radios with a GPS stamp on this path.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        model.dots.forEachIndexed { i, dot ->
-                            PathRadioRow(
-                                index = i + 1,
-                                dot = dot,
-                                demoMode = settings.demoMode,
-                                onOpen = { onOpenPathRadio(dot.key) },
-                            )
-                        }
-                        val noted = model.dots.filter { it.observerNotes.trim().isNotEmpty() }
-                        if (noted.isNotEmpty()) {
-                            Text(
-                                "Observer notes",
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier = Modifier.padding(top = 8.dp),
-                            )
-                            noted.forEach { dot ->
-                                val n = model.dots.indexOfFirst { it.key == dot.key }
-                                val mac = MacUtil.screenMac(dot.mac, settings.demoMode)
-                                val kind = if (dot.kind == RadioKind.WIFI) "WIFI" else "BLE"
-                                Column(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .clickable { onOpenPathRadio(dot.key) }
-                                        .padding(vertical = 4.dp),
+                    if (model.craft.isNotEmpty() || model.pilots.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            if (model.craft.isNotEmpty()) {
+                                val multi = model.craft.any { it.samples.size >= 2 }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
+                                    if (multi) AdvertisedTrackSwatch() else AdvertisedRingSwatch()
                                     Text(
-                                        "${n + 1}. $kind  ${dot.label}  $mac",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                    Text(
-                                        dot.observerNotes.trim(),
+                                        if (multi) {
+                                            "= advertised track within 2 km of this path"
+                                        } else {
+                                            "= one advertised position within 2 km of this path"
+                                        },
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Cyan.nightIf(LocalNightMode.current),
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            }
+                            if (model.pilots.isNotEmpty()) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    PilotSwatch()
+                                    Text(
+                                        "= pilot",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
                             }
                         }
+                    }
+                    val alertsOnACard = model.aircraftCards.any { it.dots.isNotEmpty() }
+                    if (model.dots.isEmpty() && !alertsOnACard) {
+                        Text(
+                            "No MAC or signature alerts with a GPS stamp on this path.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else if (model.dots.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            model.dots.forEachIndexed { i, dot ->
+                                PathRadioRow(
+                                    index = i + 1,
+                                    dot = dot,
+                                    demoMode = settings.demoMode,
+                                    onOpen = { onOpenPathRadio(dot.key) },
+                                )
+                            }
+                        }
+                    }
+                    }
+                    model.aircraftCards.forEachIndexed { index, card ->
+                        val fixes = card.craft.sumOf { it.samples.size }
+                        Text(
+                            card.title,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = AircraftAmber,
+                            modifier = Modifier.padding(top = 12.dp),
+                        )
+                        Text(
+                            buildString {
+                                append(
+                                    if (fixes == 1) "1 advertised fix" else "$fixes advertised fixes",
+                                )
+                                if (card.lengthM >= 1.0) append(" · ${card.lengthM.toInt()} m")
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        if (card.dots.isNotEmpty()) {
+                            Text(
+                                if (card.dots.size == 1) "1 alert" else "${card.dots.size} alerts",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        SitPathCanvas(
+                            card,
+                            tiles = aircraftTiles.getOrElse(index) { emptyList() },
+                            onOpenRadio = onOpenPathRadio,
+                        )
+                        if (card.dots.isNotEmpty()) {
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                card.dots.forEachIndexed { i, dot ->
+                                    PathRadioRow(
+                                        index = i + 1,
+                                        dot = dot,
+                                        demoMode = settings.demoMode,
+                                        onOpen = { onOpenPathRadio(dot.key) },
+                                    )
+                                }
+                            }
+                        }
+                        if (card.caption.isNotBlank()) {
+                            Text(
+                                card.caption,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    if (model.looseAdvertised > 0) {
+                        Text(
+                            if (model.looseAdvertised == 1) {
+                                "An advertised position with no UAS id is in the sit report."
+                            } else {
+                                "Advertised positions with no UAS id are in the sit report."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
@@ -627,39 +707,119 @@ private fun SitChoiceRow(
 }
 
 @Composable
+private fun AdvertisedTrackSwatch() {
+    Canvas(Modifier.width(28.dp).height(10.dp)) {
+        val dash = 3.dp.toPx()
+        val gap = 4.5.dp.toPx()
+        drawLine(
+            Color.White,
+            start = Offset(0f, size.height / 2f),
+            end = Offset(size.width, size.height / 2f),
+            strokeWidth = 2.2.dp.toPx(),
+            cap = StrokeCap.Round,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash, gap), 0f),
+        )
+    }
+}
+
+@Composable
+private fun AdvertisedRingSwatch() {
+    Canvas(Modifier.size(12.dp)) {
+        drawCircle(
+            Color.White,
+            radius = size.minDimension / 2f - 1.dp.toPx(),
+            style = Stroke(width = 1.6.dp.toPx()),
+        )
+    }
+}
+
+@Composable
+private fun PilotSwatch() {
+    val painter = rememberVectorPainter(Icons.Outlined.Person)
+    Canvas(Modifier.size(18.dp)) {
+        val radius = size.minDimension / 2f
+        val disc = radius * 0.86f
+        drawCircle(Color.White, radius = radius)
+        drawCircle(Color(0xFFF4F7FB), radius = disc)
+        drawCircle(Color(0xFF3D4A55), radius = disc, style = Stroke(width = 1.2.dp.toPx()))
+        val icon = disc * 1.35f
+        translate((size.width - icon) / 2f, (size.height - icon) / 2f) {
+            with(painter) {
+                draw(Size(icon, icon), colorFilter = ColorFilter.tint(Color(0xFF3D4A55)))
+            }
+        }
+    }
+}
+
+@Composable
 private fun PathRadioRow(
-    index: Int?,
+    index: Int,
     dot: SitPathPlot.Dot,
     demoMode: Boolean,
     onOpen: () -> Unit,
 ) {
     val mac = MacUtil.screenMac(dot.mac, demoMode)
-    val kind = if (dot.kind == RadioKind.WIFI) "WIFI" else "BLE"
-    val tag = if (dot.extraAttention) "Extra attention" else ""
+    val named = dot.label.isNotBlank() && !dot.label.equals(mac, ignoreCase = true)
     val fleets = dot.fleetNames.joinToString(" · ")
-    val title = buildString {
-        if (index != null) append("$index. ")
-        append("$kind  ${dot.label}")
-        if (dot.label != mac && mac.isNotBlank()) append("  $mac")
-    }
-    val sub = listOfNotNull(
-        tag.ifBlank { null },
-        fleets.ifBlank { null },
-    ).joinToString(" · ")
-    Column(
+    val note = dot.observerNotes.trim()
+    val accent = (if (dot.accentArgb != 0) Color(dot.accentArgb) else MaterialTheme.colorScheme.onSurfaceVariant)
+        .nightIf(LocalNightMode.current)
+    Row(
         Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen)
-            .padding(vertical = 4.dp),
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(title, style = MaterialTheme.typography.bodyMedium)
-        if (sub.isNotEmpty()) {
-            Text(
-                sub,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (dot.extraAttention) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        Text(
+            "$index",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(22.dp),
+        )
+        RadioClassBadge(dot.classKind, accent, compact = true)
+        Spacer(Modifier.width(8.dp))
+        Column(Modifier.weight(1f)) {
+            if (named) {
+                Text(
+                    dot.label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (mac.isNotBlank()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioKindMark(dot.kind, size = 13.dp)
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        mac,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            if (fleets.isNotEmpty()) {
+                Text(
+                    fleets,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = accent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (note.isNotEmpty()) {
+                Text(
+                    note,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Cyan.nightIf(LocalNightMode.current),
+                )
+            }
         }
     }
 }

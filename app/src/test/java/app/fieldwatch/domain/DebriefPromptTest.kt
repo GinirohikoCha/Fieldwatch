@@ -31,6 +31,7 @@ class DebriefPromptTest {
         assertTrue(text.contains("Observer notes:"))
         assertTrue(text.contains("Axon"))
         assertTrue(text.contains("Takeaway:"))
+        assertTrue(text.contains("decoded live value"))
         assertFalse(text.contains("Full Wi-Fi inventory"))
         assertFalse(text.contains("## Persistence (15 min)"))
         assertFalse(text.contains("## Channel utilization"))

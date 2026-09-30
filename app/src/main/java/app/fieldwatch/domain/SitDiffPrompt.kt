@@ -42,6 +42,8 @@ object SitDiffPrompt {
             }
             row.fleetNames.filter { it.isNotBlank() }.forEach { append("  ").append(it) }
             if (row.extraAttention) append("  Extra attention")
+            val labels = row.liveDecode.reportLabels()
+            if (labels.isNotEmpty()) append("  ").append(labels.joinToString(", "))
             if (row.kind == RadioKind.BLE && row.randomized) append("  RAND")
         }
         fun exclusive(keys: Set<String>, where: String, pred: (SitDiff.Radio) -> Boolean) =
@@ -68,6 +70,8 @@ object SitDiffPrompt {
             appendLine("- GPS stamps (if present) are this phone at hear-time, not the other radio.")
             appendLine("- Last 15 minutes vs a named sit is not the same net (RAM about 400 vs sit ${Sit.RADIO_CAP}). Missing BLE on the RAM side can be eviction, not gone.")
             appendLine("- Presence is not co-travel. Do not invent a tail, a follower, or a camera location.")
+            appendLine("- A decoded live value on a row is catalog text for that kind + MAC. If the onboard compare says that value changed, state the change. Do not stitch that value onto a different MAC.")
+            appendLine("- An aircraft block is positions the radio advertised, joined by UAS id. If the onboard compare says the status changed, state the change. That track is not this phone's GPS.")
             appendLine("- Do not give safety advice. Do not tell the operator they are safe or in danger.")
             appendLine("- Treat this paste as operationally sensitive.")
             appendLine()
