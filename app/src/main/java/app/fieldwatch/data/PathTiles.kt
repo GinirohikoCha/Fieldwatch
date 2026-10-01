@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import app.fieldwatch.domain.GpsSample
+import app.fieldwatch.domain.SitPathPlot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -19,8 +20,9 @@ import kotlin.math.sinh
 import kotlin.math.tan
 
 /**
- * Optional OSM raster under Reports → Path. Same switch as Online place names.
- * Never throws; offline / Privacy / fetch fail → empty list (plain trace).
+ * Optional OSM raster under Reports → Path and the letter path figure.
+ * Same switch as Online place names and maps. Privacy mode does not hide tiles.
+ * Never throws; offline or a failed fetch returns an empty list (plain trace).
  */
 object PathTiles {
     data class Tile(
@@ -34,12 +36,11 @@ object PathTiles {
     suspend fun load(
         context: Context,
         samples: List<GpsSample>,
-        privacy: Boolean,
         onlineLookup: Boolean,
     ): List<Tile> = withContext(Dispatchers.IO) {
         runCatching {
-            if (privacy || !onlineLookup) return@withContext emptyList()
-            if (samples.size < 2) return@withContext emptyList()
+            if (!onlineLookup) return@withContext emptyList()
+            if (samples.isEmpty()) return@withContext emptyList()
             if (!PlaceLookup.online(context)) return@withContext emptyList()
             loadInner(context, samples)
         }.getOrDefault(emptyList())
@@ -88,8 +89,9 @@ object PathTiles {
         val midLat = (minLat + maxLat) / 2.0
         val midLon = (minLon + maxLon) / 2.0
         val cos = cos(Math.toRadians(midLat)).absoluteValue.coerceAtLeast(0.2)
-        var yM = ((maxLat - minLat) * 110_540.0).coerceAtLeast(40.0)
-        var xM = ((maxLon - minLon) * 111_320.0 * cos).coerceAtLeast(40.0)
+        val minM = (SitPathPlot.MIN_HALF_SPAN_M * 2f * 1.22f).toDouble()
+        var yM = ((maxLat - minLat) * 110_540.0).coerceAtLeast(minM)
+        var xM = ((maxLon - minLon) * 111_320.0 * cos).coerceAtLeast(minM)
         if (xM / yM < targetAspect) {
             xM = yM * targetAspect
         } else {

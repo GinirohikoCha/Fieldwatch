@@ -83,6 +83,63 @@ class SitPathPlotTest {
     }
 
     @Test
+    fun shortPathOpensEnoughGroundToReadTheStreets() {
+        val model = SitPathPlot.Model(
+            samples = listOf(
+                GpsSample(1L, 28.78000, -81.37000),
+                GpsSample(2L, 28.78002, -81.37000),
+            ),
+            dots = emptyList(),
+            lengthM = 2.0,
+            spanM = 2.0,
+            title = "still",
+        )
+        val layout = SitPathPlot.layout(model, 400f, 300f)!!
+        val here = layout.project(28.78000, -81.37000)
+        val north = layout.project(28.78200, -81.37000)
+        val meters = 0.002 * 110_540.0
+        val pxPerM = (here.y - north.y) / meters
+        val viewM = (layout.plotBottom - layout.plotTop) / pxPerM
+        assertTrue(viewM in 350.0..600.0)
+        assertTrue(here.y > layout.plotTop && here.y < layout.plotBottom)
+    }
+
+    @Test
+    fun oneGpsFixStillFrames() {
+        val model = SitPathPlot.Model(
+            samples = listOf(GpsSample(1L, 28.78000, -81.37000)),
+            dots = emptyList(),
+            lengthM = 0.0,
+            spanM = 0.0,
+            title = "one",
+        )
+        val layout = SitPathPlot.layout(model, 400f, 300f)
+        assertNotNull(layout)
+        val pt = layout!!.project(28.78000, -81.37000)
+        assertTrue(pt.x > layout.plotLeft && pt.x < layout.plotRight)
+        assertTrue(pt.y > layout.plotTop && pt.y < layout.plotBottom)
+    }
+
+    @Test
+    fun aLongWalkStillFillsThePlot() {
+        val model = SitPathPlot.Model(
+            samples = listOf(
+                GpsSample(1L, 28.7800, -81.3700),
+                GpsSample(2L, 28.8000, -81.3700),
+            ),
+            dots = emptyList(),
+            lengthM = 2200.0,
+            spanM = 2200.0,
+            title = "drive",
+        )
+        val layout = SitPathPlot.layout(model, 400f, 300f)!!
+        val south = layout.project(28.7800, -81.3700)
+        val north = layout.project(28.8000, -81.3700)
+        val used = (south.y - north.y) / (layout.plotBottom - layout.plotTop)
+        assertTrue(used > 0.7f)
+    }
+
+    @Test
     fun scaleBarIsANiceMeterValue() {
         assertEquals(50.0, SitPathPlot.niceMeters(47.0), 0.01)
         assertEquals(100.0, SitPathPlot.niceMeters(80.0), 0.01)

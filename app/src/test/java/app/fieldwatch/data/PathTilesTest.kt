@@ -19,4 +19,11 @@ class PathTilesTest {
         val xM = lonSpan * 111_320.0 * kotlin.math.cos(Math.toRadians(28.785))
         assertTrue(xM / yM in 1.5..1.9)
     }
+
+    @Test
+    fun aSingleFixStillRequestsANeighborhoodOfTiles() {
+        val box = PathTiles.expandToPlot(28.780, 28.780, -81.370, -81.370)
+        val yM = (box[1] - box[0]) * 110_540.0
+        assertTrue(yM >= 400.0)
+    }
 }

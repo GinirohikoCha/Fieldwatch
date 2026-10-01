@@ -140,7 +140,7 @@ fun SettingsScreen(
                 FieldwatchSwitch(settings.demoMode, { on -> vm.updateSettings { it.copy(demoMode = on) } })
             }
             Text(
-                "Hides the last three octets of every MAC on Live, radar, timeline, detail, Hunt, Named radios, and watchlist cards as **:**:** so the screen and sit reports do not show full addresses. GPS last-fix and Debrief / AI Export / detail Share coordinates become “masked”; street names are omitted from those sit reports. The first three octets (OUI / vendor prefix) stay. Off by default. Logs, matching, filters, Hunt math, Moving with you, and saved signatures still use the real MAC and GPS. A TAK / CoT feed, if you turned it on, is paused while this is on so full MACs and coordinates are not sent onto the LAN. Turn this off when you need the full address or coordinates on screen.",
+                "Hides the last three octets of every MAC on Live, radar, timeline, detail, Hunt, Named radios, and watchlist cards as **:**:** so the screen and sit reports do not show full addresses. GPS last-fix and Debrief / AI Export / detail Share coordinates become “masked”; street names are omitted from those sit reports. The first three octets (OUI / vendor prefix) stay. Off by default. The map on Reports → Path still loads when Online place names and maps is on. Logs, matching, filters, Hunt math, Moving with you, and saved signatures still use the real MAC and GPS. A TAK / CoT feed, if you turned it on, is paused while this is on so full MACs and coordinates are not sent onto the LAN. Turn this off when you need the full address or coordinates on screen.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -442,7 +442,7 @@ fun SettingsScreen(
             Text(
                 "On by default. When the phone has internet, Debrief / AI Export reverse-geocode GPS stamps " +
                     "to street/city, and Reports → Path loads OpenStreetMap tiles under the trace. " +
-                    "No Fieldwatch cloud, no API key. Offline, no geocoder, or Privacy mode: Debrief uses coordinates only and Path stays the current north-up trace — no error dialog. " +
+                    "No Fieldwatch cloud, no API key. Offline or no geocoder: Debrief uses coordinates only and Path stays the current north-up trace — no error dialog. " +
                     "Turn off to keep streets and map tiles out of reports and Path. " +
                     "Debrief, Sit export, Log export, and Reset / clear log are on the Reports tab.",
                 style = MaterialTheme.typography.bodySmall,

@@ -4,6 +4,11 @@ Newest first. This is Fieldwatch (`app.fieldwatch`). Each build below is what Se
 
 Fieldwatch continues the Spectre 1.2.14 field build under a new name, application id, and the MIT License. It does not replace Spectre on a phone.
 
+## 1.1.17 — 1 October 2026
+
+- Privacy mode no longer hides the map on Reports → Path, or on the Debrief and Compare letter path figures. Those tiles follow Online place names and maps. Privacy mode still masks MAC tails and coordinates, omits street names, and pauses the TAK / CoT feed.
+- Reports → Path keeps about 400 m of ground on the short side when the GPS path is one fix or a short sit. A longer walk still fills the plot.
+
 ## 1.1.16 — 30 September 2026
 
 - Reports → Path plots MAC alerts and signature alerts, each once at the strongest hear, as a class icon. A count is several in one place. The black dot is the start. The blue dot is you, at the last point. The list puts the Wi-Fi or BLE icon next to the MAC. The symbol key under the map is gone, and the alert rows sit closer together. An alert with a decoded latitude and longitude is drawn at the last advertised fix as a class icon. The advertised track on that card is a white dotted line. If that icon shares a spot with other alerts, the count lists them together. The pilot is a person icon, with no word label on the map. A lone class icon has no number box; tap it for that one radio. A count still lists only the radios in that spot. A fix farther than 2 km stays on that aircraft’s map. Other alerts stay at the strongest hear. Debrief and Compare PDF figures draw that track as a black dotted line, with a class icon at the last position and a person icon for the pilot. On a compare, the second sit’s track is a blue dotted line. Those PDF figures plot the same MAC alerts and signature alerts, at the last advertised position when the radio sent one. The Path key under that figure lists an advertised aircraft with the drone class icon, plus its live status, UAS id, last position, motion, and pilot position. A start or end mark that covers a detection still opens that detection.

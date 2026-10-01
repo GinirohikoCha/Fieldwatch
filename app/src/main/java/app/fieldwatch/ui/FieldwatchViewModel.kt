@@ -1480,11 +1480,10 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
         val phone = figure.tracks.filter { !it.aircraft }.flatMap { it.samples }
         val craft = figure.tracks.filter { it.aircraft }.flatMap { it.samples }
         val samples = Geo.despikePath(phone).let { if (it.size >= 2) it else phone } + craft
-        if (samples.size < 2) return emptyList()
+        if (samples.isEmpty()) return emptyList()
         val settings = app.config.settings
         return PathTiles.load(
             app, samples,
-            privacy = settings.demoMode,
             onlineLookup = settings.onlineLookup,
         )
     }
@@ -1494,18 +1493,17 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
             val model = buildSitPath()
             _sitPath.value = model
             val settings = app.config.settings
-            if (model == null || !settings.onlineLookup || settings.demoMode) {
+            if (!settings.onlineLookup) {
                 _pathTiles.value = emptyList()
                 _pathAircraftTiles.value = emptyList()
                 return@launch
             }
             val phone = Geo.despikePath(model.samples).let { if (it.size >= 2) it else model.samples }
-            val walk = (if (phone.size >= 2) phone else emptyList()) + model.craft.flatMap { it.samples }
-            _pathTiles.value = if (walk.size >= 2) {
+            val walk = phone + model.craft.flatMap { it.samples }
+            _pathTiles.value = if (walk.isNotEmpty()) {
                 runCatching {
                     PathTiles.load(
                         app, walk,
-                        privacy = settings.demoMode,
                         onlineLookup = settings.onlineLookup,
                     )
                 }.getOrDefault(emptyList())
@@ -1520,7 +1518,6 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                     runCatching {
                         PathTiles.load(
                             app, samples,
-                            privacy = settings.demoMode,
                             onlineLookup = settings.onlineLookup,
                         )
                     }.getOrDefault(emptyList())
@@ -1550,7 +1547,7 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
             )
             val empty = when {
                 !tagging -> "Tag detections with GPS (Settings) to record a path."
-                samples.size < 2 -> "Walk with tagging on. Path needs about ${Sit.PATH_MIN_M.toInt()} m."
+                samples.isEmpty() -> "Walk with tagging on. Path needs a GPS fix."
                 else -> null
             }
             pathRadios = source.devices
@@ -1566,7 +1563,7 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
             return AircraftTrail.overlay(
                 SitPathPlot.Model(
                     samples = samples,
-                    dots = if (samples.size >= 2) plot.points else emptyList(),
+                    dots = if (samples.isNotEmpty()) plot.points else emptyList(),
                     lengthM = Geo.pathLengthM(samples),
                     spanM = Geo.spanM(samples),
                     title = source.name,
@@ -1581,11 +1578,11 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
         val devices = app.devices.devices.value.filter { it.lastSeen >= start || it.firstSeen >= start }
         val empty = when {
             !tagging -> "Tag detections with GPS (Settings) to record a path."
-            samples.size < 2 -> "Last 15 minutes. Walk with tagging on, or Start sit to keep a longer path."
+            samples.isEmpty() -> "Last 15 minutes. Walk with tagging on, or Start sit to keep a longer path."
             else -> null
         }
         pathRadios = devices
-        val plot = if (samples.size >= 2) {
+        val plot = if (samples.isNotEmpty()) {
             SitPathPlot.dotsFrom(
                 devices, fleets, namedKeys, customNames = customNames,
                 observerNotes = RadioBookmarks.notes(app.config.watchlist),

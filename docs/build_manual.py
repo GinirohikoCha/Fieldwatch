@@ -479,8 +479,8 @@ def draw_cover(c, doc):
         y -= 16
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 9)
-    c.drawString(48, 108, "Version 1.1.16")
-    c.drawString(48, 94, "30 September 2026")
+    c.drawString(48, 108, "Version 1.1.17")
+    c.drawString(48, 94, "1 October 2026")
     c.drawString(48, 80, "Package  app.fieldwatch   ·   Android 10+ (API 29)   ·   Target API 35")
     c.setStrokeColor(colors.HexColor("#2A3340"))
     c.setLineWidth(0.6)
@@ -520,7 +520,7 @@ def draw_body(c, doc):
     c.line(48, 40, PAGE_W - 48, 40)
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 8)
-    c.drawString(48, 28, "v1.1.16  ·  Off Grid Pete LLC")
+    c.drawString(48, 28, "v1.1.17  ·  Off Grid Pete LLC")
     draw_ig_mark(c, 148, 30, 5.2, MUTED)
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 8)
@@ -1720,11 +1720,12 @@ def story():
         P("5.6.1 Path", "h3"),
         figure_wrap(
             "fig-path.png",
-            "Fig. 6 — Reports → Path. North-up plot of this phone for the selected sit. Privacy mode: no tiles, MAC tails masked.",
+            "Fig. 6 — Reports → Path. North-up plot of this phone for the selected sit. Privacy mode masks MAC tails. Map tiles follow Online place names and maps.",
             "Reports → Path is a north-up plot of <b>this phone</b> for the sit you selected "
             "(open sit, a saved sit, or last 15 minutes). "
-            "Tag detections with GPS must have been on, and the path must be about 10 m or more, "
-            "or the card says so. Start sit for a longer track than Live’s last 15 minutes. "
+            "Tag detections with GPS must have been on, and the sit needs a GPS fix, "
+            "or the card says so. One fix or a short sit still shows about 400 m of ground so the street is readable. "
+            "A longer walk fills the plot. Start sit for a longer track than Live’s last 15 minutes. "
             "Privacy mode still draws the line; coordinate text is masked.",
         ),
         P(
@@ -1776,12 +1777,12 @@ def story():
         P(
             "Settings → <b>Online place names and maps</b> (on by default) also loads OpenStreetMap tiles under this plot when the phone has internet. "
             "Tiles fill the plot box, then clip; extra map shows around the route. "
-            "Offline, no tiles, or Privacy mode: the north-up plot only — no error dialog. Airplane mode is fine. "
+            "Offline or no tiles: the north-up plot only — no error dialog. Airplane mode is fine. Privacy mode does not hide this map. "
             "Turn that switch off to keep streets out of Debrief/AI Export and maps off Path together."
         ),
         P(
             "Debrief PDF and Compare PDF include a letter-size operator-path figure of the same walk, "
-            "full width of the report frame. When Online place names and maps is on, Privacy is off, "
+            "full width of the report frame. When Online place names and maps is on "
             "and the phone is online, OpenStreetMap tiles fill that frame the same way Reports → Path does. "
             "Thick green is a stay. A MAC alert or a signature alert is drawn once, the same radios as Reports → Path. "
             "A decoded latitude and longitude is the last advertised position. Anything else is the strongest hear. "
@@ -1790,7 +1791,7 @@ def story():
             "An advertised aircraft on that figure is the drone class icon in the Path key, not a number, with the live status, UAS id, last position, motion, and the pilot position when the radio sent them. "
             "The letter figure draws that advertised track as a black dotted line, "
             "with a class icon at the last position. The pilot is a person icon, with no word on the figure. "
-            "Offline or Privacy: the north-up trace only. Compare overlays this sit "
+            "Offline: the north-up trace only. Compare overlays this sit "
             "(solid) and the second sit (dashed) when both have enough GPS samples. "
             "This sit’s advertised track is black dots. The second sit’s is blue dots. Caption stays inside the panel outline."
         ),
@@ -1908,7 +1909,7 @@ def story():
             "<b>Watchlist</b> — Watchlist alerts is the master switch (off: no beep, voice, flash, jump, or shade card; bookmarking still works). Beep and Voice are independent: pip only, spoken phrase only, or pip then phrase. Voice (on by default) can say the class (finder tags, audio, …), the signature name (Apple AirTags, Axon, …), or both — Settings → What to say; default is Class + signature. Not Hunt; a second hit is skipped while a phrase is being spoken. Jump to new watched detection is on. Optional system notification (off by default). Test alert plays whatever is on. <b>Named radios (N)</b> opens the list of one-MAC names, Observer notes, and optional alerts: rename, notes, Alert on/off, remove one, or Clear all (signature watches stay on Signatures). Stock bookmarks watch Extra attention families (body-cam, camera glasses, recording wearables, pentest, public-safety vehicle APs, roadside / public camera + ALPR) and every built-in Drone-class row (DJI, Remote ID, Skydio, Autel, Parrot, HOVERAir). Unbookmark a row on Signatures if you do not want that alert. Flock LiteOn / Espressif OUIs can be noisy. Field write-up: §10.1–10.2.1.",
             "<b>Tag detections with GPS</b> — On by default. Requests live GPS and network location updates while scanning, then stamps each hear (detail, Moving with you, Debrief, log lat/lon). Last-known older than 30 s is ignored. Path stays 0 until a live fix. High-accuracy Location. Needed for Debrief distance/following, Filters → Moving with you, and heard-here TAK pins. Advertised payload pins (Remote ID) do not need this. A Log export with tagging on contains operator coordinates.",
             "<b>TAK / CoT feed</b> — Off by default. UDP Cursor-on-Target to ATAK / WinTAK / iTAK. Destination chips: This phone (127.0.0.1:10011), LAN multicast (239.2.3.1:6969), Custom. UDP only — a TAK server’s TCP 8087 is not this feed. Heard-here pins sit at operator GPS at the loudest hear (closest approach) and are labeled (here). Advertised lat/lon (stock Remote ID) sit on the aircraft; sticky UAS ID keeps one moving marker; decoded pilot lat/lon is a second pin. Location heading and speed go in the ATAK track when present. Wi-Fi Remote ID (vendor IE FA:0B:BC) can pin the aircraft the same way as BLE FFFA on Android 11+. Gone radios are dropped. Settings shows last send. What to send chips: Extra attention (on), Payload location (on), Watchlist (off), All signatures (off). Privacy mode pauses the feed. Full configuration: §5.8. Sit: §12.15.",
-            "<b>Online place names and maps</b> — On by default. One switch. Debrief and AI Export reverse-geocode GPS stamps (system geocoder). Reports → Path loads OpenStreetMap tiles under the trace (no Fieldwatch cloud, no API key). Offline, no geocoder, no tiles, or Privacy mode: Debrief uses coordinates only and Path stays the north-up plot — no error dialog. Turn off to keep streets and map tiles out of reports and Path together. Generate buttons are on Reports (§5.6, §5.6.1).",
+            "<b>Online place names and maps</b> — On by default. One switch. Debrief and AI Export reverse-geocode GPS stamps (system geocoder). Reports → Path loads OpenStreetMap tiles under the trace (no Fieldwatch cloud, no API key). Offline, no geocoder, or no tiles: Debrief uses coordinates only and Path stays the north-up plot — no error dialog. Privacy mode does not hide that map. Turn off to keep streets and map tiles out of reports and Path together. Generate buttons are on Reports (§5.6, §5.6.1).",
             "<b>Logging</b> — Write to disk, rotate size, Stale after slider (when a radio is marked gone). Line/disk counts. The rotating file is JSON lines. Format (CSV, JSON lines, GPX, KML, WiGLE) and radios (Both / Wi-Fi / BLE) are on Reports → Log. Share, Save, and Reset / clear log are on Reports.",
             "<b>Allow background usage</b> — Switch. Opens Fieldwatch’s Battery page; turn on Allow background usage so the OS may run the scan when Fieldwatch is not in front. Follows that Android setting. Not Keep screen on.",
             "<b>Unrestricted battery</b> — Switch. Opens the Battery page. Select Unrestricted (not Optimized). Some phones (Samsung among them) do not open onto that choice — tap Allow background usage (the words, not the switch) to click through and select Unrestricted. Fieldwatch follows that grant when you return.",
@@ -3816,7 +3817,7 @@ def story():
             "pattern match, not a skimmer detector), anomalies, privacy, "
             "recommended actions, and a one-line takeaway. "
             "When GPS tagging recorded a walk, a full-width operator-path figure sits with the report "
-            "(OSM tiles when maps are on and Privacy is off; stacked radios at one place share a Path-key number; "
+            "(OSM tiles when maps are on; stacked radios at one place share a Path-key number; "
             "a nearby advertised aircraft track is a black dotted line on that figure, with a class icon at the last position and a person icon for the pilot). "
             "<b>Anomalies</b> is not a second inventory: Extra attention, Signature hits, and tracking callouts already list named matches. "
             "Anomalies only keeps cues that are not those sections (Fast Pair in pairing mode, a very loud unnamed radio, a high randomized-BLE count). "
@@ -4669,7 +4670,7 @@ def story():
             ["Live value", "One decoded word on a Live list row, in the signature color. Live row must be on for that Decode fields entry, and this advertisement must have produced the word. Strong values use a heavier chip. Stock: DULT and Find Hub Separated; Remote ID Emergency, plus Ground, Airborne, Undeclared, and RID failure. Strength list, Hybrid, Timeline, By class. Not radar. Signature names off still shows the word. §5.4.1."],
             ["Signature family (detail)", "Card on device detail, above Create signature from device. Same on-air ID rules as Signature candidates, for this radio: Strong family, Possible family, This radio only, or Already tagged. Counts distinct MACs in the log and on the air now. Verdict only — Create from device still pins this MAC. Already tagged is not a veto: a second UUID/OUI signature can dual-label (iBeacon + store). Candidates skip tagged radios. §5.5, §9.2, §9.2.1."],
             ["Named radios", "Settings list of one-MAC custom names, optional Observer notes (up to 280 characters), and optional alerts (detail Save name / Save notes, or the bookmark icon). Rename, notes, Alert on/off, remove one, or Clear all. Does not include signature bookmarks. Privacy mode masks MAC tails. Orphans (gone or rotated) stay until you delete them. Filters → Named radios only (any custom name). Watched only needs Alert on. Path plots a Named radio only when Alert is on (bookmarked). Debrief, Compare, and AI Export list heard radios with notes. §5.5, §5.7, §8.1, §10.1."],
-            ["Privacy mode", "Settings switch, off by default. Masks the last three octets of MACs on the screen and in Debrief / AI Export / detail Share (AA:BB:CC:**:**:**). GPS last-fix and sit-report coordinates show as masked; street names omitted. Logs, matching, filters, Hunt math, Moving with you, and saved signatures stay full. Pauses a TAK / CoT feed so full MACs and coordinates are not sent. §5.7, §5.8."],
+            ["Privacy mode", "Settings switch, off by default. Masks the last three octets of MACs on the screen and in Debrief / AI Export / detail Share (AA:BB:CC:**:**:**). GPS last-fix and sit-report coordinates show as masked; street names omitted. Reports → Path still loads map tiles when Online place names and maps is on. Logs, matching, filters, Hunt math, Moving with you, and saved signatures stay full. Pauses a TAK / CoT feed so full MACs and coordinates are not sent. §5.7, §5.8."],
             ["TAK / CoT feed", "Settings switch, off by default. UDP Cursor-on-Target markers to ATAK / WinTAK / iTAK. Destination chips: This phone (127.0.0.1:10011), LAN multicast (239.2.3.1:6969), Custom. UDP only — not a TAK server TCP client. Heard-here Extra attention at operator GPS at the loudest hear (callsign ends in (here)); advertised lat/lon on the aircraft (Remote ID BLE FFFA or Wi-Fi FA:0B:BC keeps one moving marker via sticky UAS ID, plus a pilot pin when op_lat/op_lon decoded; Location heading/speed go in track). Gone radios are dropped. Settings shows last send. Privacy mode pauses it. Not DF, not a Remote ID plugin, not the Live display. §5.8, §12.15, §12.16."],
             ["Night mode", "Settings → Appearance, off by default. Red-on-black field display: text, chips, RSSI, Hunt, Extra attention. Phone brightness is unchanged. Fig. 9, §5.7."],
             ["Heard here (TAK)", "CoT pin at this phone’s GPS at the loudest hear so far. The other radio is in earshot, not on that point. Walking away does not drag it. Callsign ends in (here); Extra attention is Maroon. Needs GPS tagging and a live fix. Extra attention uses this unless a payload lat/lon exists. Not DF."],
@@ -4678,7 +4679,7 @@ def story():
             ["Payload location", "TAK What-to-send chip, on by default when you turn the feed on. Selects radios with sticky advertised lat/lon. Required for stock Remote ID (no Extra attention mark). BLE FFFA and Wi-Fi FA:0B:BC both qualify."],
             ["Reports", "Bottom tab. Sits (optional named window), Path, Debrief (text/PDF), Sit export, Compare sits, AI Export, Signature candidates, Log export (Format + radios), Reset / clear log. The selected sit drives Path, Debrief, Sit export, and Compare’s this-sit side. Config for GPS, place names, and logging on/off stays on Settings. §5.6."],
             ["Sit (named)", "Optional window of watching, started from Reports → Start sit. Path, Debrief, Compare this-sit, Sit export, and AI Export use that start/end instead of the last 15 minutes in RAM. Cap 6000 unique radios. Extra attention / payload / bookmarks / watched signatures stay when full; unnamed BLE drops first. Checkpoints to app storage about every 10 s. One at a time; keep 10 closed. Live list stays ~400. Not DF. §5.6."],
-            ["Path", "Reports card. North-up plot of this phone for the selected sit (or last 15 minutes). Leave Reports in front to watch an open sit grow, or the last-15-minute snake move; the plot redraws about every three seconds. Black dot is the start. Blue dot is you, at the last point. MAC alerts and signature alerts are drawn once. A decoded latitude and longitude uses the last advertised position. Anything else is a class icon at the strongest RSSI. A count is several in one place. A lone class icon has no number box; tap it for that one radio. Extra attention alone does not plot unless that signature is bookmarked. The list puts the Wi-Fi or BLE icon next to the MAC. Observer notes sit on a MAC-alert row. Thick green = stay. Time ticks. Head labeled Now while live, End on a saved sit. On an open or saved sit, an advertised aircraft track within 2 km is a white dotted line on that plot. The letter figure draws the same track in black dots, with a class icon at the last position and a person icon for the pilot. The last position is a class icon. Tap it for that one radio. A count means it shares that spot. One stored fix is that icon, with no line. The pilot is a person icon. A farther aircraft with a UAS id gets its own map, up to three. Last 15 minutes stays this phone. OSM tiles when Online place names and maps is on and the phone is online; Privacy mode or offline: the trace only. The Debrief and Compare path figures use those same MAC alerts and signature alerts. A decoded position is the last advertised fix. An advertised aircraft on that figure is the drone class icon in the Path key, with the live status, UAS id, last position, motion, and pilot position. Extra attention on that figure is red, a MAC alert is blue, and another signature alert is green. §5.6.1."],
+            ["Path", "Reports card. North-up plot of this phone for the selected sit (or last 15 minutes). Leave Reports in front to watch an open sit grow, or the last-15-minute snake move; the plot redraws about every three seconds. Black dot is the start. Blue dot is you, at the last point. MAC alerts and signature alerts are drawn once. A decoded latitude and longitude uses the last advertised position. Anything else is a class icon at the strongest RSSI. A count is several in one place. A lone class icon has no number box; tap it for that one radio. Extra attention alone does not plot unless that signature is bookmarked. The list puts the Wi-Fi or BLE icon next to the MAC. Observer notes sit on a MAC-alert row. Thick green = stay. Time ticks. Head labeled Now while live, End on a saved sit. On an open or saved sit, an advertised aircraft track within 2 km is a white dotted line on that plot. The letter figure draws the same track in black dots, with a class icon at the last position and a person icon for the pilot. The last position is a class icon. Tap it for that one radio. A count means it shares that spot. One stored fix is that icon, with no line. The pilot is a person icon. A farther aircraft with a UAS id gets its own map, up to three. Last 15 minutes stays this phone. OSM tiles when Online place names and maps is on and the phone is online; offline: the trace only. Privacy mode does not hide those tiles. The Debrief and Compare path figures use those same MAC alerts and signature alerts. A decoded position is the last advertised fix. An advertised aircraft on that figure is the drone class icon in the Path key, with the live status, UAS id, last position, motion, and pilot position. Extra attention on that figure is red, a MAC alert is blue, and another signature alert is green. §5.6.1."],
             ["Sit export", "Reports card under Sit report. Same Format chips as Log export, different file: one row per unique radio in the selected sit (or last 15 minutes). CSV / JSON lines include matched signatures and Extra attention families. Logging can be off. GPX/KML include the operator path as a track. Not the rotating log. Privacy mode does not mask the file. §5.6.2."],
             ["Log export", "Reports card. Share/Save of the rotating session file (JSON lines on disk; CSV / GPX / KML / WiGLE at export). One line per hear while logging was on. Needs Write to disk. Clearing the log does not delete sits. §5.6.3, §11.6."],
             ["Observer notes", "Optional 280-character field on a Named radio (same KIND+MAC as the custom name). Cyan block on detail; cyan notes chip on Live next to Extra attention “!”. Debrief lists them after Where you were; Compare after Windows. Path lists the note only if that radio is bookmarked. AI Export lists heard radios with the note. Not catalog Notes and not Extra attention gold. BLE privacy addresses hide the pencil. Settings backup includes the note. §5.5, §5.6."],
@@ -4728,7 +4729,7 @@ def story():
             ["Debrief (text)", "Reports share of the field sit report as plain text. Opens with DISCLAIMER (hobby / as-is; hypotheses not identity; local law). Selected sit (up to 6000 unique radios) or last 15 minutes in RAM (~400). Unmatched rotating BLE omitted from lists by default; counts still include them. Extra attention, named signatures, bookmarks, payload pins stay. Show unmatched rotating BLE on the Sit report card. Sit export has every radio. Ignores Live display view and Filters. Where you were, Observer notes, tracking, inventories, takeaway. On a drive, tap more than once. §5.6, §11.4.1."],
             ["Debrief (PDF)", "Same sit report as Debrief (text), letter-size typeset PDF. Same window, same unmatched-RAND hide, same counts. Disclaimer, FIELDWATCH header, numbered sections, full-width path figure, amber co-travel / Extra attention callouts, takeaway. Long trip: tap more than once (§11.4.1). Share as application/pdf."],
             ["Compare sits", "Reports card under Sit report. This sit (open, selected, or last 15 minutes) vs a second saved sit. Presence only — only in this sit, only in the second, in both. Kind + MAC. Text, PDF, and AI Export. Observer notes after Windows. Not a radio fix. §5.6."],
-            ["Online place names and maps", "Settings switch, on by default. Debrief and AI Export reverse-geocode GPS stamps via the system geocoder when online. Reports → Path loads OpenStreetMap tiles under the trace (fill the plot, clip, extra map around the route). Offline, no tiles, or Privacy mode: Debrief coordinates only, Path is the north-up trace — no error dialog. Turn off to keep streets and maps out together."],
+            ["Online place names and maps", "Settings switch, on by default. Debrief and AI Export reverse-geocode GPS stamps via the system geocoder when online. Reports → Path loads OpenStreetMap tiles under the trace (fill the plot, clip, extra map around the route). Offline or no tiles: Debrief coordinates only, Path is the north-up trace — no error dialog. Privacy mode does not hide that map. Turn off to keep streets and maps out together."],
             ["New at bottom", "Display → Sort. First-seen order, oldest at top; new radios append; gone radios drop. List follows the bottom unless you scroll up."],
             ["unnamed LE", "BLE Advertised name / Name + type when there is no advertised name and no useful decode. On the subtitle the Bluetooth icon already marks LE, so the body is unnamed (not “unnamed LE” twice). Title Advertised name still shows unnamed LE. The title is the MAC unless you change it."],
             ["AI Export", "Three buttons. Reports sit: onboard Debrief + compact rates / Extra attention / Observer notes (addendum, not a roster). Reports Compare: overlap + exclusive Extra attention / Named / Observer notes. Device detail: that one radio (dump + registry decode). All paste into a chat, all open with the experimental disclaimer, all are hypotheses — not identity. Treat as sensitive."],
@@ -5158,9 +5159,9 @@ def story():
                 ["X", "@OGridPete"],
                 ["Document", "User Manual and Technical Documentation"],
                 ["Application ID", "app.fieldwatch"],
-                ["Software version", "1.1.16 (versionCode 26), field build of 30 September 2026"],
-                ["Document version", "1.1.16"],
-                ["Document date", "30 September 2026"],
+                ["Software version", "1.1.17 (versionCode 27), field build of 1 October 2026"],
+                ["Document version", "1.1.17"],
+                ["Document date", "1 October 2026"],
                 ["License", "MIT License (see LICENSE); third-party: NOTICE"],
                 ["Platform", "Android 10+ (minSdk 29), targetSdk 35"],
                 ["Classification", "Unclassified. Operationally sensitive if filled with site logs."],

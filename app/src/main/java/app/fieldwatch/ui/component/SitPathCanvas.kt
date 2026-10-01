@@ -223,7 +223,7 @@ fun SitPathCanvas(
                     drawClassDisc(pt, 12f, fill, painter)
                 }
             }
-            if (lay.path.size >= 2) {
+            if (lay.path.isNotEmpty()) {
                 val end = lay.path.last()
                 drawYouDot(end.x, end.y, 6.2f, you)
             }

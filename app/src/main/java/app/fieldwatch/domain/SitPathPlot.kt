@@ -10,6 +10,11 @@ import kotlin.math.pow
 
 /** North-up path of this phone. Alert dots are hear-points, unless the radio advertised a position. */
 object SitPathPlot {
+    /**
+     * Shortest half-width of the walk plot, in meters. A sit that barely moved
+     * still shows the surrounding streets. A longer walk is unchanged.
+     */
+    const val MIN_HALF_SPAN_M = 180f
     data class Dot(
         val key: String,
         val lat: Double,
@@ -227,7 +232,6 @@ object SitPathPlot {
             if (cleaned.size >= 2) cleaned else model.samples
         }
         val pts = phone + model.frameSamples
-        if (pts.size < 2 && model.minHalfSpanM <= 0f) return null
         if (pts.isEmpty()) return null
         val lat0 = pts.map { it.lat }.average()
         val lon0 = pts.map { it.lon }.average()
@@ -248,7 +252,7 @@ object SitPathPlot {
         run {
             val midX = (minX + maxX) / 2f
             val midY = (minY + maxY) / 2f
-            val floor = model.minHalfSpanM.coerceAtLeast(4f)
+            val floor = if (model.minHalfSpanM > 0f) model.minHalfSpanM else MIN_HALF_SPAN_M
             val hx = ((maxX - minX) / 2f).coerceAtLeast(floor) * 1.22f
             val hy = ((maxY - minY) / 2f).coerceAtLeast(floor) * 1.22f
             minX = midX - hx
