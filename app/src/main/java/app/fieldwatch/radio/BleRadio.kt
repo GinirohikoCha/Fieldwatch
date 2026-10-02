@@ -67,8 +67,8 @@ class BleRadio(
             failStreak = (failStreak + 1).coerceAtMost(5)
             val backoff = (4_000L * (1L shl (failStreak - 1))).coerceAtMost(30_000L)
             nextRetryAt.set(System.currentTimeMillis() + backoff)
-            lastError = "BLE scan failed ($errorCode)"
-            hint = "BLE retrying"
+            lastError = "BLE 扫描失败（$errorCode）"
+            hint = "BLE 正在重试"
             demoted = true
             onError(lastError!!)
         }
@@ -81,8 +81,8 @@ class BleRadio(
         val adapter = manager.adapter
         if (adapter == null || !adapter.isEnabled) {
             running.set(false)
-            lastError = "Bluetooth is off"
-            hint = "Bluetooth is off"
+            lastError = "蓝牙已关闭"
+            hint = "蓝牙已关闭"
             onError(lastError!!)
             nextRetryAt.set(now + 8_000L)
             return
@@ -90,8 +90,8 @@ class BleRadio(
         val next = adapter.bluetoothLeScanner
         if (next == null) {
             running.set(false)
-            lastError = "BLE scanner unavailable"
-            hint = "BLE unavailable"
+            lastError = "BLE 扫描器不可用"
+            hint = "BLE 不可用"
             onError(lastError!!)
             nextRetryAt.set(now + 8_000L)
             return
@@ -121,8 +121,8 @@ class BleRadio(
             failStreak = (failStreak + 1).coerceAtMost(5)
             val backoff = (4_000L * (1L shl (failStreak - 1))).coerceAtMost(30_000L)
             nextRetryAt.set(System.currentTimeMillis() + backoff)
-            lastError = ok.exceptionOrNull()?.message ?: "BLE start failed"
-            hint = "BLE retrying"
+            lastError = ok.exceptionOrNull()?.message ?: "BLE 启动失败"
+            hint = "BLE 正在重试"
             demoted = true
             onError(lastError!!)
         }
@@ -163,14 +163,14 @@ class BleRadio(
         if (runFor >= maxRun) {
             // Recycle before Samsung suspends a long LOW_LATENCY session.
             restMs = if (lastIntensity == ScanIntensity.PERFORMANCE) 2_500L else 1_200L
-            hint = "BLE cycling"
+            hint = "BLE 正在轮换扫描"
             return true
         }
         if (runFor > 12_000L && quietFor > 18_000L) {
             // Registered but silent = OS suspended the client. Rest longer to clear quota.
             demoted = true
             restMs = if (heardAt == 0L) 12_000L else 8_000L
-            hint = "BLE parked · restarting"
+            hint = "BLE 已暂停 · 正在重启"
             return true
         }
         if (heardAt > 0L && runFor > 90_000L) {

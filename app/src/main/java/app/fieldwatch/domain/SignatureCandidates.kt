@@ -26,7 +26,7 @@ data class CandidateReport(
     val skippedRandomized: Int,
     val skippedHouseLike: Int,
     val skippedOther: Int,
-    val sourceLabel: String = "Rotating log",
+    val sourceLabel: String = "滚动日志",
 )
 
 enum class FamilyVerdict { STRONG, POSSIBLE, SINGLE, TAGGED }
@@ -44,14 +44,14 @@ data class SignatureFamilyHint(
 
 internal fun ruleShortLabel(rule: MatchRule): String = when (rule.kind) {
     RuleKind.NAME_GLOB, RuleKind.NAME_CONTAINS -> rule.text
-    RuleKind.VENDOR_IE_OUI -> "vendor IE ${rule.text}"
+    RuleKind.VENDOR_IE_OUI -> "厂商 IE ${rule.text}"
     RuleKind.OUI, RuleKind.MAC_PREFIX -> "OUI ${rule.text}"
     RuleKind.SERVICE_UUID -> "UUID ${rule.text}"
     RuleKind.SERVICE_DATA ->
-        if (rule.text.isBlank()) "svc contains ${rule.dataPrefixHex}"
+        if (rule.text.isBlank()) "服务数据包含 ${rule.dataPrefixHex}"
         else "UUID ${rule.text} ${rule.dataPrefixHex}"
-    RuleKind.MANUFACTURER_DATA -> "mfg 0x%04X %s".format(rule.companyId, rule.dataPrefixHex)
-    RuleKind.MANUFACTURER_ID -> "mfg 0x%04X".format(rule.companyId)
+    RuleKind.MANUFACTURER_DATA -> "制造商 0x%04X %s".format(rule.companyId, rule.dataPrefixHex)
+    RuleKind.MANUFACTURER_ID -> "制造商 0x%04X".format(rule.companyId)
     else -> rule.kind.name
 }
 
@@ -68,7 +68,7 @@ object SignatureCandidates {
         radios: List<LogRadio>,
         fleets: List<Fleet>,
         engine: SignatureEngine = SignatureEngine(),
-        sourceLabel: String = "Rotating log",
+        sourceLabel: String = "滚动日志",
     ): CandidateReport {
         val sightings = radios.map { it.toSighting() }
         val hits = if (sightings.isEmpty()) emptyMap() else engine.match(sightings, fleets)
@@ -123,11 +123,11 @@ object SignatureCandidates {
     ): SignatureFamilyHint {
         val tagged = fleets.filter { it.id in device.fleetIds }.map { it.name.trim() }.filter { it.isNotEmpty() }
         if (device.fleetIds.isNotEmpty()) {
-            val names = tagged.ifEmpty { listOf("a catalog signature") }
+            val names = tagged.ifEmpty { listOf("一个特征库条目") }
             return SignatureFamilyHint(
                 verdict = FamilyVerdict.TAGGED,
-                title = "Already tagged",
-                body = "Matched ${names.joinToString(", ")}. A second signature can still dual-label this radio (store UUID, product OUI).",
+                title = "已标记",
+                body = "已匹配 ${names.joinToString("、")}。仍可用第二个特征为此无线设备添加另一标签（例如商店 UUID、产品 OUI）。",
                 logCount = 0,
                 liveCount = 0,
                 displayCount = 0,
@@ -140,8 +140,8 @@ object SignatureCandidates {
         if (prints.isEmpty()) {
             return SignatureFamilyHint(
                 verdict = FamilyVerdict.SINGLE,
-                title = "This radio only",
-                body = "No unique on-air ID to cluster on. Randomized addresses, house-like names, and generic chips are skipped.",
+                title = "仅此无线设备",
+                body = "没有可用于归类的独特无线广播标识。已跳过随机地址、类似家庭网络的名称和通用芯片。",
                 logCount = 0,
                 liveCount = 0,
                 displayCount = 0,
@@ -166,8 +166,8 @@ object SignatureCandidates {
         if (best == null) {
             return SignatureFamilyHint(
                 verdict = FamilyVerdict.SINGLE,
-                title = "This radio only",
-                body = "No unique on-air ID to cluster on. Randomized addresses, house-like names, and generic chips are skipped.",
+                title = "仅此无线设备",
+                body = "没有可用于归类的独特无线广播标识。已跳过随机地址、类似家庭网络的名称和通用芯片。",
                 logCount = 0,
                 liveCount = 0,
                 displayCount = 0,
@@ -185,8 +185,8 @@ object SignatureCandidates {
         if (familyN < MIN_RADIOS) {
             return SignatureFamilyHint(
                 verdict = FamilyVerdict.SINGLE,
-                title = "This radio only",
-                body = "No other MAC in the log or on the air shares this $kindLabel. A signature from here will mostly tag this address.",
+                title = "仅此无线设备",
+                body = "日志和当前广播中，没有其他 MAC 使用相同的$kindLabel。由此建立的特征主要只能标记这个地址。",
                 logCount = logN,
                 liveCount = liveN,
                 displayCount = 0,
@@ -197,11 +197,11 @@ object SignatureCandidates {
         val strong = familyN >= STRONG_MIN_RADIOS
         return SignatureFamilyHint(
             verdict = if (strong) FamilyVerdict.STRONG else FamilyVerdict.POSSIBLE,
-            title = if (strong) "Strong family" else "Possible family",
+            title = if (strong) "系列特征明显" else "可能属于同一系列",
             body = if (strong) {
-                "Same $kindLabel on $clause. That is a catalog pattern, not this MAC."
+                "${clause}具有相同的$kindLabel。这是可入库的共同模式，不局限于此 MAC。"
             } else {
-                "Same $kindLabel on $clause. Thin sample — a possible catalog family."
+                "${clause}具有相同的$kindLabel。样本较少，可能属于同一特征系列。"
             },
             logCount = logN,
             liveCount = liveN,
@@ -311,7 +311,7 @@ object SignatureCandidates {
                     radios = distinct,
                     proposedName = glob.takeWhile { it != '*' && it != '?' && it != '-' && it != '_' }
                         .ifBlank { glob.trimEnd('*') },
-                    why = "Same name glob on ${distinct.size} ${kind.radioWord(distinct.size)} — not a house SSID.",
+                    why = "${distinct.size} 个${kind.radioWord(distinct.size)}具有相同的名称通配模式，且不像家庭 SSID。",
                 )
             }
             RuleKind.VENDOR_IE_OUI -> {
@@ -324,8 +324,8 @@ object SignatureCandidates {
                     radioKind = RadioKind.WIFI,
                     members = members,
                     radios = distinct,
-                    proposedName = vendor?.take(22) ?: "Vendor IE $oui",
-                    why = "Same vendor IE on ${distinct.size} BSSIDs. Not WPS / P2P.",
+                    proposedName = vendor?.take(22) ?: "厂商 IE $oui",
+                    why = "${distinct.size} 个 BSSID 具有相同的厂商 IE，且不是 WPS / P2P。",
                 )
             }
             RuleKind.SERVICE_UUID -> {
@@ -338,7 +338,7 @@ object SignatureCandidates {
                     members = members,
                     radios = distinct,
                     proposedName = named?.take(22) ?: "UUID $short",
-                    why = "Same service UUID on ${distinct.size} BLE advertisers.",
+                    why = "${distinct.size} 个 BLE 广播设备具有相同的服务 UUID。",
                 )
             }
             RuleKind.MANUFACTURER_DATA, RuleKind.MANUFACTURER_ID -> {
@@ -350,8 +350,8 @@ object SignatureCandidates {
                     radioKind = RadioKind.BLE,
                     members = members,
                     radios = distinct,
-                    proposedName = named?.take(22) ?: "Company 0x%04X".format(company),
-                    why = "Same manufacturer data prefix on ${distinct.size} BLE advertisers.",
+                    proposedName = named?.take(22) ?: "公司 0x%04X".format(company),
+                    why = "${distinct.size} 个 BLE 广播设备具有相同的制造商数据前缀。",
                 )
             }
             RuleKind.OUI, RuleKind.MAC_PREFIX -> {
@@ -365,7 +365,7 @@ object SignatureCandidates {
                     members = members,
                     radios = distinct,
                     proposedName = vendor?.take(22) ?: oui,
-                    why = "Same IEEE OUI on ${distinct.size} stable BSSIDs. Not a chip-module prefix.",
+                    why = "${distinct.size} 个稳定 BSSID 具有相同的 IEEE OUI，且不是芯片模块前缀。",
                 )
             }
             else -> null
@@ -440,22 +440,22 @@ object SignatureCandidates {
     }
 
     private fun idKindLabel(rule: MatchRule): String = when (rule.kind) {
-        RuleKind.NAME_GLOB, RuleKind.NAME_CONTAINS -> "name glob"
-        RuleKind.VENDOR_IE_OUI -> "vendor IE"
-        RuleKind.SERVICE_UUID -> "service UUID"
-        RuleKind.MANUFACTURER_DATA, RuleKind.MANUFACTURER_ID -> "manufacturer data prefix"
+        RuleKind.NAME_GLOB, RuleKind.NAME_CONTAINS -> "名称通配模式"
+        RuleKind.VENDOR_IE_OUI -> "厂商 IE"
+        RuleKind.SERVICE_UUID -> "服务 UUID"
+        RuleKind.MANUFACTURER_DATA, RuleKind.MANUFACTURER_ID -> "制造商数据前缀"
         RuleKind.OUI, RuleKind.MAC_PREFIX -> "IEEE OUI"
-        else -> "on-air ID"
+        else -> "无线广播标识"
     }
 
     private fun countClause(kind: RadioKind, logN: Int, liveN: Int): String {
         val logWord = kind.radioWord(logN)
         val liveWord = kind.radioWord(liveN)
         return when {
-            logN > 0 && liveN > 0 -> "$logN $logWord in the log ($liveN on the air now)"
-            logN > 0 -> "$logN $logWord in the log"
-            liveN > 0 -> "$liveN $liveWord on the air now"
-            else -> "1 ${kind.radioWord(1)}"
+            logN > 0 && liveN > 0 -> "日志中的 $logN 个$logWord（当前广播中有 $liveN 个）"
+            logN > 0 -> "日志中的 $logN 个$logWord"
+            liveN > 0 -> "当前广播中的 $liveN 个$liveWord"
+            else -> "1 个${kind.radioWord(1)}"
         }
     }
 
@@ -513,7 +513,7 @@ object SignatureCandidates {
         val word = radioKind.radioWord(members.size)
         return SignatureCandidate(
             id = key,
-            proposedName = proposedName.replace(Regex("[^A-Za-z0-9 _.-\\[\\]]"), "").take(22)
+            proposedName = proposedName.replace(Regex("[^\\p{L}\\p{N} _.-\\[\\]]"), "").take(22)
                 .ifBlank { proposedName.take(22) },
             kind = kind,
             radioKind = radioKind,
@@ -522,7 +522,7 @@ object SignatureCandidates {
             why = why,
             examples = shown,
             extraCount = extraN,
-            notes = "${members.size} $word in the log matched ${ruleShortLabel(primary)}. Shared on-air ID, not a one-radio MAC. Change the name or class, then Save.",
+            notes = "日志中的 ${members.size} 个${word}匹配了 ${ruleShortLabel(primary)}。它们共享无线广播标识，不是单个无线设备的 MAC。可修改名称或类别，然后保存。",
             colorIndex = colorFor(kind),
         )
     }
@@ -627,10 +627,10 @@ object SignatureCandidates {
     }
 
     private fun RadioKind.radioWord(n: Int): String = when {
-        this == RadioKind.WIFI && n == 1 -> "AP"
-        this == RadioKind.WIFI -> "APs"
-        n == 1 -> "advertiser"
-        else -> "advertisers"
+        this == RadioKind.WIFI && n == 1 -> "接入点"
+        this == RadioKind.WIFI -> "接入点"
+        n == 1 -> "广播设备"
+        else -> "广播设备"
     }
 
     private data class Fingerprint(

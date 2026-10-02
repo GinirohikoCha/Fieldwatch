@@ -61,18 +61,18 @@ class FilterEngine {
 
     fun defaultPresets(@Suppress("UNUSED_PARAMETER") fleets: List<Fleet> = emptyList()): List<FilterPreset> {
         return listOf(
-            FilterPreset("all", "All traffic", FilterState()),
-            FilterPreset("wifi", "Wi-Fi only", FilterState(showBle = false)),
-            FilterPreset("ble", "BLE only", FilterState(showWifi = false)),
-            FilterPreset("strong", "Strong signal", FilterState(rssiMin = -70)),
+            FilterPreset("all", "全部设备", FilterState()),
+            FilterPreset("wifi", "仅 Wi-Fi", FilterState(showBle = false)),
+            FilterPreset("ble", "仅 BLE", FilterState(showWifi = false)),
+            FilterPreset("strong", "强信号", FilterState(rssiMin = -70)),
             FilterPreset(
                 "with-you",
-                "Moving with you",
+                "随行",
                 FilterState(movingWithYou = true, showWifi = false),
             ),
             FilterPreset(
                 "watched",
-                "Watched only",
+                "仅已关注",
                 FilterState(watchedOnly = true),
             ),
         )

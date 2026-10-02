@@ -25,7 +25,7 @@ object CatalogRemote {
         try {
             val code = connection.responseCode
             if (code !in 200..299) {
-                error("GitHub returned HTTP $code")
+                error("GitHub 返回 HTTP $code")
             }
             return connection.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
         } finally {

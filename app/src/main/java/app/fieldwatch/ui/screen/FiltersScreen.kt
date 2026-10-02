@@ -71,7 +71,7 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
     val filter = state.filter
     Scaffold(
         contentWindowInsets = NestedTabInsets,
-        topBar = { NestedTopBar("Filters") },
+        topBar = { NestedTopBar("筛选") },
     ) { pad ->
         Column(
             Modifier
@@ -81,11 +81,11 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SectionCard("Presets") {
+            SectionCard("预设") {
             Text(
-                "Tap to replace the whole filter. Long-press a chip to delete it. " +
-                    "A short stock set ships; Save current as… adds your own (Cameras, plaza −80, …). " +
-                    "Stock chips you delete come back with Settings → Restore default signatures & presets.",
+                "点按预设可替换整套筛选，长按可删除。" +
+                    "应用提供少量内置预设；点按“将当前筛选另存为…”可添加自己的预设（如摄像头、广场 −80 等）。" +
+                    "已删除的内置预设可通过“设置 → 恢复默认特征库与预设”还原。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -114,7 +114,7 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                 FieldwatchOutlinedField(
                     presetName,
                     { presetName = it },
-                    "Save current as…",
+                    "将当前筛选另存为…",
                     modifier = Modifier.weight(1f),
                 )
                 TextButton(onClick = {
@@ -122,16 +122,16 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                         vm.savePreset(presetName.trim())
                         presetName = ""
                     }
-                }) { Text("Save") }
+                }) { Text("保存") }
             }
             }
 
-            SectionCard("Radios") {
+            SectionCard("无线设备") {
             Text(
                 if (filter.movingWithYou) {
-                    "Moving with you is BLE only. Both and Wi-Fi only stay off until you turn that switch off."
+                    "“随行”仅适用于 BLE。关闭此功能后才能选择“两者”或“仅 Wi-Fi”。"
                 } else {
-                    "These are include switches. Turn both on to see Wi-Fi and BLE together. A single device is never both."
+                    "这些开关决定包含哪些无线类型。选择“两者”可同时查看 Wi-Fi 和 BLE。单个条目不会同时属于两者。"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -141,25 +141,25 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     selected = !filter.movingWithYou && filter.showWifi && filter.showBle,
                     onClick = { vm.updateFilter { it.copy(showWifi = true, showBle = true) } },
                     enabled = !filter.movingWithYou,
-                    label = { Text("Both") },
+                    label = { Text("两者") },
                 )
                 FieldwatchFilterChip(
                     selected = !filter.movingWithYou && filter.showWifi && !filter.showBle,
                     onClick = { vm.updateFilter { it.copy(showWifi = true, showBle = false) } },
                     enabled = !filter.movingWithYou,
-                    label = { Text("Wi-Fi only") },
+                    label = { Text("仅 Wi-Fi") },
                 )
                 FieldwatchFilterChip(
                     selected = filter.movingWithYou || (filter.showBle && !filter.showWifi),
                     onClick = { vm.updateFilter { it.copy(showWifi = false, showBle = true) } },
-                    label = { Text("BLE only") },
+                    label = { Text("仅 BLE") },
                 )
             }
             }
 
-            SectionCard("Moving with you") {
+            SectionCard("随行") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Moving with you", Modifier.weight(1f))
+                Text("随行", Modifier.weight(1f))
                 FieldwatchSwitch(
                     filter.movingWithYou,
                     { on ->
@@ -189,45 +189,45 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             Text(
                 when {
                     !state.settings.tagLocation ->
-                        "Turn on Settings → Tag detections with GPS, then walk or drive. " +
-                            "Only loud BLE advertisers that stay with you along the path. " +
-                            "Wi-Fi access points stay off — a loud AP you drive past paints your path. " +
-                            "The switch starts a BLE follow test (clears Signatures only / Show only / Named radios only / Watched only). " +
-                            "Or tap the Moving with you preset at the top."
+                        "在“设置”中开启“为探测结果添加 GPS 标记”，然后步行或驾车移动。" +
+                            "仅显示沿轨迹持续随行的强信号 BLE 广播设备。" +
+                            "Wi-Fi 接入点保持隐藏，因为路过的强信号 AP 也会在轨迹上留下记录。" +
+                            "开启后开始 BLE 随行检测，并清除“仅匹配特征／仅显示／仅命名设备／仅已关注”筛选。" +
+                            "也可点按顶部的“随行”预设。"
                     state.operatorSpanM < 45.0 ->
-                        "GPS path so far ${state.operatorSpanM.toInt()} m. Keep moving (~50 m). " +
-                            "If this stays 0 while you drive, Location is not giving a live fix " +
-                            "(set Location to high accuracy). Last-known-only is not enough. " +
-                            "A second iPhone usually will not match: BLE MAC rotation starts a new radio." +
+                        "当前 GPS 轨迹 ${state.operatorSpanM.toInt()} 米。请继续移动约 50 米。" +
+                            "若驾车时仍为 0，说明未获取实时定位" +
+                            "（请将定位设置为高精度）。仅有上次已知位置不足以检测。" +
+                            "另一部 iPhone 通常不会匹配：BLE MAC 轮换后会视为新设备。" +
                             when {
                                 filter.customNamesOnly ->
-                                    " Named radios only is also on — unlabeled radios stay hidden."
+                                    " “仅命名设备”也已开启，未命名设备保持隐藏。"
                                 filter.watchedOnly ->
-                                    " Watched only is also on — unwatched radios stay hidden."
+                                    " “仅已关注”也已开启，未关注设备保持隐藏。"
                                 filter.namedOnly || filter.namedOnlyImplied() ->
-                                    " Signatures only / Show only is also on — unmatched radios stay hidden."
+                                    " “仅匹配特征／仅显示”也已开启，未匹配设备保持隐藏。"
                                 else -> ""
                             }
                     filter.customNamesOnly || filter.watchedOnly || filter.namedOnly || filter.namedOnlyImplied() ->
-                        "GPS path ${state.operatorSpanM.toInt()} m. Signatures only, class Show only, " +
-                            "Named radios only, or Watched only is also on, so only those radios can co-travel. " +
-                            "Tap the Moving with you preset to test BLE. A tag in your bag or car should match. Wi-Fi access points stay hidden."
+                        "GPS 轨迹 ${state.operatorSpanM.toInt()} 米。“仅匹配特征”、类别的“仅显示”、" +
+                            "“仅命名设备”或“仅已关注”也已开启，因此只有符合这些条件的设备能显示为随行。" +
+                            "点按“随行”预设以检测 BLE。包内或车内的标签应能匹配。Wi-Fi 接入点保持隐藏。"
                     else ->
-                        "GPS path ${state.operatorSpanM.toInt()} m. Loud BLE heard along that " +
-                            "path at a fairly steady level — not ones that only appear when you " +
-                            "arrive. A tag in your bag or car will match. Wi-Fi access points stay hidden " +
-                            "(range looks like co-travel). A phone’s rotating BLE address will not stitch as one follower. " +
-                            "Live → Start over clears the path and trails so you can test again."
+                        "GPS 轨迹 ${state.operatorSpanM.toInt()} 米。显示沿此" +
+                            "轨迹持续以较稳定强度接收到的 BLE 强信号，而非仅在你" +
+                            "到达时出现的设备。包内或车内的标签会匹配。Wi-Fi 接入点保持隐藏" +
+                            "（覆盖范围可能看起来像随行）。手机轮换的 BLE 地址不会合并为同一随行设备。" +
+                            "点按“实时 → 重新开始”可清除轨迹和历史，以便重新检测。"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             }
 
-            SectionCard("New detections") {
+            SectionCard("新发现") {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    if (state.arrivalsLearning) "New detections only  ·  learning" else "New detections only",
+                    if (state.arrivalsLearning) "仅新发现 · 正在学习" else "仅新发现",
                     Modifier.weight(1f),
                 )
                 FieldwatchSwitch(
@@ -237,31 +237,31 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             }
             Text(
                 if (filter.arrivalsOnly) {
-                    "Mark seen and Reset seen sit on Live, above the tabs. " +
+                    "“标记已见”和“重置已见”位于实时页面底部标签栏上方。" +
                         when {
                             state.arrivalsLearning ->
-                                "Learning sitting Wi-Fi into already-seen."
+                                "正在将现有 Wi-Fi 学习为已见设备。"
                             state.hiddenKnown > 0 ->
-                                "${state.hiddenKnown} already seen are hidden."
+                                "已隐藏 ${state.hiddenKnown} 个已见设备。"
                             else ->
-                                "Already seen is 0."
+                                "已见设备为 0。"
                         }
                 } else {
-                    "Hide radios already here so only new ones show on Live. " +
-                        "Mark seen / Reset seen appear above the tabs on Live while this is on. " +
-                        "Brief hold still sets how long a new radio stays after the last packet. " +
-                        "Randomized BLE addresses look new."
+                    "隐藏已有设备，让实时页面只显示新设备。" +
+                        "开启时，实时页面标签栏上方会显示“标记已见／重置已见”。" +
+                        "“短暂保留”仍决定新设备在最后数据包之后保留多久。" +
+                        "随机化 BLE 地址会被视为新设备。"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             }
 
-            SectionCard("Who stays") {
+            SectionCard("显示范围") {
             val namedImplied = filter.namedOnlyImplied()
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "Signatures only (hide unmatched)",
+                    "仅匹配特征（隐藏未匹配）",
                     Modifier.weight(1f),
                     color = if (namedImplied) {
                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -279,61 +279,61 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             }
             if (namedImplied) {
                 Text(
-                    "Show only already hides unmatched radios. Turn Show only (class or selected signatures) off to use this switch.",
+                    "“仅显示”已隐藏未匹配设备。请先关闭类别或所选特征的“仅显示”，再使用此开关。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Watched only", Modifier.weight(1f))
+                Text("仅已关注", Modifier.weight(1f))
                 FieldwatchSwitch(
                     filter.watchedOnly,
                     { on -> vm.updateFilter { it.copy(watchedOnly = on) } },
                 )
             }
             Text(
-                "Only radios that match a bookmarked signature, or a Named radio with Alert on. " +
-                    "Hide these still applies (Watched only + Hide Surveillance drops bookmarked cameras). " +
-                    "Label-only names stay on Named radios only. Bookmark on Signatures; Alert on detail.",
+                "仅显示匹配已关注特征的设备，或已开启警报的命名设备。" +
+                    "“隐藏所选”仍生效（“仅已关注”配合隐藏监控类会隐藏已关注的摄像头）。" +
+                    "仅设置名称的设备可用“仅命名设备”查看。可在特征库中关注特征，在详情中开启设备警报。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Named radios only", Modifier.weight(1f))
+                Text("仅命名设备", Modifier.weight(1f))
                 FieldwatchSwitch(
                     filter.customNamesOnly,
                     { on -> vm.updateFilter { it.copy(customNamesOnly = on) } },
                 )
             }
             Text(
-                "Only radios you gave a custom name. Alert can still be off. Settings → Named radios. " +
-                    "A random / privacy MAC will not follow a rotation.",
+                "仅显示你设置了自定义名称的设备，警报可保持关闭。管理位置：“设置 → 命名设备”。" +
+                    "随机／隐私 MAC 地址轮换后无法继续关联。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Hide Fast Pair account-key", Modifier.weight(1f))
+                Text("隐藏 Fast Pair 账号密钥广播", Modifier.weight(1f))
                 FieldwatchSwitch(
                     filter.hideFastPairAccountKey,
                     { on -> vm.updateFilter { it.copy(hideFastPairAccountKey = on) } },
                 )
             }
             Text(
-                "Plaza noise: already-paired Fast Pair chips with no other signature. " +
-                    "Keeps pairing-mode (tap-to-pair model ID). Hide selected Fast Pair still drops pairing-mode too.",
+                "过滤公共场所中的干扰：已配对且没有其他特征的 Fast Pair 广播。" +
+                    "保留配对模式（点按配对的型号 ID）。若在所选特征中隐藏 Fast Pair，配对模式也会隐藏。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             }
 
-            SectionCard("Signature classes") {
+            SectionCard("特征类别") {
             Text(
-                "Live only — signatures still label, log, and can beep. " +
-                    "Cameras, Drones, Finder tags, and the rest are these chips — Show only, then Save current as… if you want a preset. " +
-                    "Show only with no class picked leaves Live unchanged.",
+                "仅影响实时显示；特征仍会标注、记录并可触发提示音。" +
+                    "这些选项包括摄像头、无人机、寻物标签等。选择“仅显示”后，可用“将当前筛选另存为…”创建预设。" +
+                    "开启“仅显示”但不选择类别时，实时显示保持不变。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -346,7 +346,7 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             it.copy(useClassFilter = on, excludeClasses = false)
                         }
                     },
-                    label = { Text("Show only") },
+                    label = { Text("仅显示") },
                 )
                 FieldwatchFilterChip(
                     selected = filter.useClassFilter && filter.excludeClasses,
@@ -356,7 +356,7 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             it.copy(useClassFilter = on, excludeClasses = on)
                         }
                     },
-                    label = { Text("Hide these") },
+                    label = { Text("隐藏所选") },
                 )
             }
             CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
@@ -404,9 +404,9 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             }
             }
 
-            SectionCard("Selected signatures") {
+            SectionCard("所选特征") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Show only selected signatures", Modifier.weight(1f))
+                Text("仅显示所选特征", Modifier.weight(1f))
                 FieldwatchSwitch(
                     filter.includeSignatures,
                     { on -> vm.updateFilter { it.copy(includeSignatures = on) } },
@@ -416,8 +416,8 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                 SignaturePickList(
                     fleets = state.fleets,
                     selected = filter.includeFleetIds,
-                    help = "Tap a class to open its signatures. Only radios matching a signature you turn on below stay on Live. " +
-                        "Empty list = no extra include (Live unchanged). Picks stay if you turn this off and on again.",
+                    help = "点按类别展开特征。实时页面只显示匹配下方已开启特征的设备。" +
+                        "空列表表示不增加包含条件，实时显示保持不变。关闭再开启时会保留选择。",
                     onToggle = { id, checked ->
                         vm.updateFilter { current ->
                             val next = current.includeFleetIds.toMutableSet()
@@ -429,7 +429,7 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Hide selected signatures", Modifier.weight(1f))
+                Text("隐藏所选特征", Modifier.weight(1f))
                 FieldwatchSwitch(
                     filter.excludeSignatures,
                     { on -> vm.updateFilter { it.copy(excludeSignatures = on) } },
@@ -439,8 +439,8 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                 SignaturePickList(
                     fleets = state.fleets,
                     selected = filter.fleetIds,
-                    help = "Tap a class to open its signatures. Devices matching a signature you turn on below stay off the Live list. " +
-                        "Your picks stay if you turn this off and on again.",
+                    help = "点按类别展开特征。匹配下方已开启特征的设备不会出现在实时列表中。" +
+                        "关闭再开启时会保留选择。",
                     onToggle = { id, checked ->
                         vm.updateFilter { current ->
                             val next = current.fleetIds.toMutableSet()
@@ -452,13 +452,13 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             }
             }
 
-            SectionCard("Fine filter") {
+            SectionCard("精细筛选") {
             var rssiDrag by remember { mutableIntStateOf(filter.rssiMin) }
             var rssiDragging by remember { mutableStateOf(false) }
             LaunchedEffect(filter.rssiMin) {
                 if (!rssiDragging) rssiDrag = filter.rssiMin
             }
-            Text("Minimum RSSI  $rssiDrag dBm", style = MaterialTheme.typography.labelLarge)
+            Text("最低 RSSI  $rssiDrag dBm", style = MaterialTheme.typography.labelLarge)
             FieldwatchSlider(
                 value = rssiDrag.toFloat(),
                 onValueChange = { v ->
@@ -475,17 +475,17 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             FieldwatchOutlinedField(
                 filter.nameQuery,
                 { value -> vm.updateFilter { it.copy(nameQuery = value) } },
-                "Name / MAC contains",
+                "名称／MAC 包含",
             )
             FieldwatchOutlinedField(
                 filter.ouiQuery,
                 { value -> vm.updateFilter { it.copy(ouiQuery = value) } },
-                "OUI / vendor contains",
+                "OUI／厂商包含",
             )
 
-            Text("Extra filter logic", style = MaterialTheme.typography.labelLarge)
+            Text("附加筛选逻辑", style = MaterialTheme.typography.labelLarge)
             Text(
-                "AND/OR applies to name, OUI, RSSI, and class include — not to radios, Named radios only, Watched only, Hide Fast Pair account-key, or hide lists.",
+                "AND／OR 适用于名称、OUI、RSSI 和包含的类别；不适用于无线类型、仅命名设备、仅已关注、隐藏 Fast Pair 账号密钥广播或隐藏列表。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -493,17 +493,17 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                 FieldwatchFilterChip(
                     selected = filter.logic == FilterLogic.AND,
                     onClick = { vm.updateFilter { it.copy(logic = FilterLogic.AND) } },
-                    label = { Text("AND") },
+                    label = { Text("且（AND）") },
                 )
                 FieldwatchFilterChip(
                     selected = filter.logic == FilterLogic.OR,
                     onClick = { vm.updateFilter { it.copy(logic = FilterLogic.OR) } },
-                    label = { Text("OR") },
+                    label = { Text("或（OR）") },
                 )
             }
 
             FieldwatchActionButton(onClick = { confirmReset = true }) {
-                Text("Reset filter")
+                Text("重置筛选")
             }
             }
         }
@@ -511,11 +511,11 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
     if (confirmReset) {
         AlertDialog(
             onDismissRequest = { confirmReset = false },
-            title = { Text("Reset filter?") },
+            title = { Text("重置筛选？") },
             text = {
                 Text(
-                    "Clears every switch and pick on this tab (radios, classes, selected signatures, RSSI, name/OUI). " +
-                        "Presets you saved stay. The Live display goes back to the unfiltered set. This is not undo.",
+                    "清除此页的全部开关和选择，包括无线类型、类别、所选特征、RSSI、名称／OUI。" +
+                        "保留已保存的预设。实时页面恢复为未筛选状态。此操作并非撤销上一步。",
                 )
             },
             confirmButton = {
@@ -524,23 +524,23 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                         confirmReset = false
                         vm.updateFilter { app.fieldwatch.domain.FilterState() }
                     },
-                ) { Text("Reset") }
+                ) { Text("重置") }
             },
             dismissButton = {
-                TextButton(onClick = { confirmReset = false }) { Text("Cancel") }
+                TextButton(onClick = { confirmReset = false }) { Text("取消") }
             },
         )
     }
     pendingDelete?.let { preset ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("Delete preset?") },
+            title = { Text("删除预设？") },
             text = {
                 Text(
                     if (preset.isBuiltIn()) {
-                        "Remove stock chip “${preset.name}” from this list? Catalog updates will not put it back. Settings → Restore default signatures & presets restores all stock chips. The filter on Live does not change until you apply another chip or Reset filter."
+                        "从列表中移除内置预设“${preset.name}”？更新特征库不会恢复它。“设置 → 恢复默认特征库与预设”可还原所有内置预设。应用其他预设或重置筛选前，实时页面的筛选保持不变。"
                     } else {
-                        "Delete preset “${preset.name}”? This cannot be undone. The filter on Live does not change until you apply another chip or Reset filter."
+                        "删除预设“${preset.name}”？此操作无法撤销。应用其他预设或重置筛选前，实时页面的筛选保持不变。"
                     },
                 )
             },
@@ -548,10 +548,10 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                 TextButton(onClick = {
                     vm.deletePreset(preset.id)
                     pendingDelete = null
-                }) { Text("Delete") }
+                }) { Text("删除") }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) { Text("Cancel") }
+                TextButton(onClick = { pendingDelete = null }) { Text("取消") }
             },
         )
     }

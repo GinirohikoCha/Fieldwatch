@@ -32,80 +32,80 @@ object DeviceDetailText {
             out.append('\n').append("## ").append(title).append('\n')
         }
 
-        out.append("Fieldwatch device detail\n")
+        out.append("Fieldwatch 设备详情\n")
         out.append(iso.format(Date(now))).append('\n')
         out.append(
-            "Experimental. Not a legal identity. Stock Android radios — this is what the OS " +
-                "exposed, not a guarantee a tracker or camera is present.\n",
+            "实验性功能，不代表法律身份。数据来自原生 Android 无线接口，仅反映操作系统" +
+                "提供的信息，不能据此断定存在追踪器或摄像头。\n",
         )
         out.append('\n')
         out.append(title).append('\n')
         line("MAC", device.mac)
-        if (device.name.isNotBlank()) line("Advertised name", device.name)
+        if (device.name.isNotBlank()) line("广播名称", device.name)
 
         out.append('\n')
-        out.append("What this looks like: ").append(guess.headline).append('\n')
+        out.append("设备推测：").append(guess.headline).append('\n')
         out.append(guess.because).append('\n')
         if (attentionNotes.isNotEmpty()) {
-            section("Extra attention")
+            section("重点关注")
             attentionNotes.forEach { (name, note) ->
-                out.append("EXTRA ATTENTION ($name): ").append(note.trim()).append('\n')
+                out.append("重点关注（$name）：").append(note.trim()).append('\n')
             }
-            out.append("Pattern match, not identity. Not a safety finding.\n")
+            out.append("仅为模式匹配，不代表身份或安全结论。\n")
         }
         if (signatureNotes.isNotEmpty()) {
-            section("Notes")
+            section("说明")
             signatureNotes.forEach { (name, note) ->
                 out.append(name).append(": ").append(note.trim()).append('\n')
             }
         }
 
-        section("Identity")
+        section("身份信息")
         line(
-            "Radio",
+            "无线设备",
             if (device.kind == RadioKind.WIFI) {
-                "Wi-Fi access point (beaconing a network)"
+                "Wi-Fi 接入点（正在广播网络信标）"
             } else {
-                "Bluetooth Low Energy advertiser"
+                "低功耗蓝牙广播设备"
             },
         )
-        line("Address", DeviceExplain.addressExplain(device))
-        vendorLine(device)?.let { line("Who made it", it.replace('\n', ' ')) }
-            ?: line("OUI (vendor prefix)", "${device.oui} — no IEEE match; randomized addresses usually have none")
+        line("地址", DeviceExplain.addressExplain(device))
+        vendorLine(device)?.let { line("制造商", it.replace('\n', ' ')) }
+            ?: line("OUI（厂商前缀）", "${device.oui} — 无 IEEE 匹配；随机地址通常没有匹配项")
         if (device.hiddenSsid) {
-            line("Network name (SSID)", "Hidden — the AP is beaconing but not publishing a name")
+            line("网络名称（SSID）", "已隐藏 — AP 正在发送信标，但未公开名称")
         }
 
-        section("Signal")
+        section("信号")
         if (device.gone) {
-            line("How loud here (RSSI)", "Not available")
+            line("此处信号强度（RSSI）", "不可用")
             val last = Rssi.lastMeasured(device.rssi, device.rssiHistory)
-            line("Last heard", last?.let { "$it dBm" } ?: "Not available")
+            line("上次接收", last?.let { "$it dBm" } ?: "不可用")
         } else {
-            line("How loud here (RSSI)", DeviceExplain.rssiExplain(device.rssi))
-            out.append("Closer to 0 dBm is louder here, not a distance.\n")
+            line("此处信号强度（RSSI）", DeviceExplain.rssiExplain(device.rssi))
+            out.append("越接近 0 dBm 表示此处信号越强，不代表距离。\n")
         }
-        line("Heard range this session", Rssi.sessionRange(device.rssiMin, device.rssiMax, device.rssiHistory))
+        line("本次会话接收强度范围", Rssi.sessionRange(device.rssiMin, device.rssiMax, device.rssiHistory))
         facts.txPowerDbm?.let {
-            line("Claimed transmit power", "$it dBm — how loud it says it transmits, not a distance")
+            line("声明的发射功率", "$it dBm — 设备声明的发射功率，不代表距离")
         }
         if (device.channel != 0 || device.frequencyMhz != 0) {
             line(
-                "Channel / frequency",
+                "信道 / 频率",
                 buildString {
-                    if (device.channel != 0) append("channel ${device.channel}")
+                    if (device.channel != 0) append("信道 ${device.channel}")
                     if (device.frequencyMhz != 0) {
                         if (isNotEmpty()) append("  ·  ")
                         append("${device.frequencyMhz} MHz")
                     }
-                    facts.channelWidth?.let { append("  ·  $it wide") }
+                    facts.channelWidth?.let { append("  ·  带宽 $it") }
                 },
             )
         }
-        facts.wifiStandard?.let { line("Wi-Fi generation", it) }
+        facts.wifiStandard?.let { line("Wi-Fi 代际", it) }
         if (facts.centerFreq0 != null || facts.centerFreq1 != null) {
             line(
-                "Center frequencies",
+                "中心频率",
                 listOfNotNull(
                     facts.centerFreq0?.let { "$it MHz" },
                     facts.centerFreq1?.let { "$it MHz" },
@@ -115,49 +115,49 @@ object DeviceDetailText {
         val rssiTail = device.rssiHistory.filter { Rssi.measured(it.rssi) }.takeLast(24)
         if (rssiTail.isNotEmpty()) {
             line(
-                "Recent RSSI (oldest → newest)",
+                "近期 RSSI（最早 → 最新）",
                 rssiTail.joinToString(", ") { it.rssi.toString() },
             )
         }
 
         if (device.kind == RadioKind.BLE) {
-            section("Bluetooth advertisement")
+            section("蓝牙广播")
             facts.primaryPhy?.let {
                 val phys = listOfNotNull(it, facts.secondaryPhy).distinct()
-                line("Radio PHY", phys.joinToString(" / ") { phy -> DeviceExplain.phyExplain(phy) })
+                line("无线 PHY", phys.joinToString(" / ") { phy -> DeviceExplain.phyExplain(phy) })
             }
             facts.connectable?.let {
                 line(
-                    "Connectable",
-                    if (it) "Yes — a phone could open a BLE connection"
-                    else "No — broadcast-only (you can hear it, not join it from this scan)",
+                    "可连接",
+                    if (it) "是 — 手机可以建立 BLE 连接"
+                    else "否 — 仅广播（可以接收，但无法通过此次扫描连接）",
                 )
             }
             facts.advertisingIntervalMs?.let {
-                line("How often it advertises", "%.0f ms between bursts (smaller = chattier on the air)".format(it))
+                line("广播间隔", "每次广播间隔 %.0f 毫秒（越小表示广播越频繁）".format(it))
             }
-            facts.periodicIntervalMs?.let { line("Periodic advertising", "%.0f ms".format(it)) }
+            facts.periodicIntervalMs?.let { line("周期性广播", "%.0f ms".format(it)) }
             facts.advFlags?.let { flags ->
-                line("Discoverability", DeviceExplain.flagsExplain(flags))
-                line("Flags (raw)", "0x%02X".format(flags))
+                line("可发现性", DeviceExplain.flagsExplain(flags))
+                line("标志位（原始）", "0x%02X".format(flags))
             }
             facts.appearance?.let { value ->
                 val name = RadioDb.appearance(value)
                 line(
-                    "What it says it is (Appearance)",
-                    name ?: "Unlisted Appearance 0x%04X".format(value),
+                    "设备自报类型（Appearance）",
+                    name?.let(RadioLabels::label) ?: "未收录的 Appearance 0x%04X".format(value),
                 )
-                line("Appearance code", "0x%04X".format(value))
+                line("Appearance 编码", "0x%04X".format(value))
             }
             CodDecoder.decodeOrNull(facts.deviceClass)?.let { cod ->
                 line(
-                    "Classic Bluetooth class",
+                    "经典蓝牙类别",
                     buildString {
-                        append(cod.major)
-                        if (cod.minor.isNotBlank()) append(" / ").append(cod.minor)
+                        append(RadioLabels.label(cod.major))
+                        if (cod.minor.isNotBlank()) append(" / ").append(RadioLabels.label(cod.minor))
                         if (cod.services.isNotEmpty()) {
-                            append(". Also offers: ")
-                            append(cod.services.joinToString(", "))
+                            append("。同时提供：")
+                            append(cod.services.joinToString("、") { RadioLabels.label(it) })
                         }
                     },
                 )
@@ -165,32 +165,32 @@ object DeviceDetailText {
         }
 
         if (device.kind == RadioKind.WIFI) {
-            section("Wi-Fi access point")
+            section("Wi-Fi 接入点")
             facts.security?.let {
-                line("Encryption / login", DeviceExplain.wifiSecurityExplain(it))
-                if (it.isNotBlank()) line("Security string", it)
+                line("加密 / 登录方式", DeviceExplain.wifiSecurityExplain(it))
+                if (it.isNotBlank()) line("安全字符串", it)
             }
-            facts.supportedRates?.let { line("Supported rates", "$it Mbps  (* = required basic rate)") }
+            facts.supportedRates?.let { line("支持速率", "$it Mbps（* = 必须支持的基本速率）") }
             facts.capabilities?.takeIf { it.isNotBlank() && it != facts.security }?.let {
-                line("Capability string", it)
+                line("能力字符串", it)
             }
         }
 
         if (fleets.isNotEmpty() && (device.kind == RadioKind.BLE || device.kind == RadioKind.WIFI)) {
             val decoded = SignatureFieldDecoder.decodeSighting(device, fleets)
             if (decoded.isNotEmpty()) {
-                section("Decoded fields")
+                section("解码字段")
                 decoded.forEach { row ->
                     line(row.label, row.display)
-                    if (row.note.isNotBlank()) line("Note", row.note)
+                    if (row.note.isNotBlank()) line("说明", row.note)
                 }
             }
         }
 
         if (device.serviceUuids.isNotEmpty()) {
-            section("Services it offers")
+            section("提供的服务")
             line(
-                "Service IDs",
+                "服务 ID",
                 device.serviceUuids.joinToString("; ") { uuid ->
                     DeviceExplain.uuidGloss(uuid)?.let { "$uuid  ·  $it" } ?: uuid
                 },
@@ -198,11 +198,11 @@ object DeviceDetailText {
         }
         if (facts.serviceData.isNotEmpty()) {
             facts.serviceData.forEach { sd ->
-                val named = RadioDb.serviceUuid(sd.uuid)?.let { " ($it)" } ?: ""
+                val named = RadioDb.serviceUuid(sd.uuid)?.let { "（${RadioLabels.label(it)}）" } ?: ""
                 AdvPayloadDecoder.decodeService(sd).forEach { field -> line(field.label, field.value) }
                 line(
-                    "Service data ${uuidShort(sd.uuid)}$named",
-                    sd.dataHex.hexSpaced().ifBlank { "(empty)" },
+                    "服务数据 ${uuidShort(sd.uuid)}$named",
+                    sd.dataHex.hexSpaced().ifBlank { "（空）" },
                 )
             }
         }
@@ -213,30 +213,30 @@ object DeviceDetailText {
             } ?: emptyList()
         }
         if (mfg.isNotEmpty()) {
-            section("Maker data inside the ad")
+            section("广播中的制造商数据")
             mfg.forEach { rec ->
-                val company = RadioDb.company(rec.companyId) ?: "Not in the Bluetooth company list"
-                line("Bluetooth company 0x%04X".format(rec.companyId), company)
+                val company = RadioDb.company(rec.companyId) ?: "蓝牙公司列表中未收录"
+                line("蓝牙公司 0x%04X".format(rec.companyId), company)
                 BleAdParser.mfgDecodedFields(rec).forEach { (k, v) -> line(k, v) }
                 if (rec.dataHex.isNotBlank()) {
-                    line("Raw payload (${rec.dataHex.length / 2} bytes)", rec.dataHex.hexSpaced())
+                    line("原始载荷（${rec.dataHex.length / 2} 字节）", rec.dataHex.hexSpaced())
                 }
             }
         }
 
         if (facts.vendorIes.isNotEmpty() || device.vendorIeOuis.isNotEmpty()) {
-            section("Wi-Fi vendor tags")
+            section("Wi-Fi 厂商标记")
             val rows = facts.vendorIes.ifEmpty {
                 device.vendorIeOuis.map { VendorIeRecord(it, -1, "") }
             }
             rows.forEach { ie ->
                 val org = RadioDb.vendorForOui24(ie.oui)
-                val type = if (ie.type >= 0) " type %d".format(ie.type) else ""
+                val type = if (ie.type >= 0) " 类型 %d".format(ie.type) else ""
                 line(
-                    "Vendor OUI ${ie.oui}$type",
+                    "厂商 OUI ${ie.oui}$type",
                     buildString {
-                        append(org ?: "Unknown IEEE OUI")
-                        append(" — extra AP information element, not the SSID.")
+                        append(org ?: "未知 IEEE OUI")
+                        append(" — AP 的附加信息元素，不是 SSID。")
                         if (ie.dataHex.isNotBlank()) {
                             append(" ")
                             append(ie.dataHex.hexSpaced())
@@ -246,35 +246,35 @@ object DeviceDetailText {
             }
         }
 
-        section("Session")
-        line("First seen", fmt.format(Date(device.firstSeen)))
-        line("Last seen", fmt.format(Date(device.lastSeen)))
-        line("Hits", device.hitCount.toString())
+        section("会话")
+        line("首次发现", fmt.format(Date(device.firstSeen)))
+        line("上次发现", fmt.format(Date(device.lastSeen)))
+        line("接收次数", device.hitCount.toString())
         Geo.screenCoord(device.latitude, device.longitude, false)?.let {
-            line("Last fix", it)
-            out.append("Last fix is the phone’s GPS at hear-time, not a fix on this radio.\n")
+            line("上次定位", it)
+            out.append("上次定位是接收信号时手机的 GPS 位置，不是该无线设备的位置。\n")
         }
         if (device.fleetIds.isNotEmpty()) {
-            line("Matched signatures", signatureNames.joinToString("; ").ifBlank {
+            line("匹配的特征", signatureNames.joinToString("; ").ifBlank {
                 device.fleetIds.joinToString("; ")
             })
         }
         if (device.rawHex.isNotBlank() && device.kind == RadioKind.BLE) {
-            line("Raw advertisement", device.rawHex.hexSpaced())
+            line("原始广播", device.rawHex.hexSpaced())
         }
-        presenceLine(device, now, fmt)?.let { line("Presence (15 min)", it) }
+        presenceLine(device, now, fmt)?.let { line("出现时段（15 分钟）", it) }
         return out.toString().trimEnd() + "\n"
     }
 
     private fun vendorLine(device: Sighting): String? {
         val parts = ArrayList<String>(3)
         device.vendor?.let {
-            parts += "IEEE board/chip vendor: $it (${device.oui}). This is who owns the MAC prefix, not always the product brand."
+            parts += "IEEE 主板 / 芯片厂商：$it（${device.oui}）。这是 MAC 前缀的持有者，不一定是产品品牌。"
         }
         val mfgId = device.facts.mfgRecords.firstOrNull()?.companyId ?: device.manufacturerId
         if (mfgId != null) {
             val company = RadioDb.company(mfgId)
-            parts += "Bluetooth company in the ad: ${company ?: "unlisted"} (0x%04X).".format(mfgId)
+            parts += "广播中的蓝牙公司：${company ?: "未收录"}（0x%04X）。".format(mfgId)
         }
         return parts.joinToString(" ").ifBlank { null }
     }
@@ -291,7 +291,7 @@ object DeviceDetailText {
         if (spans.isEmpty()) return null
         return spans.joinToString("; ") { span ->
             val start = fmt.format(Date(span.start.coerceAtLeast(from)))
-            val end = span.end?.let { fmt.format(Date(it)) } ?: "now"
+            val end = span.end?.let { fmt.format(Date(it)) } ?: "现在"
             "$start–$end"
         }
     }

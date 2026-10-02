@@ -181,14 +181,14 @@ object TakPublish {
         val advertised = advertisedPin(device)
         val base = callsignBase(device, fleets, watchlist, advertised)
         if (advertised) return base.take(32)
-        val suffix = " (here)"
+        val suffix = "（接收位置）"
         return (base.take((32 - suffix.length).coerceAtLeast(1)) + suffix).take(32)
     }
 
     fun pilotCallsign(device: Sighting): String {
         val id = device.payloadUasId?.trim()?.takeIf { it.isNotEmpty() }
             ?: device.payloadSelfId?.trim()?.takeIf { it.isNotEmpty() }
-        return if (id != null) "Pilot · ${id.take(20)}".take(32) else "Pilot".take(32)
+        return if (id != null) "飞手 · ${id.take(20)}".take(32) else "飞手".take(32)
     }
 
     fun markers(
@@ -411,7 +411,7 @@ object CotEvent {
         lon = lon,
         hae = 9999999.0,
         callsign = "Fieldwatch",
-        remarks = "Fieldwatch · gone",
+        remarks = "Fieldwatch · 已离开",
         group = "Cyan",
         now = now,
         staleMs = 0L,
@@ -427,7 +427,7 @@ object CotEvent {
         lon = lon,
         hae = 9999999.0,
         callsign = "Fieldwatch",
-        remarks = "Fieldwatch TAK heartbeat (this phone)",
+        remarks = "Fieldwatch TAK 心跳（此手机）",
         group = "Cyan",
         now = now,
         staleMs = staleMs,
@@ -449,9 +449,9 @@ object CotEvent {
         val names = fleets.filter { it.id in device.fleetIds }.map { it.name }.distinct()
         val kind = if (device.kind == RadioKind.WIFI) "Wi-Fi" else "BLE"
         val where = when {
-            pilot -> "operator (pilot) position"
-            advertised -> "advertised position"
-            else -> "heard here (operator GPS)"
+            pilot -> "操作者（飞手）位置"
+            advertised -> "广播位置"
+            else -> "接收位置（此手机 GPS）"
         }
         val radio = buildString {
             append(kind)
@@ -461,7 +461,7 @@ object CotEvent {
             append(device.rssi)
             append(" dBm")
             if (device.kind == RadioKind.WIFI && device.channel > 0) {
-                append("  ch ")
+                append("  信道 ")
                 append(device.channel)
             } else if (device.kind == RadioKind.WIFI && device.frequencyMhz > 0) {
                 append("  ")
@@ -498,7 +498,7 @@ object CotEvent {
             }
             extra?.let { (name, note) ->
                 append('\n')
-                append("Extra attention")
+                append("重点关注")
                 if (!callsign.contains(name, ignoreCase = true) &&
                     !sigLine.contains(name, ignoreCase = true)
                 ) {

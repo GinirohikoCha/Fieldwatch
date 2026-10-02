@@ -1,72 +1,76 @@
 # Fieldwatch
 
-I built Fieldwatch as a personal tool to look at what Wi-Fi access points and Bluetooth LE ads my phone was able to pick up, so that I could better understand what devices were being used around me. It’s passive, it only listens, there’s no dongle, no account, and no backend server. I wanted something that would work offline in the field.
+Fieldwatch 是我为自己制作的一款工具，用来查看手机能够接收到的 Wi-Fi 接入点和低功耗蓝牙（BLE）广播，帮助了解周围正在使用哪些设备。它采用被动监听方式，不需要外接适配器、账号或后台服务器。我希望它能在现场离线使用。
 
-My goals were to have a modern interface that was easy to use, flexible in how information was displayed so I could customize a view based on what I was trying to do, a filtering engine so I do not have to look at everything, an extensible signature library so I can identify as many radio sources as possible and add new ones on the fly, as well as create reports of what was seen.
+我的目标是提供现代、易用的界面，让信息显示方式足够灵活，可以按任务调整视图；提供筛选引擎以减少无关信息；提供可扩展的特征库，尽可能识别无线信号来源并随时添加新特征；同时能够生成观测报告。
 
-I have been using it and iterating on it for a while now, and it has been useful enough that I thought I would share it.
+经过一段时间的实际使用和迭代，这款工具对我很有帮助，因此决定分享出来。
 
-This is a hobby — something I do for fun in my spare time. There is no Fieldwatch backend. There are no ads. Everything lives on the phone. Source and sideload files are in this repository (`dist/` for the APK, instruction card, and manual).
+这是一个业余项目，是我在闲暇时做的兴趣作品。Fieldwatch 没有后台服务器，也没有广告，所有内容都保存在手机上。源码和侧载文件均在本仓库中；`dist/` 包含 APK、安装说明和用户手册。
 
-It was Spectre through 1.2.14. I later learned that name was already in use by another app, so I renamed this one Fieldwatch to keep the two from being mixed up. Same field tool, new application id (`app.fieldwatch`), MIT License. Installing Fieldwatch does not replace Spectre on a phone; it is a separate app.
+本工作副本的版本为 `1.1.17-zh-CN`，已将应用界面、报告、AI 提示词和使用文档翻译为简体中文。`dist/Fieldwatch.apk` 是由本工作副本源码构建的中文版本，使用本地 Android Debug 证书；不能直接覆盖上游签名版本，请先备份再卸载旧版。APK 与签名校验值见[安装说明](dist/instruction.txt)。上游 GitHub 下载文件属于上游发布版本，可能不包含这些中文改动。
 
-If you spot an error, something stupid, or have a feature idea — in the app or the documentation — please [open an issue on this repository](https://github.com/OffGridPete/Fieldwatch/issues). This is how we make it better. I hope you find it as useful as I have. I look forward to hearing how it goes.
+截至 1.2.14，这款工具曾使用 Spectre 名称。后来我了解到已有其他应用使用该名称，因此将它改名为 Fieldwatch，避免混淆。现场工具的定位不变，应用 ID 改为 `app.fieldwatch`，源码采用 MIT 许可证。安装 Fieldwatch 不会替换手机上的 Spectre，它们是两个独立应用。
 
-**Just want to install it?** Download [Fieldwatch.apk](https://github.com/OffGridPete/Fieldwatch/raw/main/dist/Fieldwatch.apk). Instruction card and manual: [instruction.txt](https://github.com/OffGridPete/Fieldwatch/raw/main/dist/instruction.txt), [Fieldwatch_User_Manual.pdf](https://github.com/OffGridPete/Fieldwatch/raw/main/dist/Fieldwatch_User_Manual.pdf). [What’s new](CHANGELOG.md) is the changelog for each build. Leave the APK named `Fieldwatch.apk`. GitHub may say the file is too big to preview — that is their viewer; use Download.
+如果发现应用或文档存在错误、设计不合理，或者有功能建议，请[在本仓库提交 Issue](https://github.com/OffGridPete/Fieldwatch/issues)。希望它对你也有帮助，欢迎分享使用反馈。
 
-## Safety & disclaimer
+**只想安装？** 请查看本地分发目录中的 [Fieldwatch.apk](dist/Fieldwatch.apk)、[安装说明](dist/instruction.txt)和[用户手册](dist/Fieldwatch_User_Manual.pdf)。[更新日志](CHANGELOG.md)记录各版本的变化。APK 文件名应保持为 `Fieldwatch.apk`。GitHub 如果提示文件过大、无法预览，请使用下载按钮。
 
-This is a hobby project, provided as-is under the MIT License. A few things to know before you do:
+## 安全与免责声明
 
-- Use at your own risk. Using Fieldwatch is your responsibility. To the maximum extent permitted by law, Off Grid Pete LLC is not liable for indirect, incidental, special, consequential, or punitive damages arising from its use.
-- There is no guarantee that trackers, cameras, tags, access points, or any other device will be found, named, or reported. Radios that are off, cellular-only, asleep, randomized, quiet, or outside what this handset’s OS exposes will not appear. Each phone has its own radios, firmware, scan quotas, and OEM battery policies. Software cannot address those limits.
-- Pattern matches, GPS co-travel (“Moving with you” / “possible tail”), Debrief language, and AI Export output are hypotheses — not identity, not a legal finding, and not a complete RF capture. You are solely responsible for how you use this app and this document, and for complying with local law. By using the software or this manual you accept these terms and the MIT License.
-- Location data, if tagging is on, is this phone at hear-time — not the other radio. There is no Fieldwatch server. Stamps stay on the handset until you share them. Logs keep full coordinates even when Privacy mode masks the screen and sit reports. Debrief, Share log, AI Export (sit or one radio), and radio-detail Share as text can take that path off the phone. Online place names use the system geocoder (often the OEM / Google network), not a Fieldwatch cloud. How you store, share, or publish those files is your responsibility.
+这是一个业余项目，按 MIT 许可证以现状提供。使用前请了解：
 
-## Put it on a phone
+- 使用风险由您自行承担。您须对如何使用 Fieldwatch 负责。在法律允许的最大范围内，Off Grid Pete LLC 不对使用本应用所产生的间接、附带、特殊、后果性或惩罚性损害承担责任。
+- 不保证一定能发现、命名或报告追踪器、摄像头、标签、接入点或任何其他设备。无线设备若关闭、仅使用蜂窝网络、休眠、采用随机地址、处于静默状态，或超出手机操作系统提供的信息范围，就不会出现。各手机的无线硬件、固件、扫描配额和厂商电池策略不同，软件无法消除这些限制。
+- 模式匹配、GPS 同行分析（“随行” / “可能尾随”）、观测总结文字及 AI 导出结果都只是推测，不代表身份或法律结论，也不是完整的射频捕获。您须独自承担使用本应用和本文档，以及遵守当地法律的责任。使用本软件或手册即表示接受这些条款及 MIT 许可证。
+- 开启位置标记后，位置数据表示接收信号时本手机的位置，不是其他无线设备的位置。Fieldwatch 没有服务器，标记会保留在手机中，直到您主动分享。即使隐私模式遮蔽了屏幕和观测报告，日志仍保存完整坐标。观测总结、分享日志、AI 导出（观测或单个设备）及设备详情的文字分享，可能使轨迹离开手机。在线地名使用系统地理编码服务（通常为厂商或 Google 网络），并非 Fieldwatch 云端。如何存储、分享或发布这些文件由您自行负责。
 
-On a phone, the install files are in [`dist/`](https://github.com/OffGridPete/Fieldwatch/tree/main/dist), not the root of the repo:
+## 安装到手机
 
-- [Fieldwatch.apk](https://github.com/OffGridPete/Fieldwatch/raw/main/dist/Fieldwatch.apk)
-- [instruction.txt](https://github.com/OffGridPete/Fieldwatch/raw/main/dist/instruction.txt)
-- [Fieldwatch_User_Manual.pdf](https://github.com/OffGridPete/Fieldwatch/raw/main/dist/Fieldwatch_User_Manual.pdf)
+安装文件位于 [`dist/`](dist/)，不在仓库根目录：
 
-Do not rename the APK. Open `Fieldwatch.apk` from Files (or My Files). Allow install from that app if Android asks.
+- [Fieldwatch.apk](dist/Fieldwatch.apk)
+- [instruction.txt](dist/instruction.txt)
+- [Fieldwatch_User_Manual.pdf](dist/Fieldwatch_User_Manual.pdf)
 
-| File | What it is |
+上游发布文件可在[上游 dist 目录](https://github.com/OffGridPete/Fieldwatch/tree/main/dist)找到；它们与本地中文构建可能不同。请按安装说明核对对应文件和签名信息。
+
+不要重命名 APK。用“文件”或“我的文件”打开 `Fieldwatch.apk`；如果 Android 询问，请允许从该应用安装。
+
+| 文件 | 用途 |
 |---|---|
-| `dist/Fieldwatch.apk` | Sideload APK |
-| `dist/fieldwatch-signatures.json` | Stock catalog for 1.1.11 GitHub update (catalog 77) |
-| `dist/fieldwatch-signatures-v2.json` | Stock catalog for 1.1.12+ GitHub update |
-| `dist/instruction.txt` | Permissions, first launch |
-| `dist/Fieldwatch_User_Manual.pdf` | User manual |
-| [`CHANGELOG.md`](CHANGELOG.md) | What’s new in each build |
-| `LICENSE` | MIT License |
-| `NOTICE` | Third-party attribution |
+| `dist/Fieldwatch.apk` | 侧载 APK |
+| `dist/fieldwatch-signatures.json` | 供 1.1.11 通过 GitHub 更新的默认特征库（版本 77） |
+| `dist/fieldwatch-signatures-v2.json` | 供 1.1.12 及以上版本通过 GitHub 更新的默认特征库 |
+| `dist/instruction.txt` | 权限与首次启动说明 |
+| `dist/Fieldwatch_User_Manual.pdf` | 用户手册 |
+| [`CHANGELOG.md`](CHANGELOG.md) | 各版本更新内容 |
+| `LICENSE` | MIT 许可证原文 |
+| `NOTICE` | 第三方归属声明 |
 
-Android 10+. Allow install from the app you used to open the APK. Play Protect may warn that it is not from Play — expected. Full steps are in `instruction.txt`.
+需要 Android 10 或更新版本。允许从打开 APK 的应用安装。Play Protect 可能提示该应用并非来自 Play 商店，这是侧载应用可能遇到的提示。完整步骤见 `instruction.txt`。
 
 ```bash
 adb install -r dist/Fieldwatch.apk
 ```
 
-### Upgrading from 1.0.4 or earlier — Fieldwatch now has a real publisher certificate (one-time reinstall)
+### 从上游 1.0.4 或更早版本升级：发布者证书变化，需要一次重新安装
 
-This release is a little more professional about how the APK is signed. Android attaches a certificate to every app so the phone can tell “this update is from the same publisher as the app I already have.” Through 1.0.4, Fieldwatch used the generic Android developer certificate that the build tools ship with. That is normal while you are iterating, but people who scan a sideload APK (and some scanners) flag it: a public build should not look like a debug leftover. 1.0.5 is signed with an Off Grid Pete LLC certificate instead. Same hobby app; the file now has a publisher name scanners can check. The fingerprint is in `instruction.txt` if you want to compare.
+Android 为每个应用记录签名证书，用来判断更新是否来自同一发布者。上游 Fieldwatch 的 1.0.4 及更早版本使用构建工具附带的通用 Android 开发证书；上游 1.0.5 起改用 Off Grid Pete LLC 发布证书。这样 APK 带有可供扫描器核查的发布者信息。上游证书指纹见 `instruction.txt`。自行构建的中文 APK 可能使用不同证书，应以实际构建信息为准。
 
-The catch is one-time. The phone treats a new certificate as a different publisher, so it will not install 1.0.5 on top of 1.0.4 or earlier. You uninstall the old Fieldwatch, then install this APK. After that, later versions use the same certificate, so ordinary updates work again. You will not have to uninstall for 1.1.17.
+手机会把新证书视为不同发布者，因此上游 1.0.5 无法直接覆盖安装到 1.0.4 或更早版本之上。需要先卸载旧版，再安装新 APK；之后使用相同证书签名的上游版本可以正常覆盖更新，上游 1.1.17 不要求再次卸载。若本地中文构建的签名与已安装版本不同，Android 同样不允许直接覆盖。
 
-Uninstall wipes what is on the phone. If you added signatures, changed Settings, named radios, or saved filter presets, do this first: Settings → **Export signatures** and **Export settings**. Share or save those two files somewhere you can get them after. They are not the log and not GPS. Then uninstall (long-press the Fieldwatch icon, or `adb uninstall app.fieldwatch`), install 1.0.5, open it, tap through the disclaimer, and use **Import signatures** and **Import settings**. If you never customized, skip the export and just uninstall, then install.
+卸载会删除手机上的应用数据。如果您添加过特征、修改过设置、命名过无线设备或保存过筛选预设，请先在“设置”中执行**导出特征库**和**导出设置**，将两个文件保存到卸载后仍能访问的位置。它们不包含日志或 GPS。然后卸载旧版（长按 Fieldwatch 图标，或运行 `adb uninstall app.fieldwatch`），安装对应新 APK，打开应用并接受免责声明，再使用**导入特征库**和**导入设置**恢复。如果从未自定义过，可以跳过导出。
 
-## What Fieldwatch is not
+## Fieldwatch 的能力边界
 
-- Not Wi-Fi clients, probe-only stations, or 802.11 monitor mode
-- Not Bluetooth Classic inquiry (HC-05 / HC-06 will not appear)
-- Not cellular
-- Not direction finding
+- 无法捕获 Wi-Fi 客户端、仅发送探测请求的终端，也不支持 802.11 监听模式。
+- 不执行经典蓝牙查询（HC-05 / HC-06 不会出现）。
+- 不监听蜂窝网络。
+- 不进行无线测向。
 
-## Copyright and license
+## 版权与许可证
 
-Copyright (c) 2026 Off Grid Pete LLC.
+版权所有 (c) 2026 Off Grid Pete LLC。
 
-Fieldwatch source is licensed under the [MIT License](LICENSE). AndroidX, Kotlin, and related libraries remain Apache-2.0. IEEE and Bluetooth SIG assigned-number tables in `radiodb.bin` are subject to those organizations’ terms. See [NOTICE](NOTICE).
+Fieldwatch 源码采用 [MIT 许可证](LICENSE)。AndroidX、Kotlin 及相关库仍采用 Apache-2.0。`radiodb.bin` 中的 IEEE 和 Bluetooth SIG 分配编号表适用各组织的条款。详见 [NOTICE](NOTICE)。

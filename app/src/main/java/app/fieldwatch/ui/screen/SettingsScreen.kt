@@ -104,7 +104,7 @@ fun SettingsScreen(
     var confirmRestore by remember { mutableStateOf(false) }
     Scaffold(
         contentWindowInsets = NestedTabInsets,
-        topBar = { NestedTopBar("Settings") },
+        topBar = { NestedTopBar("设置") },
     ) { pad ->
         Column(
             Modifier
@@ -114,45 +114,45 @@ fun SettingsScreen(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SectionCard("Appearance") {
+            SectionCard("外观") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Night mode", Modifier.weight(1f))
+                Text("夜间模式", Modifier.weight(1f))
                 FieldwatchSwitch(settings.nightMode, { on -> vm.updateSettings { it.copy(nightMode = on) } })
             }
             Text(
-                "Off by default. Red-on-black field display so chips, text, and signal marks " +
-                    "do not dump green or blue into a dark sit. Background stays dark. " +
-                    "Phone brightness is unchanged.",
+                "默认关闭。使用黑底红色的现场显示，让标签、文字和信号标记" +
+                    "在黑暗环境观测时不产生绿色或蓝色亮光。背景保持深色，" +
+                    "手机亮度保持不变。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Keep screen on", Modifier.weight(1f))
+                Text("保持屏幕常亮", Modifier.weight(1f))
                 FieldwatchSwitch(settings.keepScreenOn, { on -> vm.updateSettings { it.copy(keepScreenOn = on) } })
             }
             Text(
-                "On by default. Stops the display from sleeping while Fieldwatch is open so BLE is not parked when the phone blanks. Scanning still runs in the notification if you leave the app. Turn it off when you pocket the phone.",
+                "默认开启。在 Fieldwatch 打开时防止屏幕休眠，避免熄屏后 BLE 被系统暂停。离开应用后仍会通过前台通知继续扫描。将手机放入口袋时可关闭。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Privacy mode", Modifier.weight(1f))
+                Text("隐私模式", Modifier.weight(1f))
                 FieldwatchSwitch(settings.demoMode, { on -> vm.updateSettings { it.copy(demoMode = on) } })
             }
             Text(
-                "Hides the last three octets of every MAC on Live, radar, timeline, detail, Hunt, Named radios, and watchlist cards as **:**:** so the screen and sit reports do not show full addresses. GPS last-fix and Debrief / AI Export / detail Share coordinates become “masked”; street names are omitted from those sit reports. The first three octets (OUI / vendor prefix) stay. Off by default. The map on Reports → Path still loads when Online place names and maps is on. Logs, matching, filters, Hunt math, Moving with you, and saved signatures still use the real MAC and GPS. A TAK / CoT feed, if you turned it on, is paused while this is on so full MACs and coordinates are not sent onto the LAN. Turn this off when you need the full address or coordinates on screen.",
+                "将实时、雷达、时间线、详情、信号追踪、命名设备和关注列表卡片中每个 MAC 的后三组字节隐藏为 **:**:**，使屏幕和观测报告不显示完整地址。最近 GPS 定位以及观测总结／AI 导出／详情分享中的坐标显示为“已隐藏”，这些报告也会省略街道名称。保留前三组字节（OUI／厂商前缀）。默认关闭。“在线地名与地图”开启时，“报告 → 轨迹”仍会加载地图。日志、匹配、筛选、追踪计算、随行和已保存特征仍使用真实 MAC 与 GPS。如已开启 TAK／CoT 推送，此模式会暂停推送，防止完整 MAC 和坐标发送到局域网。需要在屏幕上查看完整地址或坐标时，请关闭此模式。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             }
 
-            SectionCard("Scanning") {
+            SectionCard("扫描") {
             val label = when (settings.intensity) {
-                ScanIntensity.SAVER -> "Battery saver"
-                ScanIntensity.BALANCED -> "Balanced"
-                ScanIntensity.PERFORMANCE -> "High performance"
+                ScanIntensity.SAVER -> "省电"
+                ScanIntensity.BALANCED -> "均衡"
+                ScanIntensity.PERFORMANCE -> "高性能"
             }
-            Text("Scan intensity  ·  $label")
+            Text("扫描强度 · $label")
             FieldwatchSlider(
                 value = settings.intensity.ordinal.toFloat(),
                 onValueChange = { v ->
@@ -163,15 +163,15 @@ fun SettingsScreen(
                 steps = 1,
             )
             Text(
-                "Wi-Fi is a batch radio: the phone grabs every AP at once, then must wait. High performance asks about every 30s — that is the fastest cadence that stays under the OS limit of four scans per two minutes. BLE still streams in between.",
+                "Wi-Fi 采用批量扫描：手机一次获取所有 AP，然后必须等待。高性能模式约每 30 秒请求一次，这是不超过系统“每两分钟四次扫描”限制的最快频率。期间 BLE 仍持续接收。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             StableCaption(
                 state.throttleHint.ifBlank { " " },
-                "Wi-Fi waiting on OS",
-                "Wi-Fi scanning",
-                "Wi-Fi next 99s",
+                "Wi-Fi 正等待系统",
+                "Wi-Fi 正在扫描",
+                "Wi-Fi 下次扫描 99 秒",
                 " ",
             )
 
@@ -194,7 +194,7 @@ fun SettingsScreen(
             }
             val fastActive = settings.wifiFastScan && !osThrottled
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Faster Wi-Fi AP scans", Modifier.weight(1f))
+                Text("加快 Wi-Fi AP 扫描", Modifier.weight(1f))
                 FieldwatchSwitch(
                     checked = settings.wifiFastScan,
                     onCheckedChange = { on ->
@@ -211,30 +211,30 @@ fun SettingsScreen(
             StableCaption(
                 when {
                     Build.VERSION.SDK_INT < 30 ->
-                        "Needs Android 11+ so Fieldwatch can read whether the OS is still throttling scans. This phone cannot confirm that, so the switch stays off."
+                        "需要 Android 11 及以上版本，Fieldwatch 才能读取系统是否仍在限制扫描。本机无法确认，因此此开关保持关闭。"
                     fastActive ->
-                        "On. Fieldwatch asks for a new AP list about every 8 seconds. Uses more battery and heat. If the OS starts refusing scans, it backs off."
+                        "已开启。Fieldwatch 约每 8 秒请求一次新的 AP 列表，会增加耗电和发热。如果系统开始拒绝扫描，应用会降低频率。"
                     settings.wifiFastScan && osThrottled ->
-                        "Saved on, but not in effect — Android Wi-Fi scan throttling is still on. Turn that off in Developer options, then return here."
+                        "已保存为开启，但尚未生效：Android 的 Wi-Fi 扫描节流仍已开启。请在开发者选项中关闭后返回。"
                     else ->
-                        "Stock Android allows about four AP scans per two minutes. Faster scans only run after you turn off Wi-Fi scan throttling in Developer options. Fieldwatch checks that OS switch before turning this on, and cannot change it for you."
+                        "原生 Android 每两分钟约允许扫描 AP 四次。需在开发者选项中关闭“Wi-Fi 扫描节流”后，才能加快扫描。Fieldwatch 开启前会检查该系统开关，无法代你修改。"
                 },
-                "Needs Android 11+ so Fieldwatch can read whether the OS is still throttling scans. This phone cannot confirm that, so the switch stays off.",
-                "On. Fieldwatch asks for a new AP list about every 8 seconds. Uses more battery and heat. If the OS starts refusing scans, it backs off.",
-                "Saved on, but not in effect — Android Wi-Fi scan throttling is still on. Turn that off in Developer options, then return here.",
-                "Stock Android allows about four AP scans per two minutes. Faster scans only run after you turn off Wi-Fi scan throttling in Developer options. Fieldwatch checks that OS switch before turning this on, and cannot change it for you.",
+                "需要 Android 11 及以上版本，Fieldwatch 才能读取系统是否仍在限制扫描。本机无法确认，因此此开关保持关闭。",
+                "已开启。Fieldwatch 约每 8 秒请求一次新的 AP 列表，会增加耗电和发热。如果系统开始拒绝扫描，应用会降低频率。",
+                "已保存为开启，但尚未生效：Android 的 Wi-Fi 扫描节流仍已开启。请在开发者选项中关闭后返回。",
+                "原生 Android 每两分钟约允许扫描 AP 四次。需在开发者选项中关闭“Wi-Fi 扫描节流”后，才能加快扫描。Fieldwatch 开启前会检查该系统开关，无法代你修改。",
             )
             if (needDevOptions) {
                 AlertDialog(
                     onDismissRequest = { needDevOptions = false },
-                    title = { Text("Developer options required") },
+                    title = { Text("需要开发者选项") },
                     text = {
                         Text(
                             if (Build.VERSION.SDK_INT < 30) {
-                                "This phone is older than Android 11, so Fieldwatch cannot read the OS Wi-Fi scan-throttle switch. Faster AP scanning stays off."
+                                "本机系统早于 Android 11，Fieldwatch 无法读取系统的 Wi-Fi 扫描节流开关，因此保持关闭快速 AP 扫描。"
                             } else {
-                                "Android is still throttling Wi-Fi scans (about four per two minutes). Fieldwatch will not turn Faster Wi-Fi AP scans on until that is off.\n\n" +
-                                    "Enable Developer options (tap Build number seven times in About phone), then Settings → Developer options → Wi-Fi scan throttling → Off. Come back and flip this switch again."
+                                "Android 仍在限制 Wi-Fi 扫描（每两分钟约四次）。关闭该限制后，Fieldwatch 才能开启快速 Wi-Fi AP 扫描。\n\n" +
+                                    "请启用开发者选项（在“关于手机”中连续点按“版本号”七次），然后进入“设置 → 开发者选项 → Wi-Fi 扫描节流”并关闭。返回后再次打开此开关。"
                             },
                         )
                     },
@@ -247,43 +247,43 @@ fun SettingsScreen(
                                         context.startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
                                     }
                                 },
-                            ) { Text("Open developer options") }
+                            ) { Text("打开开发者选项") }
                         } else {
-                            TextButton(onClick = { needDevOptions = false }) { Text("OK") }
+                            TextButton(onClick = { needDevOptions = false }) { Text("确定") }
                         }
                     },
                     dismissButton = {
                         if (Build.VERSION.SDK_INT >= 30) {
-                            TextButton(onClick = { needDevOptions = false }) { Text("Not now") }
+                            TextButton(onClick = { needDevOptions = false }) { Text("暂不") }
                         }
                     },
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Allow background usage", Modifier.weight(1f))
+                Text("允许后台运行", Modifier.weight(1f))
                 FieldwatchSwitch(
                     checked = backgroundAllowed,
                     onCheckedChange = { batteryGate = BatteryAndroidGate.BACKGROUND },
                 )
             }
             Text(
-                "Mirrors Android Allow background usage. Tap to open Fieldwatch’s Battery page and " +
-                    "use that switch. Fieldwatch updates when you return. Off: the OS can kill the scan " +
-                    "as soon as you leave. Not Keep screen on.",
+                "对应 Android 的“允许后台运行”。点按打开 Fieldwatch 的电池页面，" +
+                    "使用其中的开关，返回后 Fieldwatch 会更新状态。关闭时，系统可能在你离开应用后" +
+                    "立即停止扫描。此设置独立于“保持屏幕常亮”。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Unrestricted battery", Modifier.weight(1f))
+                Text("电池使用不受限制", Modifier.weight(1f))
                 FieldwatchSwitch(
                     checked = unrestricted,
                     onCheckedChange = { batteryGate = BatteryAndroidGate.UNRESTRICTED },
                 )
             }
             Text(
-                "Mirrors Android Unrestricted (not Optimized). Some phones (Samsung among them) do not " +
-                    "open onto that choice. If you only see Allow background usage, tap that row to " +
-                    "click through and select Unrestricted. Fieldwatch updates when you return.",
+                "对应 Android 的“不受限制”电池模式。部分手机（包括三星）不会" +
+                    "直接显示此选项。若只看到“允许后台运行”，请点按该行进入，" +
+                    "再选择“不受限制”。返回后 Fieldwatch 会更新状态。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -292,18 +292,18 @@ fun SettingsScreen(
                 AlertDialog(
                     onDismissRequest = { batteryGate = null },
                     title = {
-                        Text(if (background) "Allow background usage" else "Unrestricted battery")
+                        Text(if (background) "允许后台运行" else "电池使用不受限制")
                     },
                     text = {
                         Text(
                             if (background) {
-                                "The next screen is Fieldwatch’s Battery page. Use the Allow background usage switch. " +
-                                    "Fieldwatch will match that setting when you return."
+                                "下一页是 Fieldwatch 的电池设置，请使用“允许后台运行”开关。" +
+                                    "返回后 Fieldwatch 会同步此设置。"
                             } else {
-                                "Some phones (Samsung among them) do not open onto Unrestricted / " +
-                                    "Optimized / Restricted. If you only see Allow background usage, " +
-                                    "tap that row (the words, not the blue switch) to click through, " +
-                                    "then select Unrestricted. Fieldwatch will match that when you return."
+                                "部分手机（包括三星）不会直接显示“不受限制／" +
+                                    "优化／受限制”。若只看到“允许后台运行”，" +
+                                    "请点按该行文字（不是蓝色开关）进入，" +
+                                    "然后选择“不受限制”。返回后 Fieldwatch 会同步此设置。"
                             },
                         )
                     },
@@ -317,22 +317,22 @@ fun SettingsScreen(
                                     highlightBackground = gate == BatteryAndroidGate.BACKGROUND,
                                 )
                             },
-                        ) { Text("Open Android settings") }
+                        ) { Text("打开 Android 设置") }
                     },
                     dismissButton = {
-                        TextButton(onClick = { batteryGate = null }) { Text("Not now") }
+                        TextButton(onClick = { batteryGate = null }) { Text("暂不") }
                     },
                 )
             }
             }
 
-            SectionCard("Watchlist") {
+            SectionCard("关注列表") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Watchlist alerts", Modifier.weight(1f))
+                Text("关注警报", Modifier.weight(1f))
                 FieldwatchSwitch(settings.alertsEnabled, { on -> vm.updateSettings { it.copy(alertsEnabled = on) } })
             }
             Text(
-                "On by default. Master switch for bookmarked signatures and devices. Off: no beep, vibration, flash, jump, or shade card. Bookmarking still works — you just will not be told when that radio appears.",
+                "默认开启。这是已关注特征和设备的警报总开关。关闭后不发出提示音、不振动、不闪烁、不跳转，也不显示通知卡片。仍可关注设备，但设备出现时不会提醒。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -340,14 +340,14 @@ fun SettingsScreen(
             FieldwatchActionButton(
                 onClick = onRadioBookmarks,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Named radios ($radioWatchN)") }
+            ) { Text("命名设备（$radioWatchN）") }
             Text(
-                "Custom names for one MAC. Alert is optional. Filters → Named radios only shows them on Live. Signature watches stay on Signatures.",
+                "为单个 MAC 设置自定义名称，可选择开启警报。“筛选 → 仅命名设备”可在实时页面只显示这些设备。已关注特征仍在“特征库”中。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Beep on watched signature", Modifier.weight(1f))
+                Text("已关注特征提示音", Modifier.weight(1f))
                 FieldwatchSwitch(
                     settings.alertBeep,
                     { on -> vm.updateSettings { it.copy(alertBeep = on) } },
@@ -355,12 +355,12 @@ fun SettingsScreen(
                 )
             }
             Text(
-                "The double pip on media volume when a bookmarked signature or device first appears, or returns after leaving. Sitting detections do not beep again. Independent of Voice — use beep, voice, or both. Raise media volume if you hear nothing, then tap Test alert.",
+                "已关注特征或设备首次出现、离开后再次出现时，会按媒体音量播放两声提示音。持续存在的设备不会重复响铃。与语音独立，可单独或同时使用。若听不到声音，请提高媒体音量后点按“测试警报”。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Voice on watched signature", Modifier.weight(1f))
+                Text("已关注特征语音提示", Modifier.weight(1f))
                 FieldwatchSwitch(
                     settings.alertVoice,
                     { on -> vm.updateSettings { it.copy(alertVoice = on) } },
@@ -368,11 +368,11 @@ fun SettingsScreen(
                 )
             }
             Text(
-                "On by default. Speaks on the same media volume as the pip. Independent of Beep: with Beep on, voice follows the pip; with Beep off, voice only. Not Hunt. If a phrase is already being spoken, a second hit is skipped. Phones with no text-to-speech still beep if Beep is on.",
+                "默认开启，使用与提示音相同的媒体音量。与提示音独立：开启提示音时，语音在提示音之后播放；关闭提示音时只播放语音。不适用于信号追踪。正在播报时会跳过第二次触发。没有文字转语音功能的手机，在提示音开启时仍会响铃。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text("What to say", style = MaterialTheme.typography.labelLarge)
+            Text("播报内容", style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AlertVoiceWhat.entries.forEach { item ->
                     FieldwatchFilterChip(
@@ -384,7 +384,7 @@ fun SettingsScreen(
                 }
             }
             Text(
-                "For signature watches: Class is the Live glyph bucket (finder tags, audio, …). Signature is the catalog row (Apple AirTags, Axon, …). Class + signature (default) says both. A named radio with Alert on always says its custom name, even if it has no class. Test alert plays the signature mix you have on.",
+                "对于已关注特征：“类别”对应实时页面的图标类别（寻物标签、音频等），“特征”对应特征库条目（Apple AirTags、Axon 等）。“类别 + 特征”（默认）会同时播报两者。开启警报的命名设备始终播报自定义名称，即使没有类别。“测试警报”会使用当前所选组合。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -392,9 +392,9 @@ fun SettingsScreen(
                 onClick = vm::testWatchBeep,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = settings.alertsEnabled && (settings.alertBeep || settings.alertVoice),
-            ) { Text("Test alert") }
+            ) { Text("测试警报") }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Jump to new watched detection", Modifier.weight(1f))
+                Text("跳转至新发现的已关注设备", Modifier.weight(1f))
                 FieldwatchSwitch(
                     settings.snapToBeep,
                     { on -> vm.updateSettings { it.copy(snapToBeep = on) } },
@@ -402,12 +402,12 @@ fun SettingsScreen(
                 )
             }
             Text(
-                "When a new watched signature or device appears, Live scrolls to that row so you can see the flash. Works with beep, voice, or both. Weak hits sit at the bottom of a strength-ranked list. Turn this off if you do not want the list to move.",
+                "新发现已关注特征或设备时，实时列表会滚动到对应条目，以便查看闪烁提示。可配合提示音、语音或两者使用。按信号强度排序时，弱信号位于底部。不希望列表自动移动时可关闭。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("System notification", Modifier.weight(1f))
+                Text("系统通知", Modifier.weight(1f))
                 FieldwatchSwitch(
                     settings.alertShade,
                     { on -> vm.updateSettings { it.copy(alertShade = on) } },
@@ -415,36 +415,36 @@ fun SettingsScreen(
                 )
             }
             Text(
-                "Optional. Posts a silent shade card when a watched radio appears. Off by default — the beep and flash are enough, and skipping the card keeps the scan loop lighter.",
+                "可选。已关注设备出现时，在通知栏显示静音卡片。默认关闭，提示音和闪烁通常已足够，省略卡片也可减轻扫描负担。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             }
 
-            SectionCard("Location") {
+            SectionCard("位置") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Tag detections with GPS", Modifier.weight(1f))
+                Text("为探测结果添加 GPS 标记", Modifier.weight(1f))
                 FieldwatchSwitch(settings.tagLocation, { on -> vm.updateSettings { it.copy(tagLocation = on) } })
             }
             Text(
-                "On by default. Requests live GPS/network updates and stamps each hear (Live detail, Moving with you, " +
-                    "Debrief, and lat/lon on new log rows). Last-known-only is ignored if older than 30 s. " +
-                    "That is your GPS at hear-time, not an independent fix on the other radio. " +
-                    "Use high-accuracy Location or the path stays 0. Turn off if you do not want operator coordinates on logs. " +
-                    "Heard-here TAK pins also need this; advertised payload coordinates (Remote ID) do not.",
+                "默认开启。请求实时 GPS／网络位置更新，并为每次接收添加位置标记，供实时详情、随行、" +
+                    "观测总结及新日志行的经纬度使用。超过 30 秒的上次已知位置会被忽略。" +
+                    "这是接收时本机的 GPS 位置，不是对方无线设备的独立定位。" +
+                    "请使用高精度定位，否则轨迹可能一直为 0。不希望日志记录操作者坐标时可关闭。" +
+                    "“此处接收”的 TAK 标记也需要此功能，广播载荷中的坐标（Remote ID）则不需要。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Online place names and maps", Modifier.weight(1f))
+                Text("在线地名与地图", Modifier.weight(1f))
                 FieldwatchSwitch(settings.onlineLookup, { on -> vm.updateSettings { it.copy(onlineLookup = on) } })
             }
             Text(
-                "On by default. When the phone has internet, Debrief / AI Export reverse-geocode GPS stamps " +
-                    "to street/city, and Reports → Path loads OpenStreetMap tiles under the trace. " +
-                    "No Fieldwatch cloud, no API key. Offline or no geocoder: Debrief uses coordinates only and Path stays the current north-up trace — no error dialog. " +
-                    "Turn off to keep streets and map tiles out of reports and Path. " +
-                    "Debrief, Sit export, Log export, and Reset / clear log are on the Reports tab.",
+                "默认开启。有网络时，观测总结／AI 导出会将 GPS 标记反向解析为" +
+                    "街道／城市，“报告 → 轨迹”会在轨迹下方加载 OpenStreetMap 地图瓦片。" +
+                    "不使用 Fieldwatch 云端，也不需要 API 密钥。离线或无地理编码服务时，观测总结只使用坐标，轨迹保持北向朝上的线条，不弹出错误。" +
+                    "关闭后，报告和轨迹不使用街道名称与地图瓦片。" +
+                    "观测总结、观测导出、日志导出及重置／清除日志均在“报告”页。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -452,27 +452,27 @@ fun SettingsScreen(
 
             SectionCard("TAK / CoT") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("TAK / CoT feed", Modifier.weight(1f))
+                Text("TAK／CoT 推送", Modifier.weight(1f))
                 FieldwatchSwitch(settings.takEnabled, { on -> vm.updateSettings { it.copy(takEnabled = on) } })
             }
             Text(
-                "Off by default. Sends Cursor-on-Target UDP markers to ATAK, WinTAK, or iTAK. " +
-                    "This phone (${TakDefaults.LOOPBACK}:${TakDefaults.PORT}) is ATAK CIV on this handset. " +
-                    "LAN multicast is ${TakDefaults.SA_HOST}:${TakDefaults.SA_PORT}. " +
-                    "Custom is a unicast IPv4 or hostname. UDP only — a TAK server’s TCP 8087 is not this feed. " +
-                    "Heard-here pins sit at this phone’s GPS at the loudest hear (closest approach) and are labeled (here). " +
-                    "Walking away does not drag the pin; a louder hear moves it. Keep-alives refresh the same lat/lon every ~10 s so ATAK does not drop it. " +
-                    "Advertised lat/lon (stock Remote ID) sit on the aircraft; the same Remote ID " +
-                    "keeps one marker that moves (UAS ID, not the rotating BLE MAC). " +
-                    "A decoded pilot location is a second pin. Gone radios are dropped on ATAK instead of sitting 120 s. " +
-                    "Tap a marker in ATAK for remarks (name, MAC, RSSI, signatures). " +
-                    "Not direction-finding. Not a Remote ID plugin. Privacy mode pauses the feed.",
+                "默认关闭。向 ATAK、WinTAK 或 iTAK 发送 Cursor-on-Target UDP 标记。" +
+                    "“本机”（${TakDefaults.LOOPBACK}:${TakDefaults.PORT}）指此手机上的 ATAK CIV。" +
+                    "局域网组播地址为 ${TakDefaults.SA_HOST}:${TakDefaults.SA_PORT}。" +
+                    "“自定义”使用单播 IPv4 或主机名。仅支持 UDP，不是 TAK 服务器的 TCP 8087 接口。" +
+                    "“此处接收”标记位于本机接收到最强信号（最接近时）的 GPS 位置，并标注“（此处）”。" +
+                    "走远时标记不随之移动，接收到更强信号时才更新。约每 10 秒刷新同一经纬度，避免 ATAK 移除标记。" +
+                    "广播的经纬度（内置 Remote ID）表示飞行器位置；相同的 Remote ID " +
+                    "保持一个随位置移动的标记，按 UAS ID 识别，而非轮换的 BLE MAC。" +
+                    "解码出的操作员位置会显示为第二个标记。设备离开后会从 ATAK 移除，不再保留 120 秒。" +
+                    "点按 ATAK 中的标记可查看备注（名称、MAC、RSSI、特征）。" +
+                    "这不是无线测向，也不是 Remote ID 插件。隐私模式会暂停推送。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (settings.takEnabled && settings.demoMode) {
                 Text(
-                    "Privacy mode is on — the feed is paused so full MACs and coordinates are not sent. Turn Privacy mode off to publish.",
+                    "隐私模式已开启，推送已暂停，以免发送完整 MAC 和坐标。关闭隐私模式后可恢复推送。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -482,22 +482,22 @@ fun SettingsScreen(
             }
             }
 
-            SectionCard("Logging") {
+            SectionCard("日志") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Write detections to disk", Modifier.weight(1f))
+                Text("将探测结果写入磁盘", Modifier.weight(1f))
                 FieldwatchSwitch(settings.loggingEnabled, { on -> vm.updateSettings { it.copy(loggingEnabled = on) } })
             }
             StableCaption(
                 if (settings.loggingEnabled) {
-                    "Logging is on. New detections are appended to the rotating file."
+                    "日志已开启。新探测结果会追加到轮转文件。"
                 } else {
-                    "Logging is off. Scanning still runs; nothing new is written until you turn this back on."
+                    "日志已关闭。扫描继续运行，重新开启前不写入新数据。"
                 },
-                "Logging is on. New detections are appended to the rotating file.",
-                "Logging is off. Scanning still runs; nothing new is written until you turn this back on.",
+                "日志已开启。新探测结果会追加到轮转文件。",
+                "日志已关闭。扫描继续运行，重新开启前不写入新数据。",
             )
             Text(
-                "The rotating file is JSON lines (one hear per line). Reports → Log → Format writes CSV, JSON lines, GPX, KML, or WiGLE when you Share or Save.",
+                "轮转文件采用 JSON lines 格式（每行一次接收）。在“报告 → 日志导出 → 格式”中选择后，分享或保存时可生成 CSV、JSON lines、GPX、KML 或 WiGLE 文件。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -506,7 +506,7 @@ fun SettingsScreen(
             LaunchedEffect(settings.logRotateKb) {
                 if (!rotateDragging) rotateDrag = settings.logRotateKb
             }
-            Text("Rotate at $rotateDrag KB")
+            Text("达到 $rotateDrag KB 时轮转")
             FieldwatchSlider(
                 value = rotateDrag.toFloat(),
                 onValueChange = {
@@ -524,7 +524,7 @@ fun SettingsScreen(
             LaunchedEffect(settings.staleSec) {
                 if (!staleDragging) staleDrag = settings.staleSec
             }
-            Text("Stale after ${staleDrag}s")
+            Text("${staleDrag} 秒后视为过期")
             FieldwatchSlider(
                 value = staleDrag.toFloat(),
                 onValueChange = {
@@ -539,89 +539,89 @@ fun SettingsScreen(
             )
             StickyHeight("log-stats") {
                 Text(
-                    "${state.logLines} lines this session  ·  ${vm.logBytes() / 1024} KB on disk. " +
-                        "Share, Save, and Reset / clear log are on the Reports tab.",
+                    "本次会话 ${state.logLines} 行 · 磁盘占用 ${vm.logBytes() / 1024} KB。" +
+                        "分享、保存和重置／清除日志位于“报告”页。",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
             }
 
-            SectionCard("Signatures") {
+            SectionCard("特征库") {
             Text(
-                "Export the catalog (stock plus any you added or edited) to share with another Fieldwatch or as a backup. Import adds new rows and extra rules; it does not delete anything. Same id or the same match rules are skipped so a pack can be imported twice. Update stock catalog from GitHub replaces stock rows (including Extra attention) from the v2 pack on the repo; bookmarks, Settings, and signatures you added stay. Needs internet. Offline: Import signatures from a file. Restore defaults below still wipes customs.",
+                "导出特征库（包括内置条目及自行添加或编辑的内容），可分享给其他 Fieldwatch 用户或备份。导入会添加新条目和额外规则，不删除现有内容；相同 ID 或匹配规则会跳过，因此同一包可重复导入。“从 GitHub 更新内置特征库”使用仓库中的 v2 特征包替换内置条目（含重点关注），保留关注项目、设置和自建特征。此操作需要网络；离线时可从文件导入。下方“恢复默认值”仍会清除自定义内容。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             FieldwatchActionButton(
                 onClick = vm::startSignatureShare,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Export signatures") }
+            ) { Text("导出特征库") }
             FieldwatchActionButton(
                 onClick = { saveSignatures.launch(vm.suggestedSignaturesName()) },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Save signatures to SD card / storage…") }
+            ) { Text("将特征库保存到 SD 卡／存储空间…") }
             FieldwatchActionButton(
                 onClick = {
                     importSignatures.launch(arrayOf("application/json", "text/plain", "*/*"))
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Import signatures…") }
+            ) { Text("导入特征库…") }
             FieldwatchActionButton(
                 onClick = vm::updateStockCatalogFromGitHub,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Update stock catalog from GitHub") }
+            ) { Text("从 GitHub 更新内置特征库") }
 
             FieldwatchActionButton(
                 onClick = { confirmRestore = true },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Restore default signatures & presets")
+                Text("恢复默认特征库与预设")
             }
             }
 
-            SectionCard("Settings backup") {
+            SectionCard("设置备份") {
             Text(
-                "Settings switches, the current filter, filter presets, named radios, and signature watches. " +
-                    "Not the catalog — that is Export signatures. Not logs or GPS. " +
-                    "Import replaces those on this phone; the catalog stays. " +
-                    "Use this after a factory reset or on a new phone.",
+                "包含设置开关、当前筛选、筛选预设、命名设备和已关注特征。" +
+                    "不包含特征库（需单独导出）、日志或 GPS。" +
+                    "导入会替换本机对应设置，特征库保持不变。" +
+                    "可在恢复出厂设置或更换手机后使用。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             FieldwatchActionButton(
                 onClick = vm::startSettingsShare,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Export settings") }
+            ) { Text("导出设置") }
             FieldwatchActionButton(
                 onClick = { saveSettings.launch(vm.suggestedSettingsName()) },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Save settings to SD card / storage…") }
+            ) { Text("将设置保存到 SD 卡／存储空间…") }
             FieldwatchActionButton(
                 onClick = {
                     importSettings.launch(arrayOf("application/json", "text/plain", "*/*"))
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Import settings…") }
+            ) { Text("导入设置…") }
             }
 
             FieldwatchActionButton(
                 onClick = onShowLiveTour,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Show Live tour") }
+            ) { Text("显示实时页面引导") }
             Text(
-                "Chrome overlay on Live: Tune is Display (Radar, list, By class), Pause, Filters, Signatures, Reports, Settings. First-run after the license; this button shows it again.",
+                "实时页面功能引导包括：调整显示（雷达、列表、按类别等）、暂停、筛选、特征库、报告和设置。首次同意许可后会显示，也可通过此按钮再次查看。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Text(
-                "Fieldwatch ${app.fieldwatch.BuildConfig.VERSION_NAME}  ·  Catalog ${state.catalogVersion}",
+                "Fieldwatch ${app.fieldwatch.BuildConfig.VERSION_NAME} · 特征库 ${state.catalogVersion}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                "Passive Wi-Fi + BLE only. " +
-                    "Stock Android cannot promiscuously capture Wi-Fi stations; access points and BLE advertisers are what the radios expose.",
+                "仅被动接收 Wi-Fi + BLE。" +
+                    "原生 Android 无法以混杂模式捕获 Wi-Fi 客户端；无线接口仅提供接入点和 BLE 广播设备。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -636,9 +636,9 @@ fun SettingsScreen(
             }
             Text(
                 if (ipv4.isEmpty()) {
-                    "This phone’s IPv4  ·  none"
+                    "本机 IPv4 · 无"
                 } else {
-                    "This phone’s IPv4  ·  ${ipv4.joinToString("  ·  ")}"
+                    "本机 IPv4 · ${ipv4.joinToString("  ·  ")}"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -651,13 +651,13 @@ fun SettingsScreen(
     if (confirmRestore) {
         AlertDialog(
             onDismissRequest = { confirmRestore = false },
-            title = { Text("Restore defaults?") },
+            title = { Text("恢复默认值？") },
             text = {
                 Text(
-                    "Rewrites the catalog (stock rows, class colors, Decode fields), stock bookmarks, " +
-                        "stock filter chips, and default Settings switches. Custom signatures and chips you " +
-                        "saved are wiped. Export signatures and Export settings first if you want a backup. " +
-                        "This cannot be undone.",
+                    "将重写特征库（内置条目、类别颜色、解码字段）、内置关注项目、" +
+                        "内置筛选预设和默认设置开关。你保存的自定义特征和预设" +
+                        "将被清除。如需备份，请先导出特征库和设置。" +
+                        "此操作无法撤销。",
                 )
             },
             confirmButton = {
@@ -666,10 +666,10 @@ fun SettingsScreen(
                         confirmRestore = false
                         vm.restoreDefaults()
                     },
-                ) { Text("Restore") }
+                ) { Text("恢复") }
             },
             dismissButton = {
-                TextButton(onClick = { confirmRestore = false }) { Text("Cancel") }
+                TextButton(onClick = { confirmRestore = false }) { Text("取消") }
             },
         )
     }
@@ -687,7 +687,7 @@ private fun CreditFooter() {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            "Copyright (c) 2026 Off Grid Pete LLC. All rights reserved.",
+            "版权所有 (c) 2026 Off Grid Pete LLC。保留所有权利。",
             style = MaterialTheme.typography.labelSmall,
             color = muted,
         )
@@ -748,7 +748,7 @@ private fun TakFeedSettings(settings: AppSettings, vm: FieldwatchViewModel, stat
     LaunchedEffect(settings.takHost) { hostText = settings.takHost }
     LaunchedEffect(settings.takPort) { portText = settings.takPort.toString() }
     val preset = TakPublish.udpPreset(settings.takHost, settings.takPort)
-    Text("Destination", style = MaterialTheme.typography.labelLarge)
+    Text("目标", style = MaterialTheme.typography.labelLarge)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         FieldwatchFilterChip(
             selected = preset == TakUdpPreset.THIS_PHONE,
@@ -757,7 +757,7 @@ private fun TakFeedSettings(settings: AppSettings, vm: FieldwatchViewModel, stat
                 vm.updateSettings { it.copy(takHost = host, takPort = port) }
             },
             enabled = !settings.demoMode,
-            label = { Text("This phone") },
+            label = { Text("本机") },
         )
         FieldwatchFilterChip(
             selected = preset == TakUdpPreset.LAN_MULTICAST,
@@ -766,7 +766,7 @@ private fun TakFeedSettings(settings: AppSettings, vm: FieldwatchViewModel, stat
                 vm.updateSettings { it.copy(takHost = host, takPort = port) }
             },
             enabled = !settings.demoMode,
-            label = { Text("LAN multicast") },
+            label = { Text("局域网组播") },
         )
         FieldwatchFilterChip(
             selected = preset == TakUdpPreset.CUSTOM,
@@ -777,14 +777,14 @@ private fun TakFeedSettings(settings: AppSettings, vm: FieldwatchViewModel, stat
                 }
             },
             enabled = !settings.demoMode,
-            label = { Text("Custom") },
+            label = { Text("自定义") },
         )
     }
     Text(
-        "This phone: ${TakDefaults.LOOPBACK}:${TakDefaults.PORT} (ATAK CIV on this handset). " +
-            "LAN multicast: ${TakDefaults.SA_HOST}:${TakDefaults.SA_PORT} (other ATAKs on this Wi-Fi). " +
-            "Custom: type a unicast IPv4 or hostname. UDP only. A TAK server’s TCP 8087 is not this feed. " +
-            "If This phone does not plot, use Custom with this phone’s Wi-Fi IPv4 from the footer and port ${TakDefaults.PORT}.",
+        "本机：${TakDefaults.LOOPBACK}:${TakDefaults.PORT}（此手机上的 ATAK CIV）。" +
+            "局域网组播：${TakDefaults.SA_HOST}:${TakDefaults.SA_PORT}（同一 Wi-Fi 中的其他 ATAK）。" +
+            "自定义：输入单播 IPv4 或主机名。仅支持 UDP，不是 TAK 服务器的 TCP 8087 接口。" +
+            "若“本机”无法显示标记，请改用“自定义”，输入页脚中的本机 Wi-Fi IPv4 和端口 ${TakDefaults.PORT}。",
         style = MaterialTheme.typography.bodySmall,
         color = muted,
     )
@@ -797,7 +797,7 @@ private fun TakFeedSettings(settings: AppSettings, vm: FieldwatchViewModel, stat
                 vm.updateSettings { it.copy(takHost = trimmed) }
             }
         },
-        label = "Host",
+        label = "主机",
         placeholder = TakDefaults.HOST,
         enabled = !settings.demoMode,
     )
@@ -812,72 +812,72 @@ private fun TakFeedSettings(settings: AppSettings, vm: FieldwatchViewModel, stat
                 }
             }
         },
-        label = "Port",
+        label = "端口",
         placeholder = TakDefaults.PORT.toString(),
-        supportingText = "UDP. ATAK CIV ${TakDefaults.PORT}. SA multicast ${TakDefaults.SA_PORT}. Not TCP 8087.",
+        supportingText = "UDP。ATAK CIV 端口 ${TakDefaults.PORT}，SA 组播端口 ${TakDefaults.SA_PORT}。不是 TCP 8087。",
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         enabled = !settings.demoMode,
     )
     Text(takStatusLine(status), style = MaterialTheme.typography.bodySmall, color = muted)
-    Text("What to send", style = MaterialTheme.typography.labelLarge)
+    Text("发送内容", style = MaterialTheme.typography.labelLarge)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         FieldwatchFilterChip(
             selected = settings.takAttention,
             onClick = { vm.updateSettings { it.copy(takAttention = !it.takAttention) } },
             enabled = !settings.demoMode,
-            label = { Text("Extra attention") },
+            label = { Text("重点关注") },
         )
         FieldwatchFilterChip(
             selected = settings.takPayloadFix,
             onClick = { vm.updateSettings { it.copy(takPayloadFix = !it.takPayloadFix) } },
             enabled = !settings.demoMode,
-            label = { Text("Payload location") },
+            label = { Text("载荷位置") },
         )
         FieldwatchFilterChip(
             selected = settings.takWatchlist,
             onClick = { vm.updateSettings { it.copy(takWatchlist = !it.takWatchlist) } },
             enabled = !settings.demoMode,
-            label = { Text("Watchlist") },
+            label = { Text("关注列表") },
         )
         FieldwatchFilterChip(
             selected = settings.takAllSignatures,
             onClick = { vm.updateSettings { it.copy(takAllSignatures = !it.takAllSignatures) } },
             enabled = !settings.demoMode,
-            label = { Text("All signatures") },
+            label = { Text("全部特征") },
         )
     }
     Text(
-        "Independent chips. Extra attention (on): body-cam, glasses, recording wearables, pentest, public-safety APs. " +
-            "Payload location (on): advertised lat/lon from a decode map — required for stock Remote ID, which has no Extra attention mark. " +
-            "Watchlist (off): bookmarked signatures and named radios with Alert on. " +
-            "All signatures (off): every labeled radio — noisy in a plaza. Unmatched radios never go. " +
-            "A pin still needs coordinates: advertised payload, or GPS tagging with a live fix. " +
-            "Heard-here holds the loudest hear, not the last, and callsigns end in (here). " +
-            "Remote ID keeps one aircraft marker (UAS ID) plus a pilot pin when that location decoded.",
+        "各选项独立。“重点关注”（默认开）：执法记录仪、眼镜、录音录像可穿戴设备、渗透测试设备、公共安全 AP。" +
+            "“载荷位置”（默认开）：解码映射得到的广播经纬度。内置 Remote ID 没有重点关注标记，因此需开启此项。" +
+            "“关注列表”（默认关）：已关注特征，以及已开启警报的命名设备。" +
+            "“全部特征”（默认关）：所有已标注设备，在公共场所可能较多。未匹配设备始终不会发送。" +
+            "标记仍需要坐标：来自广播载荷，或带实时定位的 GPS 标记。" +
+            "“此处接收”保留最强信号时的位置，而非最后一次位置，呼号以“（此处）”结尾。" +
+            "Remote ID 保留一个按 UAS ID 识别的飞行器标记，解码出操作员位置时另加一个标记。",
         style = MaterialTheme.typography.bodySmall,
         color = muted,
     )
 }
 
 private fun takStatusLine(status: TakFeedStatus): String {
-    if (status.paused) return "Feed status  ·  paused (Privacy mode)"
+    if (status.paused) return "推送状态 · 已暂停（隐私模式）"
     if (status.error != null) {
         val whenAt = takStatusWhen(status.at)
-        return "Feed status  ·  error: ${status.error}" + if (whenAt.isNotEmpty()) "  ·  $whenAt" else ""
+        return "推送状态 · 错误：${status.error}" + if (whenAt.isNotEmpty()) "  ·  $whenAt" else ""
     }
     if (status.at <= 0L) {
-        return "Feed status  ·  no send yet this session"
+        return "推送状态 · 本次会话尚未发送"
     }
     val bits = ArrayList<String>(5)
-    bits += "on the feed ${status.onFeed}"
-    bits += "sent ${status.sent}"
+    bits += "推送中 ${status.onFeed} 个"
+    bits += "已发送 ${status.sent} 个"
     if (status.gone > 0) {
-        bits += if (status.gone == 1) "1 gone" else "${status.gone} gone"
+        bits += if (status.gone == 1) "1 个已离开" else "${status.gone} 个已离开"
     }
     if (status.dest.isNotBlank()) bits += status.dest
     val whenAt = takStatusWhen(status.at)
     if (whenAt.isNotEmpty()) bits += whenAt
-    val head = "Feed status  ·  ${bits.joinToString("  ·  ")}"
+    val head = "推送状态 · ${bits.joinToString("  ·  ")}"
     return if (status.detail.isNotBlank() && status.sent == 0 && status.gone == 0) {
         "$head  ·  ${status.detail}"
     } else {

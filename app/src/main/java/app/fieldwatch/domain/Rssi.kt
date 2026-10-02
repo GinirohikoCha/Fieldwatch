@@ -12,10 +12,10 @@ object Rssi {
         if (measured(min)) vals += min
         if (measured(max)) vals += max
         for (s in history) if (measured(s.rssi)) vals += s.rssi
-        if (vals.isEmpty()) return "Not available"
+        if (vals.isEmpty()) return "不可用"
         val lo = vals.min()
         val hi = vals.max()
-        return if (lo == hi) "$lo dBm" else "$lo to $hi dBm"
+        return if (lo == hi) "$lo dBm" else "$lo 至 $hi dBm"
     }
 
     fun lastMeasured(rssi: Int, history: List<RssiSample>): Int? {

@@ -56,23 +56,23 @@ object Hunt {
     }
 
     fun label(cue: HuntCue): String = when (cue) {
-        HuntCue.VERY_CLOSE -> "Very Close"
-        HuntCue.CLOSER -> "Closer"
-        HuntCue.FURTHER -> "Further"
-        HuntCue.SAME -> "About the same"
-        HuntCue.WAITING -> "Listening…"
-        HuntCue.QUIET -> "Quiet"
-        HuntCue.GONE -> "Gone"
+        HuntCue.VERY_CLOSE -> "非常近"
+        HuntCue.CLOSER -> "更近了"
+        HuntCue.FURTHER -> "更远了"
+        HuntCue.SAME -> "基本不变"
+        HuntCue.WAITING -> "正在监听…"
+        HuntCue.QUIET -> "静默"
+        HuntCue.GONE -> "已离开"
     }
 
     fun hint(cue: HuntCue): String = when (cue) {
-        HuntCue.VERY_CLOSE -> "Screaming loud here. Look around — usually in-hand, pocket, or the same bag. Not meters."
-        HuntCue.CLOSER -> "Louder than a few seconds ago. Keep walking that way."
-        HuntCue.FURTHER -> "Quieter than a few seconds ago. Turn or back up."
-        HuntCue.SAME -> "No clear change yet. Slow down; hold the phone still."
-        HuntCue.WAITING -> "Need a few seconds of packets to compare."
-        HuntCue.QUIET -> "No packet for a few seconds. Silent, or behind a wall."
-        HuntCue.GONE -> "Left the live set. Randomized BLE often vanishes mid-hunt."
+        HuntCue.VERY_CLOSE -> "此处信号极强。留意周围，设备通常在手中、口袋或同一个包里。这不是以米为单位的测距。"
+        HuntCue.CLOSER -> "信号比几秒前更强。继续向这个方向移动。"
+        HuntCue.FURTHER -> "信号比几秒前更弱。可以转向或后退。"
+        HuntCue.SAME -> "暂时没有明显变化。放慢脚步，保持手机稳定。"
+        HuntCue.WAITING -> "需要收集几秒的数据包才能比较。"
+        HuntCue.QUIET -> "已有几秒未收到数据包。设备可能处于静默状态，也可能被墙壁遮挡。"
+        HuntCue.GONE -> "设备已离开实时列表。使用随机地址的 BLE 设备经常会在信号追踪途中消失。"
     }
 
     /**

@@ -78,7 +78,7 @@ class SignatureEngine {
             else -> "${device.kind.label()} ${device.mac.takeLast(8)}"
         }
         val rotateNote = if (device.randomized) {
-            " Address is randomized and may change; prefer name / UUID / manufacturer rules."
+            " 地址已随机化，可能变化；建议优先使用名称 / UUID / 厂商规则。"
         } else ""
         return Fleet(
             id = java.util.UUID.randomUUID().toString(),
@@ -87,7 +87,7 @@ class SignatureEngine {
             matchAny = true,
             colorIndex = if (device.kind == RadioKind.BLE) 3 else 0,
             rules = rules,
-            notes = "Created from ${device.kind.label()} ${device.mac}.$rotateNote Keep the MAC rule to track this radio; keep name/UUID/mfg to match siblings.",
+            notes = "根据 ${device.kind.label()} ${device.mac} 创建。$rotateNote 保留 MAC 规则可追踪此设备；保留名称 / UUID / 厂商规则可匹配同类设备。",
         )
     }
 

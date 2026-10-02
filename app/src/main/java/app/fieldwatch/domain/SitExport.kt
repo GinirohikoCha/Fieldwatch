@@ -154,23 +154,23 @@ object SitExport {
     }
 
     fun subject(kind: LogExportKind, sitName: String): String = when (kind) {
-        LogExportKind.LOG_CSV -> "Fieldwatch sit $sitName (CSV)"
-        LogExportKind.LOG_JSONL -> "Fieldwatch sit $sitName (JSON lines)"
-        LogExportKind.GPX -> "Fieldwatch sit $sitName (GPX)"
-        LogExportKind.KML -> "Fieldwatch sit $sitName (KML)"
-        LogExportKind.WIGLE -> "Fieldwatch sit $sitName (WiGLE CSV)"
+        LogExportKind.LOG_CSV -> "Fieldwatch 观测 $sitName（CSV）"
+        LogExportKind.LOG_JSONL -> "Fieldwatch 观测 $sitName（JSON Lines）"
+        LogExportKind.GPX -> "Fieldwatch 观测 $sitName（GPX）"
+        LogExportKind.KML -> "Fieldwatch 观测 $sitName（KML）"
+        LogExportKind.WIGLE -> "Fieldwatch 观测 $sitName（WiGLE CSV）"
     }
 
     fun emptyHint(kind: LogExportKind, radios: LogExportRadios): String {
         val which = when (radios) {
-            LogExportRadios.BOTH -> "radios"
-            LogExportRadios.WIFI -> "Wi-Fi radios"
-            LogExportRadios.BLE -> "BLE radios"
+            LogExportRadios.BOTH -> "无线设备"
+            LogExportRadios.WIFI -> "Wi-Fi 设备"
+            LogExportRadios.BLE -> "BLE 设备"
         }
         return if (kind == LogExportKind.LOG_CSV || kind == LogExportKind.LOG_JSONL) {
-            "No $which in this sit."
+            "本次观测没有$which。"
         } else {
-            "No GPS-tagged $which in this sit. Settings → Tag detections with GPS."
+            "本次观测没有附带 GPS 位置的$which。可在“设置 → 为检测结果添加 GPS 位置”中开启。"
         }
     }
 

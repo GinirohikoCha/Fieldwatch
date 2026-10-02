@@ -25,10 +25,10 @@ object Sit {
     fun clipName(raw: String): String =
         raw.trim().replace('\n', ' ').replace('\r', ' ').take(NAME_MAX)
 
-    fun defaultName(at: Long, locale: Locale = Locale.US): String =
-        SimpleDateFormat("d MMM HH:mm", locale).format(Date(at))
+    fun defaultName(at: Long, locale: Locale = Locale.SIMPLIFIED_CHINESE): String =
+        SimpleDateFormat("M月d日 HH:mm", locale).format(Date(at))
 
-    fun resolveName(raw: String, at: Long, locale: Locale = Locale.US): String =
+    fun resolveName(raw: String, at: Long, locale: Locale = Locale.SIMPLIFIED_CHINESE): String =
         clipName(raw).ifBlank { defaultName(at, locale) }
 
     fun fmtDuration(ms: Long): String {
@@ -36,9 +36,9 @@ object Sit {
         val h = s / 3600L
         val m = (s % 3600L) / 60L
         return when {
-            h > 0L -> "$h h $m min"
-            m > 0L -> "$m min"
-            else -> "$s s"
+            h > 0L -> "$h 小时 $m 分钟"
+            m > 0L -> "$m 分钟"
+            else -> "$s 秒"
         }
     }
 
@@ -48,7 +48,7 @@ object Sit {
     fun dropWarning(closed: List<SitSummary>): String? {
         if (closed.size < CLOSED_CAP) return null
         val oldest = closed.lastOrNull() ?: return null
-        return "You already have $CLOSED_CAP saved sits. When you end this one, the oldest (“${oldest.name}”) will be deleted."
+        return "已保存 $CLOSED_CAP 次观测。结束本次观测时，最早的观测（“${oldest.name}”）将被删除。"
     }
 
     fun pinned(

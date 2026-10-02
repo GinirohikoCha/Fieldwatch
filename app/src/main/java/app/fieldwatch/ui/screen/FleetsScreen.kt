@@ -141,10 +141,10 @@ fun FleetsScreen(
     }
     Scaffold(
         contentWindowInsets = NestedTabInsets,
-        topBar = { NestedTopBar("Signatures (${state.fleets.size})") },
+        topBar = { NestedTopBar("特征库（${state.fleets.size}）") },
         floatingActionButton = {
             FloatingActionButton(onClick = vm::beginNewFleet) {
-                Icon(Icons.Outlined.Add, "New signature")
+                Icon(Icons.Outlined.Add, "新建特征")
             }
         },
     ) { pad ->
@@ -158,9 +158,9 @@ fun FleetsScreen(
             item {
                 Text(
                     if (sort == SignatureListSort.CLASS) {
-                        "Tap a class to open its signatures. Bookmark = beep. Hide a family on Filters, not here."
+                        "点按类别查看特征。关注后出现时会发出提示音。可在“筛选”中隐藏某个系列。"
                     } else {
-                        "Tap to edit. Bookmark = beep when that family appears. Hide a family on Filters, not here."
+                        "点按编辑。关注后该系列出现时会发出提示音。可在“筛选”中隐藏某个系列。"
                     },
                     style = compactLine(12.sp, 14.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -173,12 +173,12 @@ fun FleetsScreen(
                     FieldwatchFilterChip(
                         selected = sort == SignatureListSort.NAME,
                         onClick = { vm.setSignatureListSort(SignatureListSort.NAME) },
-                        label = { Text("Name A–Z") },
+                        label = { Text("名称 A–Z") },
                     )
                     FieldwatchFilterChip(
                         selected = sort == SignatureListSort.CLASS,
                         onClick = { vm.setSignatureListSort(SignatureListSort.CLASS) },
-                        label = { Text("Class A–Z") },
+                        label = { Text("类别 A–Z") },
                     )
                 }
             }
@@ -294,7 +294,7 @@ private fun SignatureRow(fleet: Fleet, state: FieldwatchUi, vm: FieldwatchViewMo
                     }
                 }
                 Text(
-                    "${fleet.kind.label()} · ${fleet.rules.size} rules · $liveHits live · ${if (fleet.matchAny) "OR" else "AND"}",
+                    "${fleet.kind.label()} · ${fleet.rules.size} 条规则 · $liveHits 个实时匹配 · ${if (fleet.matchAny) "OR" else "AND"}",
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = compactLine(11.sp, 13.sp),
@@ -307,7 +307,7 @@ private fun SignatureRow(fleet: Fleet, state: FieldwatchUi, vm: FieldwatchViewMo
             ) {
                 Icon(
                     if (vm.isFleetWatched(fleet.id)) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
-                    "Beep when this signature appears",
+                    "此特征出现时发出提示音",
                     modifier = Modifier.size(20.dp),
                 )
             }
@@ -334,9 +334,9 @@ fun FleetEditor(
         contentWindowInsets = NestedTabInsets,
         topBar = {
             NestedTopBar(
-                title = if (isNew) "New signature" else "Edit signature",
-                navigationIcon = { TextButton(onClick = onCancel) { Text("Cancel") } },
-                actions = { TextButton(onClick = { onSave(fleet) }) { Text("Save") } },
+                title = if (isNew) "新建特征" else "编辑特征",
+                navigationIcon = { TextButton(onClick = onCancel) { Text("取消") } },
+                actions = { TextButton(onClick = { onSave(fleet) }) { Text("保存") } },
             )
         },
     ) { pad ->
@@ -348,30 +348,30 @@ fun FleetEditor(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SectionCard("Identity") {
-            FieldwatchOutlinedField(fleet.name, { fleet = fleet.copy(name = it) }, "Name")
+            SectionCard("标识") {
+            FieldwatchOutlinedField(fleet.name, { fleet = fleet.copy(name = it) }, "名称")
             FieldwatchOutlinedField(
                 fleet.notes,
                 { fleet = fleet.copy(notes = it) },
-                "Notes",
-                supportingText = "Shows on radio detail for matching radios, and in Share / AI Export. Not Extra attention — no Live “!” and not the amber card.",
+                "备注",
+                supportingText = "显示在匹配设备的详情、分享内容和 AI 导出中。与“重点关注”不同，不会显示实时页面的“!”或琥珀色卡片。",
                 singleLine = false,
                 minLines = 2,
             )
             FieldwatchOutlinedField(
                 fleet.attentionNote,
                 { fleet = fleet.copy(attentionNote = it) },
-                "Extra attention",
-                supportingText = "Optional. If this is not empty, matching radios get a “!” on Live, this amber card on detail, and a line in Debrief. Separate from Notes above.",
+                "重点关注",
+                supportingText = "选填。填写后，匹配设备会在实时页面显示“!”，在详情中显示琥珀色卡片，并在观测总结中增加一行。独立于上方备注。",
                 singleLine = false,
                 minLines = 3,
             )
             }
 
-            SectionCard("Matching") {
+            SectionCard("匹配") {
             var classMenu by remember { mutableStateOf(false) }
             ExposedDropdownMenuBox(classMenu, { classMenu = it }) {
-                FieldwatchDropdownField("Class", fleet.kind.label(), classMenu)
+                FieldwatchDropdownField("类别", fleet.kind.label(), classMenu)
                 ExposedDropdownMenu(classMenu, { classMenu = false }) {
                     SignatureClass.visible.sortedBy { it.label().lowercase() }.forEach { kind ->
                         DropdownMenuItem(
@@ -385,47 +385,47 @@ fun FleetEditor(
                 }
             }
             Text(
-                "Filters → Show only / Hide these. Class sits (Finder tags, Cameras, …) are those chips — Save current as… if you want a preset.",
+                "在“筛选 → 仅显示／隐藏所选”中选择类别（寻物标签、摄像头等）。需要预设时可点按“将当前筛选另存为…”。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Match any rule (OR)", Modifier.weight(1f))
+                Text("匹配任意规则（OR）", Modifier.weight(1f))
                 FieldwatchSwitch(fleet.matchAny, { fleet = fleet.copy(matchAny = it) })
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Cluster by OUI", Modifier.weight(1f))
+                Text("按 OUI 分组", Modifier.weight(1f))
                 FieldwatchSwitch(fleet.clusterByOui, { fleet = fleet.copy(clusterByOui = it) })
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Sequential MACs", Modifier.weight(1f))
+                Text("连续 MAC 地址", Modifier.weight(1f))
                 FieldwatchSwitch(fleet.sequentialMac, { fleet = fleet.copy(sequentialMac = it) })
             }
             FieldwatchOutlinedField(
                 fleet.minPeers.toString(),
                 { fleet = fleet.copy(minPeers = it.toIntOrNull() ?: 0) },
-                "Min peers (0 = off)",
+                "最少同类设备（0 = 关闭）",
             )
             FieldwatchOutlinedField(
                 fleet.peerWindowSec.toString(),
                 { fleet = fleet.copy(peerWindowSec = it.toIntOrNull() ?: 60) },
-                "Peer window (seconds)",
+                "同类设备时间窗口（秒）",
             )
             }
 
-            SectionCard("Color") {
+            SectionCard("颜色") {
             ColorPicker(fleet.colorIndex) { fleet = fleet.copy(colorIndex = it) }
             Text(
-                "Stock colors are by class (red pentest, amber cameras/ALPR, purple phones/tags, cyan wearables, green mesh, orange audio/glasses, teal in-car/vehicle). Change any row.",
+                "内置颜色按类别分配：渗透测试为红色，摄像头／ALPR 为琥珀色，手机／标签为紫色，可穿戴设备为青色，网状网络为绿色，音频／眼镜为橙色，车载／车辆为蓝绿色。可修改任意条目。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             }
 
-            SectionCard("Rules") {
+            SectionCard("规则") {
             Text(
-                "Each rule has its own switch. Off keeps the rule but it does not match. " +
-                    "Use that to mute noisy OUIs or names on one signature without deleting them.",
+                "每条规则都有独立开关。关闭后保留规则，但不参与匹配。" +
+                    "可借此停用某个特征中干扰较多的 OUI 或名称，无需删除。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -447,12 +447,12 @@ fun FleetEditor(
                     fleet = fleet.copy(rules = fleet.rules + MatchRule(RuleKind.OUI, text = ""))
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Add rule") }
+            ) { Text("添加规则") }
             }
 
             if (fleet.canHaveBleDecode()) {
                 val decodeCount = fleet.decode?.fields?.size ?: 0
-                SectionCard("Decode fields") {
+                SectionCard("解码字段") {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -460,7 +460,7 @@ fun FleetEditor(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        if (decodeCount == 0) "None" else "$decodeCount fields",
+                        if (decodeCount == 0) "无" else "$decodeCount 个字段",
                         Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyLarge,
                     )
@@ -471,7 +471,7 @@ fun FleetEditor(
                     )
                 }
                 Text(
-                    "Optional. After this signature matches, map cleartext BLE bytes to labels. Encrypted payloads stay hex.",
+                    "可选。特征匹配后，将明文 BLE 字节映射为标签。加密载荷仍显示为十六进制。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -484,7 +484,7 @@ fun FleetEditor(
                 ) {
                     Icon(Icons.Outlined.Delete, null)
                     Spacer(Modifier.padding(4.dp))
-                    Text("Delete signature")
+                    Text("删除特征")
                 }
             }
         }
@@ -492,13 +492,13 @@ fun FleetEditor(
     if (confirmDelete && onDelete != null) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Delete this signature?") },
+            title = { Text("删除此特征？") },
             text = {
                 Text(
                     if (initial.builtIn) {
-                        "“${fleet.name}” is a built-in signature. Deleting it removes matching, its bookmark, and filter chips. Restore default signatures in Settings will bring the stock set back."
+                        "“${fleet.name}”是内置特征。删除后将移除其匹配、关注和筛选选项。可在“设置”中恢复默认特征库以还原内置集合。"
                     } else {
-                        "“${fleet.name}” will be removed. Matching, its bookmark, and filter chips go with it. This cannot be undone."
+                        "将移除“${fleet.name}”及其匹配、关注和筛选选项。此操作无法撤销。"
                     },
                 )
             },
@@ -506,10 +506,10 @@ fun FleetEditor(
                 TextButton(onClick = {
                     confirmDelete = false
                     onDelete()
-                }) { Text("Delete") }
+                }) { Text("删除") }
             },
             dismissButton = {
-                TextButton(onClick = { confirmDelete = false }) { Text("Cancel") }
+                TextButton(onClick = { confirmDelete = false }) { Text("取消") }
             },
         )
     }
@@ -545,7 +545,7 @@ private fun ColorPicker(selected: Int, onSelect: (Int) -> Unit) {
                         if (on) {
                             Icon(
                                 Icons.Outlined.Check,
-                                contentDescription = "Selected color",
+                                contentDescription = "所选颜色",
                                 tint = if (fill.luminance() > 0.45f) {
                                     Color(0xFF12171C)
                                 } else {
@@ -582,7 +582,7 @@ private fun RuleEditor(rule: MatchRule, onChange: (MatchRule) -> Unit, onDelete:
                     .weight(1f)
                     .padding(start = 8.dp, end = 4.dp),
             ) {
-                FieldwatchDropdownField("Kind", ruleKindLabel(rule.kind), expanded)
+                FieldwatchDropdownField("类型", ruleKindLabel(rule.kind), expanded)
                 ExposedDropdownMenu(expanded, { expanded = false }) {
                     RuleKind.entries.forEach { kind ->
                         DropdownMenuItem(text = { Text(ruleKindLabel(kind)) }, onClick = {
@@ -592,7 +592,7 @@ private fun RuleEditor(rule: MatchRule, onChange: (MatchRule) -> Unit, onDelete:
                     }
                 }
             }
-            IconButton(onClick = onDelete) { Icon(Icons.Outlined.Delete, "Delete rule") }
+            IconButton(onClick = onDelete) { Icon(Icons.Outlined.Delete, "删除规则") }
         }
         Column(
             Modifier.padding(top = 12.dp, start = 8.dp),
@@ -603,7 +603,7 @@ private fun RuleEditor(rule: MatchRule, onChange: (MatchRule) -> Unit, onDelete:
                 FieldwatchOutlinedField(
                     rule.text,
                     { onChange(rule.copy(text = it)) },
-                    "Value",
+                    "值",
                 )
             }
             RuleKind.MANUFACTURER_ID -> {
@@ -613,7 +613,7 @@ private fun RuleEditor(rule: MatchRule, onChange: (MatchRule) -> Unit, onDelete:
                         val parsed = it.removePrefix("0x").removePrefix("0X").toIntOrNull(16) ?: 0
                         onChange(rule.copy(companyId = parsed))
                     },
-                    "Company ID hex",
+                    "公司 ID（十六进制）",
                 )
             }
             RuleKind.MANUFACTURER_DATA -> {
@@ -623,24 +623,24 @@ private fun RuleEditor(rule: MatchRule, onChange: (MatchRule) -> Unit, onDelete:
                         val parsed = it.removePrefix("0x").removePrefix("0X").toIntOrNull(16) ?: 0
                         onChange(rule.copy(companyId = parsed))
                     },
-                    "Company ID hex",
+                    "公司 ID（十六进制）",
                 )
                 FieldwatchOutlinedField(
                     rule.dataPrefixHex,
                     { onChange(rule.copy(dataPrefixHex = it)) },
-                    "Data prefix hex",
+                    "数据前缀（十六进制）",
                 )
             }
             RuleKind.SERVICE_DATA -> {
                 FieldwatchOutlinedField(
                     rule.text,
                     { onChange(rule.copy(text = it)) },
-                    "Service UUID (empty = any, contains)",
+                    "服务 UUID（包含匹配，留空 = 任意）",
                 )
                 FieldwatchOutlinedField(
                     rule.dataPrefixHex,
                     { onChange(rule.copy(dataPrefixHex = it)) },
-                    if (rule.text.isBlank()) "Contains hex" else "Data prefix hex",
+                    if (rule.text.isBlank()) "包含十六进制" else "数据前缀（十六进制）",
                 )
             }
             RuleKind.RADIO_KIND -> {
@@ -649,7 +649,7 @@ private fun RuleEditor(rule: MatchRule, onChange: (MatchRule) -> Unit, onDelete:
                     FieldwatchSwitch(rule.radio != RadioKind.BLE, { onChange(rule.copy(radio = if (it) RadioKind.WIFI else RadioKind.BLE)) })
                 }
             }
-            RuleKind.HIDDEN_SSID -> Text("Matches hidden SSIDs", style = MaterialTheme.typography.bodySmall)
+            RuleKind.HIDDEN_SSID -> Text("匹配隐藏的 SSID", style = MaterialTheme.typography.bodySmall)
         }
         }
     }
@@ -657,16 +657,16 @@ private fun RuleEditor(rule: MatchRule, onChange: (MatchRule) -> Unit, onDelete:
 
 private fun ruleKindLabel(kind: RuleKind): String = when (kind) {
     RuleKind.OUI -> "OUI"
-    RuleKind.MAC_PREFIX -> "MAC prefix"
-    RuleKind.NAME_CONTAINS -> "Name contains"
-    RuleKind.NAME_GLOB -> "Name glob"
-    RuleKind.SERVICE_UUID -> "Service UUID"
-    RuleKind.SERVICE_DATA -> "Service data"
-    RuleKind.MANUFACTURER_ID -> "Manufacturer ID"
-    RuleKind.MANUFACTURER_DATA -> "Manufacturer data"
-    RuleKind.RADIO_KIND -> "Radio kind"
-    RuleKind.HIDDEN_SSID -> "Hidden SSID"
-    RuleKind.VENDOR_IE_OUI -> "Vendor IE OUI"
+    RuleKind.MAC_PREFIX -> "MAC 前缀"
+    RuleKind.NAME_CONTAINS -> "名称包含"
+    RuleKind.NAME_GLOB -> "名称通配符"
+    RuleKind.SERVICE_UUID -> "服务 UUID"
+    RuleKind.SERVICE_DATA -> "服务数据"
+    RuleKind.MANUFACTURER_ID -> "制造商 ID"
+    RuleKind.MANUFACTURER_DATA -> "制造商数据"
+    RuleKind.RADIO_KIND -> "无线类型"
+    RuleKind.HIDDEN_SSID -> "隐藏 SSID"
+    RuleKind.VENDOR_IE_OUI -> "厂商 IE OUI"
 }
 
 private fun compactLine(

@@ -1,162 +1,170 @@
-# What's new
+# 更新日志
 
-Newest first. This is Fieldwatch (`app.fieldwatch`). Each build below is what Settings shows as the version.
+按时间倒序排列。本文对应 Fieldwatch（`app.fieldwatch`），各构建版本号与“设置”页显示一致。
 
-Fieldwatch continues the Spectre 1.2.14 field build under a new name, application id, and the MIT License. It does not replace Spectre on a phone.
+Fieldwatch 延续了 Spectre 1.2.14 的现场工具版本，并更换名称、应用 ID 和 MIT 许可证。它不会替换手机上的 Spectre。
 
-## 1.1.17 — 1 October 2026
+## 1.1.17-zh-CN — 2026 年 10 月 2 日
 
-- Privacy mode no longer hides the map on Reports → Path, or on the Debrief and Compare letter path figures. Those tiles follow Online place names and maps. Privacy mode still masks MAC tails and coordinates, omits street names, and pauses the TAK / CoT feed.
-- Reports → Path keeps about 400 m of ground on the short side when the GPS path is one fix or a short sit. A longer walk still fills the plot.
+- 本地中文化构建：界面、观测报告、设备说明和 AI 导出提示使用简体中文，保留协议值、技术缩写及原始设备标识。
+- README、安装说明、更新日志和用户手册提供中文内容。报告 PDF 的图例、标题和分节识别同步适配中文。
+- 分发 APK 由本地 Android Debug 证书签名，与上游发布证书不同。安装前请参阅 `dist/instruction.txt` 中的校验值与备份、卸载说明。
 
-## 1.1.16 — 30 September 2026
+以下为上游版本历史的中文译文。
 
-- Reports → Path plots MAC alerts and signature alerts, each once at the strongest hear, as a class icon. A count is several in one place. The black dot is the start. The blue dot is you, at the last point. The list puts the Wi-Fi or BLE icon next to the MAC. The symbol key under the map is gone, and the alert rows sit closer together. An alert with a decoded latitude and longitude is drawn at the last advertised fix as a class icon. The advertised track on that card is a white dotted line. If that icon shares a spot with other alerts, the count lists them together. The pilot is a person icon, with no word label on the map. A lone class icon has no number box; tap it for that one radio. A count still lists only the radios in that spot. A fix farther than 2 km stays on that aircraft’s map. Other alerts stay at the strongest hear. Debrief and Compare PDF figures draw that track as a black dotted line, with a class icon at the last position and a person icon for the pilot. On a compare, the second sit’s track is a blue dotted line. Those PDF figures plot the same MAC alerts and signature alerts, at the last advertised position when the radio sent one. The Path key under that figure lists an advertised aircraft with the drone class icon, plus its live status, UAS id, last position, motion, and pilot position. A start or end mark that covers a detection still opens that detection.
-- A decode field can ask to show its value on the live row, and which named values use the stronger chip. Catalog 85 turns that on for DULT mode: Separated stands out; Near owner stays quiet. The separated sentence is catalog text on that value. Older apps skip the new keys and still import the pack.
-- Debrief and Compare quote that live label and its catalog sentence. A separated tag keeps the about-a-day sentence instead of the rotating-address line. Compare says when the decoded value changed between sits. Catalog 86 adds the near-owner sentence. A named sit stores the label, because the sit does not keep the advertisement bytes.
-- Catalog 87: Google Find Hub mode uses the same live row. Separated is the stronger chip and keeps the about-a-day sentence. Nearby stays quiet, with a sentence that co-travel is often your own tag or someone who joined with their own keys.
-- Catalog 88: Remote ID location status uses the same live row. Undeclared, Ground, Airborne, Emergency, and RID failure all show. Emergency is the stronger chip.
-- A sit keeps a short trail of advertised positions, joined by UAS id on the report. A track within 2 km of the phone path shares that map. A farther aircraft gets its own map. Reports → Path draws that track as a white dotted line on an open or saved sit. The letter-size figure draws it in black dots. Last 15 minutes marks the current advertised position and does not keep a track. Sits recorded before this change keep a single last position.
+## 1.1.17 — 2026 年 10 月 1 日
 
-## 1.1.15 — 28 September 2026
+- 隐私模式不再隐藏“报告 → 轨迹”及观测总结 / 对比报告中的地图。地图瓦片由“在线地名和地图”控制。隐私模式仍会遮蔽 MAC 尾部与坐标、省略街道名，并暂停 TAK / CoT 发送。
+- 当 GPS 轨迹只有一个定位点，或观测移动距离很短时，“报告 → 轨迹”的短边保持约 400 米地面范围。较长轨迹仍会充满绘图区。
 
-- Catalog 82: Flock Safety Cameras Extra attention is IEEE B4:1E:52 and Flock / FLCK / Flock-* / Condor / Falcon / Sparrow names only. LiteOn / module prefixes move to LiteOn camera radio (Cameras class, no Extra attention, not bookmarked). UGSI E0:4F:43 is dropped so a Ring- SSID is Ring, not a Flock pole.
-- Sit export CSV / JSON lines include matched signatures and Extra attention family names (semicolon-separated). Extra attention true/false stays. GPX / KML / WiGLE unchanged.
-- Named sit cap 6000 unique radios (was 3000). Unnamed BLE still drops first. Low-memory gate unchanged.
-- Debrief text/PDF hide unmatched rotating BLE from inventories by default. Counts, Extra attention, named signatures, bookmarks, payload pins, and Sit export still include them. Reports switch: Show unmatched rotating BLE.
-- Catalog 83: Penguin decode on XUNTONG 0x09C8 manufacturer data — MAC in payload and ASCII serial starting TN. Identity is still the company ID / Penguin* names.
-- Catalog 84: DULT tracker on BLE service data FCB2 (IETF Detecting Unwanted Location Trackers). Decode Network ID and near-owner vs separated. No Extra attention. Chipolo / Pebblebee names may dual-label. A bare FCB2 UUID list does not match.
-- Wi-Fi Remote ID ASTM message packs (vendor IE FA:0B:BC type 13) are framed as BLE FFFA (`0x0D` + counter + each 25-byte message) so the stock Remote ID Decode fields map, detail, and TAK Payload location use the same fields as BLE. GitHub catalog stays v2.
-- Update stock catalog from GitHub: unknown decode sources keep the signature and drop only that field map. After import, a second dialog asks for a newer APK when any map was skipped.
+## 1.1.16 — 2026 年 9 月 30 日
 
-## 1.1.14 — 27 September 2026
+- “报告 → 轨迹”使用类别图标绘制 MAC 提醒和特征提醒，每条只在信号最强的位置出现一次；同一位置有多个提醒时显示数量。黑点是起点，蓝点是手机最后位置。列表在 MAC 旁显示 Wi-Fi 或 BLE 图标。移除地图下方的符号说明，提醒记录排列更紧凑。带解码经纬度的提醒按最近广播位置绘制类别图标，其卡片中的广播轨迹使用白色虚线；与其他提醒重合时，数量列表会将它们一起列出。飞手使用人物图标，地图上不附文字。单独的类别图标不显示数字框，点击可查看该设备；数量标记仍只列出该地点的设备。超过 2 千米的定位点保留在对应航空器自己的地图上，其他提醒仍使用最强接收位置。观测总结和对比 PDF 以黑色虚线绘制广播轨迹，最后位置为类别图标，飞手为人物图标；对比时，第二次观测的轨迹为蓝色虚线。PDF 使用相同的 MAC 提醒和特征提醒，设备广播位置时按最近广播位置绘制。图下“轨迹图例”以无人机类别图标列出广播位置的航空器，并附实时状态、UAS ID、最新位置、运动信息和飞手位置。起点或终点标记遮住检测标记时，仍可打开对应检测。
+- 解码字段可指定在实时记录上显示值，以及哪些命名值使用更醒目的标签。特征库 85 为 DULT 模式启用此功能：“分离”醒目显示，“靠近主人”保持低强调。关于分离状态的句子由该值的特征库说明提供。旧应用会跳过新增键，仍可导入特征包。
+- 观测总结和对比会引用实时标签及对应特征库说明。分离标签保留“约一天”的说明，不再显示通用地址轮换说明。对比会指出两次观测之间的解码值变化。特征库 86 新增靠近主人的说明。命名观测会保存这些标签，因为观测本身不保存广播字节。
+- 特征库 87：Google Find Hub 模式使用相同的实时标签。“分离”更醒目，并保留“约一天”的说明；“附近”保持低强调，说明同行通常来自自有标签，或携带自己钥匙的同行者。
+- 特征库 88：Remote ID 位置状态使用相同的实时标签，显示未声明、地面、空中、紧急和 RID 故障；“紧急”更醒目。
+- 观测保留简短的广播位置轨迹，并在报告中按 UAS ID 合并。距离手机轨迹 2 千米内的航空器共用地图，更远的航空器使用独立地图。“报告 → 轨迹”在进行中或已保存观测上以白色虚线显示该轨迹，Letter 纸张报告以黑色虚线显示。“最近 15 分钟”只标记当前广播位置，不保存轨迹。此改动前录制的观测保留单个最新位置。
 
-- Debrief / Compare PDF path figure: OpenStreetMap tiles when Online place names and maps is on and Privacy is off (same gate as Reports → Path). Full-width letter frame, thick green stays, numbered Extra attention (red) and bookmarked (blue) hits. Offline or Privacy: the north-up trace only.
-- Remote ID Location: heading uses the OpenDroneID east/west flag (direction 0–179, +180 when that bit is set) instead of a ×2 scale. Horizontal speed (`hspeed`) decodes with the SpeedMult bit (×0.25, or ×0.75 + 63.75). Catalog 79. ATAK track course/speed follow those values.
-- Catalog 80: BLE manufacturer 0x09C8 (XUNTONG) moves from Raven / ShotSpotter to Penguin. That ID is the Flock external battery, not the acoustic sensor. Raven keeps names, UUIDs 3100–3500, and OUI D4:11:D6.
-- Catalog 81: Axon `BWCDEVICE` matches ASCII (and byte-reversed) in BLE service data, not the advertised name. Empty-UUID service-data rules contain that hex in any service payload.
+## 1.1.15 — 2026 年 9 月 28 日
 
-## 1.1.13 — 26 September 2026
+- 特征库 82：Flock Safety Cameras 的重点关注仅限 IEEE B4:1E:52 和 Flock / FLCK / Flock-* / Condor / Falcon / Sparrow 名称。LiteOn 及模块前缀移入 LiteOn camera radio（摄像头类别，无重点关注，默认不关注）。移除 UGSI E0:4F:43，避免将 Ring- SSID 误标为 Flock 杆。
+- 观测导出的 CSV / JSON Lines 包含匹配特征和重点关注系列名称，以分号分隔；仍保留重点关注 true/false。GPX / KML / WiGLE 不变。
+- 命名观测上限由 3000 增加至 6000 个独立无线设备，仍优先移除未命名 BLE。低内存限制不变。
+- 观测总结文字 / PDF 的设备清单默认隐藏未匹配特征的轮换地址 BLE；数量统计、重点关注、命名特征、已关注设备、载荷定位点和观测导出仍包含它们。报告页新增“显示未匹配的轮换地址 BLE”开关。
+- 特征库 83：为 XUNTONG 0x09C8 制造商数据添加 Penguin 解码，读取载荷中的 MAC 及以 TN 开头的 ASCII 序列号。识别规则仍依据公司 ID / Penguin* 名称。
+- 特征库 84：在 BLE 服务数据 FCB2 上识别 DULT 追踪标签（IETF Detecting Unwanted Location Trackers），解码网络 ID 及靠近主人 / 分离状态。无重点关注。Chipolo / Pebblebee 名称可能同时命中两个标签；仅有 FCB2 UUID 列表不会匹配。
+- Wi-Fi Remote ID ASTM 消息包（厂商 IE FA:0B:BC，类型 13）封装为 BLE FFFA 格式（`0x0D` + 计数器 + 每条 25 字节消息），使默认 Remote ID 解码字段、详情和 TAK 载荷位置可与 BLE 共用字段。GitHub 特征库仍使用 v2。
+- 从 GitHub 更新默认特征库时，遇到未知解码来源会保留特征，只丢弃该字段映射。导入后如跳过任何映射，会弹出第二个对话框，提示使用更新的 APK。
 
-- TAK / CoT: advertised Remote ID aircraft pins include ATAK track course and speed when the Location message has them. Wi-Fi Remote ID (vendor IE FA:0B:BC type 0x0D) decodes Location / Basic ID / System the same way as BLE FFFA, so Payload location can pin a Wi-Fi-only drone. Vendor IE payload is no longer truncated at 24 bytes.
+## 1.1.14 — 2026 年 9 月 27 日
 
-## 1.1.12 — 26 September 2026
+- 观测总结 / 对比 PDF 轨迹图：当时在开启在线地名和地图、关闭隐私模式时加载 OpenStreetMap 瓦片，与“报告 → 轨迹”条件一致。Letter 纸张全宽绘图区，绿色粗线表示停留，重点关注为红色编号点，已关注为蓝色编号点。离线或隐私模式下只显示上北下南的轨迹。
+- Remote ID 位置：航向改用 OpenDroneID 东 / 西标志（方向 0–179，该位为 1 时加 180），不再使用 ×2 缩放。水平速度 `hspeed` 按 SpeedMult 位解码（×0.25，或 ×0.75 + 63.75）。特征库 79；ATAK 轨迹航向 / 速度使用相同值。
+- 特征库 80：BLE 制造商 0x09C8（XUNTONG）从 Raven / ShotSpotter 移至 Penguin。此 ID 属于 Flock 外置电池，不是声学传感器。Raven 保留名称、UUID 3100–3500 和 OUI D4:11:D6。
+- 特征库 81：Axon `BWCDEVICE` 在 BLE 服务数据中按 ASCII 及字节反转形式匹配，不匹配广播名称。UUID 为空的服务数据规则可在任意服务载荷中查找该十六进制内容。
 
-- Google Find Hub tags (FEAA frames 40/41). Catalog 78. Eddystone UID/URL/TLM stay unmatched. Separated mode can hold a MAC about a day. GitHub update uses dist/fieldwatch-signatures-v2.json; 1.1.11 still reads the v1 pack (catalog 77).
-- Catalog 77 (already on GitHub for 1.1.11): Flock/FS Ext drop Espressif and Silicon Labs OUIs; Axon TASER/Axon UUIDs; Meta FEB7/FEB8, Snap FE45, Vuzix; Remote ID Wi-Fi FA:0B:BC and BLE v0–v2 location extras.
+## 1.1.13 — 2026 年 9 月 26 日
 
-## 1.1.11 — 26 September 2026
+- TAK / CoT：广播的 Remote ID 航空器标记在 Location 消息包含航向和速度时，会附带 ATAK 轨迹信息。Wi-Fi Remote ID（厂商 IE FA:0B:BC，类型 0x0D）按与 BLE FFFA 相同方式解码 Location / Basic ID / System，因此载荷位置可标记只广播 Wi-Fi 的无人机。厂商 IE 载荷不再截断为 24 字节。
 
-- Detail / share: RSSI 127 is Bluetooth “not available,” not transmit power. It is omitted from current, min/max, sparkline, Hunt, and share text.
+## 1.1.12 — 2026 年 9 月 26 日
 
-## 1.1.10 — 26 September 2026
+- Google Find Hub 标签（FEAA 帧 40/41），特征库 78。Eddystone UID / URL / TLM 仍不匹配。分离模式的 MAC 可能保持约一天。GitHub 更新使用 dist/fieldwatch-signatures-v2.json；1.1.11 仍读取 v1 包（特征库 77）。
+- 特征库 77（已在 GitHub 提供给 1.1.11）：Flock / FS Ext 移除 Espressif 和 Silicon Labs OUI；补充 Axon TASER / Axon UUID、Meta FEB7/FEB8、Snap FE45、Vuzix，以及 Remote ID Wi-Fi FA:0B:BC 和 BLE v0–v2 位置附加字段。
 
-- Path: Extra attention and bookmarked radios as numbered dots at strongest RSSI. Observer notes on Path only if that radio is bookmarked. Present for the entire route is dropped. GPS trails keep spread samples across the sit instead of only the last 40. Path drops GPS spikes (out-and-back jumps or hops faster than about 150 km/h).
-- Stock catalog: BLE TPMS. Aftermarket valve-cap sensors (TPMS* / FBB0 / manufacturer data 80–83) decode pressure, temperature, battery, and alarm. SYTPMS / BR (name BR or UUID 27A5) decode gauge pressure, temperature, battery, and motion. Tesla tsTPMS decodes pressure / temperature / battery when the sensor is awake. New rows: TireCheck, Bluetooth TPMS service. FOBO also matches service 00EE. Not a bare Nokia 0x0001 match. Catalog 76.
+## 1.1.11 — 2026 年 9 月 26 日
 
-## 1.1.9 — 25 September 2026
+- 详情 / 分享：蓝牙 RSSI 127 表示“不可用”，不是发射功率。当前值、最小 / 最大值、趋势图、信号追踪和分享文字都会排除该值。
 
-- Path: stays as thick green on the line, time ticks, header stop / entire-route counts, RSSI min–max on Present for the entire route. Each Extra attention / Named radio plots once at strongest RSSI. Entire-route uses first/last heard vs the sit window (not the 40-sample GPS trail).
-- Settings → Online place names and maps (default on) also loads OSM tiles under Path. Tiles fill the plot box then clip, with extra map around the route. Offline, no tiles, or Privacy mode: north-up trace only, no error. User manual updated.
+## 1.1.10 — 2026 年 9 月 26 日
 
-## 1.1.8 — 25 September 2026
+- 轨迹：重点关注和已关注设备在最强 RSSI 位置显示编号点。仅当设备已关注时，轨迹页显示其观测备注。移除“全程出现”。GPS 轨迹保留覆盖整次观测的分散采样，不再只保留最后 40 个。轨迹会剔除 GPS 尖峰（突然往返的跳点，或超过约 150 km/h 的跃迁）。
+- 默认特征库新增 BLE 胎压监测。后装气门帽传感器（TPMS* / FBB0 / 制造商数据 80–83）解码压力、温度、电量和告警；SYTPMS / BR（名称 BR 或 UUID 27A5）解码表压、温度、电量和运动状态；Tesla tsTPMS 在传感器唤醒时解码压力 / 温度 / 电量。新增 TireCheck 和 Bluetooth TPMS 服务条目；FOBO 同时匹配服务 00EE。不会仅凭 Nokia 0x0001 匹配。特征库 76。
 
-- Reports → Sit export: its own card under Sit report, same Format and radios chips as Log export (CSV, JSON lines, GPX, KML, WiGLE). One row per unique radio in the selected sit (or last 15 minutes), not the rotating log. GPX / KML include this phone’s path as a track plus hear-points. Privacy mode does not mask the file. The log card is titled Log export. User manual §5.6.2 / §11.6 spells sit vs log.
-- Path legend: Line = this phone on its own row; Blue = Named in cyan (same as Named dots).
+## 1.1.9 — 2026 年 9 月 25 日
 
-## 1.1.7 — 25 September 2026
+- 轨迹：停留段显示为绿色粗线，新增时间刻度、顶部停留点 / 全程数量，以及“全程出现”记录的 RSSI 最小–最大值。每个重点关注 / 命名设备只在最强 RSSI 位置绘制一次。全程判断比较首次 / 上次接收时间与观测时段，不使用仅 40 点的 GPS 轨迹。
+- “设置 → 在线地名和地图”（默认开启）同时在轨迹下加载 OSM 瓦片。瓦片覆盖绘图区后裁切，并保留路线周围的地图空间。当时离线、无瓦片或隐私模式下只显示上北下南的轨迹，不报错。同步更新用户手册。
 
-- Named radios: Observer notes (up to 280 characters) on the same KIND+MAC as the custom name. Cyan block on detail under the name; a saved custom name is the large title, advertised name smaller. Edit on detail or Settings → Named radios. Saving notes without a name still creates the Named-radio row (suggested label, Alert off). Live list shows a cyan notes chip next to Extra attention “!”. Debrief lists Observer notes after Where you were; Compare after Windows. Path and AI Export list heard radios and the note. Extra attention stays gold. BLE privacy addresses still hide the pencil. Settings backup includes the note.
-- Debrief / Compare PDF: stay/transit lines, Channel occupancy / Loudest APs and other “Label:” kickers are bold; bullets and Path key numbers are structured.
-- Reports use the custom name from Named radios (not the advertised SSID/LE name) in Debrief, Compare, Path, AI Export, and GPX/KML. WiGLE CSV still writes the advertised SSID.
-- Reports → Path: north-up plot of this sit (or last 15 minutes). Operator GPS track, scale bar, Extra attention / Named dots. Stacked counts tap for one inset. No map tiles. Hear-points, not radio fixes. Debrief PDF and Compare PDF include a letter-size operator-path figure (compare overlays both walks).
-- Reports → Log: Format (Log file — CSV, Log file — JSON lines, GPX — GPS Exchange, KML — Google Earth, WiGLE CSV — wigle.net) and radios (Both / Wi-Fi only / BLE only). Rotating file is JSON lines. CSV / maps are Share/Save projections. Hear-point pins are this phone. Fieldwatch does not upload. Settings CSV/JSON chips removed.
-- User manual rewritten for Path, Compare, Log export, Observer notes, custom names, and the Live notes chip. Screenshots recaptured in Privacy mode.
+## 1.1.8 — 2026 年 9 月 25 日
 
-## 1.1.6 — 24 September 2026
+- “报告 → 观测导出”：在观测报告下新增独立卡片，格式和设备选择与日志导出相同（CSV、JSON Lines、GPX、KML、WiGLE）。每个选定观测或最近 15 分钟内的独立设备一条记录，不读取滚动日志。GPX / KML 同时包含本手机轨迹和接收点。隐私模式不会遮蔽文件。日志卡片改名为“日志导出”。手册 §5.6.2 / §11.6 明确区分观测与日志。
+- 轨迹图例：“线条 = 本手机”独占一行；“蓝色 = 命名设备”使用与命名设备点相同的青色。
 
-- Decode field numbers and radar zoom use `Locale.US`, so French/German phones keep a period (`26.48 °C`, `×1.5`). Parser unit tests and GitHub Actions (`testDebugUnitTest` + debug APK) on push/PR.
-- Reports → Compare sits: this sit (open, selected, or last 15 minutes) vs a second saved sit. Compare (text) and Compare (PDF) — same letter layout as Debrief. Compare AI Export is an addendum (overlap, exclusive Extra attention / Named radios), not a rewrite of the lists. Presence: only in this sit, only in the second, in both. Kind + MAC. Extra attention and Named radios marked. Privacy mode on the share text.
-- Sit-report AI Export is the same addendum shape: onboard Debrief verbatim, then 5/15-minute rates, RSSI bands, Extra attention and finder-tag IDs for a tracking stress-test — not a second Wi-Fi/BLE roster.
+## 1.1.7 — 2026 年 9 月 25 日
 
-## 1.1.5 — 24 September 2026
+- 命名设备：为与自定义名称相同的类型 + MAC 增加最长 280 字符的观测备注。详情页名称下显示青色区块；保存的自定义名称为大标题，广播名称较小。可在详情或“设置 → 命名设备”编辑。只保存备注、不填写名称也会建立命名设备记录，使用建议名称且关闭提醒。实时列表在重点关注“!”旁显示青色备注标签。观测总结在“所在地点”之后列出观测备注，对比在“观测时段”之后列出。轨迹和 AI 导出列出已接收设备及备注。重点关注仍为金色。BLE 隐私地址仍隐藏编辑按钮。设置备份包含备注。
+- 观测总结 / 对比 PDF：停留 / 途经行、信道占用 / 最强 AP 等“标签：”行加粗；项目符号和轨迹图例编号采用结构化排版。
+- 观测总结、对比、轨迹、AI 导出和 GPX / KML 使用命名设备的自定义名称，不使用广播 SSID / BLE 名称。WiGLE CSV 仍写入广播 SSID。
+- “报告 → 轨迹”：以上北下南方式绘制本次观测或最近 15 分钟数据，包括操作者 GPS 轨迹、比例尺、重点关注 / 命名设备点。叠加数量可点击打开详情。当时不含地图瓦片。图中为接收点，不是无线设备定位。观测总结和对比 PDF 包含 Letter 纸张大小的操作者轨迹图；对比会叠加两次路线。
+- “报告 → 日志”：可选格式为日志文件 CSV、日志文件 JSON Lines、GPX（GPS 交换格式）、KML（Google Earth）、WiGLE CSV（wigle.net）；设备可选两者、仅 Wi-Fi、仅 BLE。滚动文件为 JSON Lines，CSV 和地图文件在分享 / 保存时转换。接收点标记表示本手机位置，Fieldwatch 不上传。移除设置页的 CSV / JSON 选项。
+- 重写用户手册，说明轨迹、对比、日志导出、观测备注、自定义名称和实时备注标签，并在隐私模式下重新截取界面图。
 
-- Detail “What this looks like” uses a matched catalog family instead of a generic SSID guess. A `DIRECT-rR-Raven-*` AP is a Raven / ShotSpotter sensor, not a phone or TV on Wi-Fi Direct.
-- Removed the stock **Unknown Signature** catch-all (`ESP_*`, `ANDROID-`, `DIRECT-`, `UNIT-`). Those names were not a product family and dual-labeled real rows (Raven, Roku, Epson). Generic `DIRECT-` SSIDs stay unmatched; the guess can still say Wi-Fi Direct.
-- Custom name on detail is always available for Wi-Fi, including locally administered BSSIDs (vehicle / mesh / guest APs). BLE privacy addresses still hide the pencil. Identity copy no longer calls a Wi-Fi local-bit BSSID a rotating privacy MAC.
-- Stock Extra attention: Digital Ally body/in-car (IEEE 00:23:BD); Limitless, Bee, Omi, and Friend wearable recorders (unique BLE services / names); Brilliant Frame and Even G1 glasses; Reveal Media and Wolfcom bodycams; Panasonic i-PRO / Arbitrator; Hayden AI, Miovision, Tattile, and LVT LiveView (name-only — cellular units stay quiet).
-- Stock filter chips: All traffic, Wi-Fi only, BLE only, Strong signal, Moving with you, Watched only. Trackers / Hide trackers / Hide phones left the stock set (class chips + Save current as… still make those sits). Existing custom chips that duplicate a stock name or filter are folded on upgrade.
-- User manual Chapter 14 Technical specifications / How it works (Fig. 20).
+## 1.1.6 — 2026 年 9 月 24 日
 
-## 1.1.4 — 21 September 2026
+- 解码数值和雷达缩放使用 `Locale.US`，使法语 / 德语手机也保留小数点（如 `26.48 °C`、`×1.5`）。新增解析器单元测试，GitHub Actions 在推送 / PR 时执行 `testDebugUnitTest` 并构建调试 APK。
+- “报告 → 对比观测”：本次观测（进行中、已选保存项或最近 15 分钟）对比第二次已保存观测。文字 / PDF 对比使用与观测总结相同的 Letter 版式。对比 AI 导出提供补充分析（重合、单次出现的重点关注 / 命名设备），不重写清单。出现情况分为仅本次、仅第二次、两次均出现，以类型 + MAC 区分，并标注重点关注和命名设备。分享文字支持隐私模式。
+- 观测报告 AI 导出采用相同的补充分析结构：原样附上设备内观测总结，再提供 5 / 15 分钟变化速率、RSSI 区间、重点关注及寻物标签 ID，用于核查追踪提示，不再生成第二份 Wi-Fi / BLE 名单。
 
-- Slightly smaller switches. Outlined fields and dropdowns share the same tight inner padding (Display, signature editor, Decode, Filters, Settings TAK, sit/name dialogs). Rule Kind/Value and Manufacturer data fields no longer overlap.
-- Opening Display dims Live and blocks taps on radios behind it. Tap the dim area to close.
+## 1.1.5 — 2026 年 9 月 24 日
 
-## 1.1.3 — 21 September 2026
+- 详情“设备推测”优先使用匹配到的特征系列，不再只根据通用 SSID 猜测。`DIRECT-rR-Raven-*` AP 会被解释为 Raven / ShotSpotter 传感器，而不是使用 Wi-Fi Direct 的手机或电视。
+- 移除默认的 **Unknown Signature** 兜底规则（`ESP_*`、`ANDROID-`、`DIRECT-`、`UNIT-`）。这些名称不是产品系列，会使 Raven、Roku、Epson 等真实设备被重复标记。通用 `DIRECT-` SSID 保持未匹配，但类型推测仍可提示 Wi-Fi Direct。
+- Wi-Fi 详情始终允许自定义名称，包括本地管理的 BSSID（车载 / Mesh / 访客 AP）。BLE 隐私地址仍隐藏编辑按钮。身份说明不再把设置了本地位的 Wi-Fi BSSID 称为轮换隐私 MAC。
+- 默认重点关注新增：Digital Ally 随身 / 车载设备（IEEE 00:23:BD）；Limitless、Bee、Omi、Friend 可穿戴录音设备（独特 BLE 服务 / 名称）；Brilliant Frame、Even G1 眼镜；Reveal Media、Wolfcom 随身摄像头；Panasonic i-PRO / Arbitrator；Hayden AI、Miovision、Tattile、LVT LiveView（仅名称匹配，蜂窝网络设备仍可能静默）。
+- 默认筛选预设为全部信号、仅 Wi-Fi、仅 BLE、强信号、随行、仅已关注。移除默认的追踪器 / 隐藏追踪器 / 隐藏手机预设，仍可通过类别选项和另存当前筛选创建。升级时合并与默认名称或条件重复的自定义预设。
+- 用户手册新增第 14 章“技术规格 / 工作原理”（图 20）。
 
-- Live Tune (Display) overlays the radar/list instead of pushing it down. The panel stays collapsed at launch. In portrait it uses the height above the tab bar; in landscape it scrolls, with a fade and down-chevron when more options sit below.
-- Tighter FIELDWATCH header, Filters/Signatures subtitle bar, and bottom tab bar.
-- Night mode is under Appearance. Dark theme is no longer a switch — the display is always dark. An upgrade or settings import with Dark theme off is forced on.
+## 1.1.4 — 2026 年 9 月 21 日
 
-## 1.1.2 — 21 September 2026
+- 缩小开关。带边框输入框和下拉框统一使用更紧凑的内边距，覆盖显示、特征编辑器、解码、筛选、TAK 设置及观测 / 命名对话框。规则类型 / 值与制造商数据字段不再重叠。
+- 打开“显示”时，实时页变暗并阻止点击背后的设备；点击暗区可关闭面板。
 
-- Stock signature: BlueTOAD Spectra (Iteris Vantage Velocity / Spectra CV roadside Bluetooth travel-time reader). Surveillance class. Labels on a BlueTOAD / Vantage Velocity / Spectra CV name or Iteris OUI `00:14:7B`. No Extra attention and not a stock bookmark — quiet cabinets and 5.9 GHz C-V2X will not appear.
-- Stock signatures: BlipTrack (travel-time, no beep); Hanwha Wisenet, Uniview, Rhombus (cameras, Extra attention); MeshCore, goTenna, SenseCAP, RAK WisGate (mesh, no beep); GhostESP and Bruce (pentest Extra attention, GhostNet / BruceNet only). Existing phones now get the new Extra attention bookmarks (GhostESP, Bruce, Hanwha, Uniview, Rhombus) without Restore.
-- Locks class is now labeled Access control. ASSA ABLOY, SALTO, dormakaba, and Paxton move there from Surveillance (door readers, not cameras). Stored class value is still LOCK.
-- Settings footer shows Catalog N. Update stock catalog from GitHub replaces stock rows (including Extra attention) from the repo JSON; bookmarks and Settings stay. Needs internet. Offline: Import signatures.
+## 1.1.3 — 2026 年 9 月 21 日
 
-## 1.1.1 — 20 September 2026
+- 实时“显示”面板叠加在雷达 / 列表上，不再将内容向下推。启动时保持折叠。竖屏使用底部标签栏上方的高度，横屏可滚动，下面还有选项时显示渐隐和向下箭头。
+- 收紧 FIELDWATCH 顶部标题、筛选 / 特征库副标题栏及底部标签栏。
+- 夜间模式移至“外观”。移除深色主题开关，界面始终使用深色。升级或导入关闭深色主题的设置时会强制开启。
 
-- Reports → Sits: a short note on what a sit is, and that Sit report uses the open sit, a selected saved sit, or last 15 minutes.
+## 1.1.2 — 2026 年 9 月 21 日
 
-## 1.1.0 — 19 September 2026
+- 默认特征新增 BlueTOAD Spectra（Iteris Vantage Velocity / Spectra CV 路侧蓝牙行程时间读取器），归入监控设备。通过 BlueTOAD / Vantage Velocity / Spectra CV 名称或 Iteris OUI `00:14:7B` 标记。无重点关注，默认不关注；静默机柜和 5.9 GHz C-V2X 不会出现。
+- 默认特征新增：BlipTrack（行程时间，不提示音）；Hanwha Wisenet、Uniview、Rhombus（摄像头，重点关注）；MeshCore、goTenna、SenseCAP、RAK WisGate（Mesh，不提示音）；GhostESP、Bruce（渗透测试，重点关注，仅 GhostNet / BruceNet）。已有安装无需恢复默认即可获得 GhostESP、Bruce、Hanwha、Uniview、Rhombus 的默认关注。
+- “锁”类别改名为“门禁”。ASSA ABLOY、SALTO、dormakaba、Paxton 从监控设备移到门禁，因为它们是门禁读取器而不是摄像头。存储的类别值仍为 LOCK。
+- 设置页脚显示特征库版本。“从 GitHub 更新默认特征库”用仓库 JSON 替换默认条目（包括重点关注），保留关注状态和设置。需要网络；离线可导入特征库。
 
-- Named sits. Optional: Reports → Start sit. Debrief and AI Export use that window instead of the last 15 minutes in RAM. Live list, Filters, Hunt, and TAK are unchanged if you never start one.
+## 1.1.1 — 2026 年 9 月 20 日
 
-## 1.0.8 — 19 September 2026
+- “报告 → 观测”增加简短说明，解释观测的含义，以及观测报告会使用进行中的观测、选中的已保存观测或最近 15 分钟数据。
 
-- TAK remarks are a short card when you inspect a marker: callsign, radio kind, MAC, RSSI, heard-here vs advertised vs pilot, signatures, Extra attention. Map label is still the 32-character callsign.
+## 1.1.0 — 2026 年 9 月 19 日
 
-## 1.0.7 — 19 September 2026
+- 新增命名观测，可选使用“报告 → 开始观测”。观测总结和 AI 导出会使用该时段，替代内存中的最近 15 分钟。不开始观测时，实时列表、筛选、信号追踪和 TAK 保持原有行为。
 
-- TAK heard-here pins hold the loudest hear (closest approach) instead of following the operator. A weaker hear still refreshes the same lat/lon every ~10 s so ATAK does not drop the marker. Advertised Remote ID / pilot pins still follow the payload. Not direction-finding.
+## 1.0.8 — 2026 年 9 月 19 日
 
-## 1.0.6 — 19 September 2026
+- 在 TAK 中查看标记时，备注显示为简短卡片：呼号、无线类型、MAC、RSSI、接收位置 / 广播位置 / 飞手位置、特征和重点关注。地图标签仍为最长 32 字符的呼号。
 
-- Radar sweep runs off the display refresh so it still turns when Developer options Animator duration scale is off. The trail fades off the beam; contacts brighten when the sweep paints them.
-- New installs / Restore: Live display is By class. RSSI bars, Signature names, Frequency, and First / last seen are on. Existing phones keep the view they already chose.
+## 1.0.7 — 2026 年 9 月 19 日
 
-## 1.0.5 — 18 September 2026
+- TAK 的接收位置标记固定在信号最强时的位置（最接近的位置），不再跟随操作者移动。之后较弱的接收仍约每 10 秒刷新同一经纬度，避免 ATAK 移除标记。Remote ID 广播位置 / 飞手位置仍随载荷变化；这不是无线测向。
 
-- Sideload APK is signed with an Off Grid Pete LLC release certificate, not the Android debug cert. Certificate SHA-256 is in `instruction.txt`. Phones that already have 1.0.4 or earlier must uninstall first; Android will not update over a different signer.
+## 1.0.6 — 2026 年 9 月 19 日
 
-## 1.0.4 — 18 September 2026
+- 雷达扫描由显示刷新驱动，因此系统开发者选项将动画时长缩放设为关闭时仍会旋转。波束后方的拖尾渐隐，扫过目标时目标变亮。
+- 新安装 / 恢复默认：实时显示使用“按类别”，开启 RSSI 条、特征名称、频率和首次 / 上次发现。已有安装保留已选视图。
 
-- Dropped unused `RECEIVE_BOOT_COMPLETED`. Fieldwatch never started at boot; scanners flagged a permission with no receiver.
+## 1.0.5 — 2026 年 9 月 18 日
 
-## 1.0.3 — 17 September 2026
+- 上游侧载 APK 改用 Off Grid Pete LLC 发布证书，不再使用 Android 调试证书。证书 SHA-256 见 `instruction.txt`。已安装 1.0.4 或更早版本的手机必须先卸载，因为 Android 不允许不同签名直接覆盖更新。
 
-- TAK / CoT: Remote ID keeps one aircraft marker that moves (sticky UAS ID, not the rotating BLE MAC). Decoded pilot lat/lon is a second pin, linked to the aircraft.
-- Heard-here callsigns end in (here); Extra attention uses Maroon, advertised drones Yellow, pilot Orange. Radios that leave are dropped on ATAK instead of sitting ~120 s.
-- Settings Feed status shows pins on the feed and sends this tick, plus dest, error, and time. Destination chips: This phone (`127.0.0.1:10011`), LAN multicast (`239.2.3.1:6969`), Custom. UDP only — a TAK server’s TCP 8087 is not this feed.
-- New installs / Restore: Voice on watched signature on; What to say is Class + signature. Dark theme, Keep screen on, Jump to new watched detection, and Beep were already on.
-- Stock bookmarks include Extra attention (including every Surveillance row that has Extra attention text) plus every built-in Drone-class row (DJI, Remote ID, Skydio, Autel, Parrot, HOVERAir). Existing phones keep their current Settings and watchlist unless you Restore defaults.
+## 1.0.4 — 2026 年 9 月 18 日
 
-## 1.0.2 — 16 September 2026
+- 移除未使用的 `RECEIVE_BOOT_COMPLETED` 权限。Fieldwatch 从未开机自启，但扫描器会标记这种没有对应接收器的权限。
 
-- Settings backup: Export settings / Save settings / Import settings. Named radios, filter presets, and Settings switches; not the catalog, logs, or GPS. Done and error show an OK dialog.
-- Import signatures uses the same OK / error dialogs.
-- Bottom tabs cut immediately (no 700 ms fade).
+## 1.0.3 — 2026 年 9 月 17 日
 
-## 1.0.1 — 15 September 2026
+- TAK / CoT：Remote ID 保持一个随位置移动的航空器标记，以持久 UAS ID 识别，不使用轮换 BLE MAC。解码得到的飞手经纬度作为第二个标记，并关联航空器。
+- 接收位置呼号以 (here) 结尾；重点关注使用栗红色，广播位置无人机用黄色，飞手用橙色。设备离开时立即从 ATAK 移除，不再等待约 120 秒。
+- 设置中的发送状态显示当前标记数、本轮发送数、目标、错误和时间。目标选项：本手机（`127.0.0.1:10011`）、局域网组播（`239.2.3.1:6969`）、自定义。仅支持 UDP，不是 TAK 服务器使用的 TCP 8087。
+- 新安装 / 恢复默认：开启关注特征语音提醒，播报内容为“类别 + 特征”。深色主题、保持屏幕常亮、跳转到新关注命中和提示音此前已默认开启。
+- 默认关注包括重点关注特征（含所有有重点关注说明的监控设备条目），以及所有内置无人机类别条目（DJI、Remote ID、Skydio、Autel、Parrot、HOVERAir）。已有安装保持当前设置与关注列表，除非恢复默认。
 
-- Moving with you is BLE only. Wi-Fi access points stay off (a loud AP you drive past paints your path). Filters shows BLE only while that switch is on.
+## 1.0.2 — 2026 年 9 月 16 日
 
-## 1.0.0 — 15 September 2026
+- 设置备份新增导出设置、保存设置、导入设置，包含命名设备、筛选预设和设置开关，不包含特征库、日志或 GPS。完成与错误通过确认对话框显示。
+- 导入特征库使用相同的完成 / 错误对话框。
+- 底部标签页立即切换，移除 700 毫秒渐变。
 
-- New app: Fieldwatch (`app.fieldwatch`). Sideload next to Spectre; data does not migrate.
-- MIT License for Fieldwatch source. Apache-2.0 libraries and IEEE / Bluetooth SIG lookup tables: see NOTICE.
-- Operator-visible name is Fieldwatch (launcher, notification, Debrief, TAK, first-run).
-- Signature export uses `fieldwatch-signatures`. Spectre packs (`spectre-signatures`) still import.
-- Includes Spectre 1.2.14: Android 12–14 no longer crash on the first BLE advertisement; Android 15 still shows Public / Random from the stack. Sideload APK is not a debug build. BLE scan starts about half a second after Wi-Fi at launch.
+## 1.0.1 — 2026 年 9 月 15 日
+
+- “随行”只处理 BLE，不包含 Wi-Fi 接入点，因为驾车经过的强信号 AP 可能沿路线留下看似同行的轨迹。开启时，筛选页显示仅 BLE。
+
+## 1.0.0 — 2026 年 9 月 15 日
+
+- 新应用 Fieldwatch（`app.fieldwatch`），可与 Spectre 并存安装，不迁移数据。
+- Fieldwatch 源码采用 MIT 许可证。Apache-2.0 库及 IEEE / Bluetooth SIG 查询表详见 NOTICE。
+- 启动器、通知、观测总结、TAK 和首次启动中显示的应用名称统一为 Fieldwatch。
+- 特征库导出使用 `fieldwatch-signatures`，仍可导入 Spectre 的 `spectre-signatures` 包。
+- 包含 Spectre 1.2.14 的改动：Android 12–14 不再在首次接收 BLE 广播时崩溃；Android 15 仍显示系统协议栈提供的 Public / Random 地址类型。上游侧载 APK 不是调试构建。启动时，BLE 扫描在 Wi-Fi 启动约半秒后开始。

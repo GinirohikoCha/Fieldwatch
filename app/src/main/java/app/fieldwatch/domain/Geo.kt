@@ -61,13 +61,13 @@ object Geo {
 
     fun screenCoord(lat: Double?, lon: Double?, demo: Boolean): String? {
         if (lat == null || lon == null) return null
-        if (demo) return "masked"
+        if (demo) return "已隐藏"
         return "%.5f, %.5f".format(java.util.Locale.US, lat, lon)
     }
 
     fun redactCoordsIn(text: String, demo: Boolean): String {
         if (!demo || text.isEmpty()) return text
-        return COORD_RE.replace(text, "masked")
+        return COORD_RE.replace(text, "已隐藏")
     }
 
     private val COORD_RE = Regex("""-?\d{1,3}\.\d{3,8}\s*,\s*-?\d{1,3}\.\d{3,8}""")
@@ -441,8 +441,8 @@ object TrackerMatch {
         if (beacon.isNotEmpty()) return beacon.joinToString(" + ")
         val wear = nameHits(device, names, wearableTokens)
         if (wear.isNotEmpty()) return wear.joinToString(" + ")
-        if (isFindMyPayload(device)) return "Apple Find My / Offline Finding"
-        if (isCarriedApple(device, names)) return "Apple BLE (phone / Continuity)"
-        return "tracker-like"
+        if (isFindMyPayload(device)) return "Apple 查找 / 离线查找"
+        if (isCarriedApple(device, names)) return "Apple BLE（手机 / 连续互通）"
+        return "疑似追踪设备"
     }
 }

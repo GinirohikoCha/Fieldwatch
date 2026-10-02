@@ -93,7 +93,7 @@ fun ReportsScreen(
     var confirmDeleteAll by remember { mutableStateOf(false) }
     Scaffold(
         contentWindowInsets = NestedTabInsets,
-        topBar = { NestedTopBar("Reports") },
+        topBar = { NestedTopBar("报告") },
     ) { pad ->
         Column(
             Modifier
@@ -105,15 +105,15 @@ fun ReportsScreen(
         ) {
             if (settings.demoMode) {
                 Text(
-                    "Privacy mode is on. MAC tails in Debrief, sit compare, AI Export (sit or compare), and detail Share are **:**:**. GPS coordinates are masked. The log file, sit export, and GPX / KML / WiGLE files still have full addresses and lat/lon.",
+                    "隐私模式已开启。观测总结、观测对比、AI 导出（观测或对比）及详情分享中的 MAC 地址末尾显示为 **:**:**，GPS 坐标已隐藏。日志、观测导出及 GPX／KML／WiGLE 文件仍包含完整地址和经纬度。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
 
-            SectionCard("Sits") {
+            SectionCard("观测") {
                 Text(
-                    "A sit is a named window of radios heard here. The selection below drives Path, Debrief, and Compare’s this-sit side: open sit, a selected saved sit, or last 15 minutes if you never start one.",
+                    "观测是为一段时间内在此接收到的无线设备建立的命名记录。下方选择决定轨迹、观测总结和对比中的“本次观测”：可以是正在进行的观测、选中的已保存观测，或未开始观测时的最近 15 分钟。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -121,14 +121,14 @@ fun ReportsScreen(
                 if (open != null) {
                     val dur = Sit.fmtDuration(open.durationMs())
                     Text(
-                        "This sit: ${open.name} · $dur · ${state.sit.radioCount} radios",
+                        "本次观测：${open.name} · $dur · ${state.sit.radioCount} 个无线设备",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     FieldwatchActionButton(
                         onClick = vm::endSit,
                         enabled = !exporting,
                         modifier = Modifier.fillMaxWidth(),
-                    ) { Text("End sit") }
+                    ) { Text("结束观测") }
                 } else {
                     FieldwatchActionButton(
                         onClick = {
@@ -137,12 +137,12 @@ fun ReportsScreen(
                         },
                         enabled = !exporting,
                         modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Start sit") }
+                    ) { Text("开始观测") }
                     Text(
                         if (state.sit.closed.isEmpty()) {
-                            "No sit running. Start sit here. Path and Debrief stay last 15 minutes until you do."
+                            "当前没有进行中的观测。可在此开始；开始前，轨迹和观测总结使用最近 15 分钟的数据。"
                         } else {
-                            "No sit running. Start sit here. Path and Debrief use the selected sit."
+                            "当前没有进行中的观测。可在此开始。轨迹和观测总结使用选中的观测。"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -150,7 +150,7 @@ fun ReportsScreen(
                 }
                 if (state.sit.closed.isEmpty() && open == null) {
                     Text(
-                        "No saved sits.",
+                        "暂无已保存的观测。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -160,14 +160,14 @@ fun ReportsScreen(
                     SitChoiceRow(
                         selected = state.sit.selectedId == null,
                         enabled = pickEnabled,
-                        title = "Last 15 minutes",
-                        subtitle = "Path and Debrief use RAM, not a saved sit.",
+                        title = "最近 15 分钟",
+                        subtitle = "轨迹和观测总结使用内存中的数据，不读取已保存的观测。",
                         onSelect = { vm.selectSit(null) },
                     )
                     state.sit.closed.forEach { row ->
                         val dur = Sit.fmtDuration(row.durationMs())
                         val extra = if (row.extraAttentionCount > 0) {
-                            " · Extra attention ${row.extraAttentionCount}"
+                            " · 重点关注 ${row.extraAttentionCount} 个"
                         } else {
                             ""
                         }
@@ -175,13 +175,13 @@ fun ReportsScreen(
                             selected = state.sit.selectedId == row.id,
                             enabled = pickEnabled,
                             title = row.name,
-                            subtitle = "${Sit.defaultName(row.startAt)} · $dur · ${row.radioCount} radios$extra",
+                            subtitle = "${Sit.defaultName(row.startAt)} · $dur · ${row.radioCount} 个无线设备$extra",
                             onSelect = { vm.selectSit(row.id) },
                         )
                     }
                     if (open != null) {
                         Text(
-                            "End sit to pick a saved one for Path and Debrief.",
+                            "结束当前观测后，才能为轨迹和观测总结选择已保存的观测。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -200,18 +200,18 @@ fun ReportsScreen(
                             },
                             enabled = !exporting && picked != null,
                             modifier = Modifier.weight(1f),
-                        ) { Text("Rename") }
+                        ) { Text("重命名") }
                         FieldwatchActionButton(
                             onClick = { if (picked != null) deleteSitId = picked.id },
                             enabled = !exporting && picked != null,
                             modifier = Modifier.weight(1f),
-                        ) { Text("Delete") }
+                        ) { Text("删除") }
                     }
                     FieldwatchActionButton(
                         onClick = { confirmDeleteAll = true },
                         enabled = !exporting,
                         modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Delete all sits") }
+                    ) { Text("删除所有观测") }
                 }
             }
 
@@ -222,9 +222,9 @@ fun ReportsScreen(
                     kotlinx.coroutines.delay(3_000L)
                 }
             }
-            SectionCard("Path") {
+            SectionCard("轨迹") {
                 Text(
-                    "North up. The line is this phone. The black dot is the start. The blue dot is you, at the last point. A MAC or signature alert is one class icon. A decoded latitude and longitude uses the last position that radio sent. A count is several in one spot. Thick green is a stay. Time ticks along the path.",
+                    "上方为北。线条表示本机轨迹，黑点为起点，蓝点为你所在的最新位置。MAC 或特征警报显示为类别图标。解码出的经纬度采用设备最近发送的位置。数字表示该处有多个设备，粗绿线表示停留，时间刻度沿轨迹显示。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -233,7 +233,7 @@ fun ReportsScreen(
                 val showAircraft = model != null && model.aircraftCards.isNotEmpty()
                 if (model == null || (!showWalk && !showAircraft)) {
                     Text(
-                        model?.emptyHint ?: "Tag detections with GPS and walk, or open a sit that recorded a path.",
+                        model?.emptyHint ?: "开启“为探测结果添加 GPS 标记”后走动，或打开记录了轨迹的观测。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -242,7 +242,7 @@ fun ReportsScreen(
                     val aircraftTiles by vm.pathAircraftTiles.collectAsStateWithLifecycle()
                     if (!showWalk) {
                         Text(
-                            model.emptyHint ?: "Tag detections with GPS and walk, or open a sit that recorded a path.",
+                            model.emptyHint ?: "开启“为探测结果添加 GPS 标记”后走动，或打开记录了轨迹的观测。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -251,17 +251,16 @@ fun ReportsScreen(
                     val stopN = model.dots.size
                     Text(
                         buildString {
-                            append("${model.title} · ${model.lengthM.toInt()} m path · ${model.spanM.toInt()} m span")
+                            append("${model.title} · 轨迹 ${model.lengthM.toInt()} 米 · 跨度 ${model.spanM.toInt()} 米")
                             if (stopN > 0) {
-                                append(" · $stopN alert")
-                                if (stopN != 1) append("s")
+                                append(" · $stopN 条警报")
                             }
                         },
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     SitPathCanvas(model, tiles = pathTiles, onOpenRadio = onOpenPathRadio)
                     Text(
-                        "Tap a count for the radios there. Tap a single icon for that one radio. Tap again to close. Tap a row in that list, or a row below, to open that radio.",
+                        "点按数字查看该处设备，点按单个图标查看对应设备，再次点按可关闭。点按弹出列表或下方列表中的条目，可打开设备详情。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -276,9 +275,9 @@ fun ReportsScreen(
                                     if (multi) AdvertisedTrackSwatch() else AdvertisedRingSwatch()
                                     Text(
                                         if (multi) {
-                                            "= advertised track within 2 km of this path"
+                                            "= 距此轨迹 2 公里内的广播轨迹"
                                         } else {
-                                            "= one advertised position within 2 km of this path"
+                                            "= 距此轨迹 2 公里内的单个广播位置"
                                         },
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurface,
@@ -292,7 +291,7 @@ fun ReportsScreen(
                                 ) {
                                     PilotSwatch()
                                     Text(
-                                        "= pilot",
+                                        "= 操作员",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -303,7 +302,7 @@ fun ReportsScreen(
                     val alertsOnACard = model.aircraftCards.any { it.dots.isNotEmpty() }
                     if (model.dots.isEmpty() && !alertsOnACard) {
                         Text(
-                            "No MAC or signature alerts with a GPS stamp on this path.",
+                            "此轨迹上没有带 GPS 标记的 MAC 或特征警报。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -331,15 +330,15 @@ fun ReportsScreen(
                         Text(
                             buildString {
                                 append(
-                                    if (fixes == 1) "1 advertised fix" else "$fixes advertised fixes",
+                                    if (fixes == 1) "1 个广播定位点" else "$fixes 个广播定位点",
                                 )
-                                if (card.lengthM >= 1.0) append(" · ${card.lengthM.toInt()} m")
+                                if (card.lengthM >= 1.0) append(" · ${card.lengthM.toInt()} 米")
                             },
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         if (card.dots.isNotEmpty()) {
                             Text(
-                                if (card.dots.size == 1) "1 alert" else "${card.dots.size} alerts",
+                                if (card.dots.size == 1) "1 条警报" else "${card.dots.size} 条警报",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -372,9 +371,9 @@ fun ReportsScreen(
                     if (model.looseAdvertised > 0) {
                         Text(
                             if (model.looseAdvertised == 1) {
-                                "An advertised position with no UAS id is in the sit report."
+                                "观测报告中包含一个没有 UAS ID 的广播位置。"
                             } else {
-                                "Advertised positions with no UAS id are in the sit report."
+                                "观测报告中包含没有 UAS ID 的广播位置。"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -383,7 +382,7 @@ fun ReportsScreen(
                 }
             }
 
-            SectionCard("Sit report") {
+            SectionCard("观测报告") {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -392,12 +391,12 @@ fun ReportsScreen(
                     onClick = vm::startFieldDebrief,
                     enabled = !exporting,
                     modifier = Modifier.weight(1f),
-                ) { Text("Debrief (text)") }
+                ) { Text("观测总结（文本）") }
                 FieldwatchActionButton(
                     onClick = vm::startFieldDebriefPdf,
                     enabled = !exporting,
                     modifier = Modifier.weight(1f),
-                ) { Text("Debrief (PDF)") }
+                ) { Text("观测总结（PDF）") }
             }
             Text(
                 sitReportCaption(state),
@@ -409,7 +408,7 @@ fun ReportsScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "Show unmatched rotating BLE",
+                    "显示未匹配的轮换地址 BLE",
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -419,7 +418,7 @@ fun ReportsScreen(
                 )
             }
             Text(
-                "Off (default): Debrief text/PDF lists skip unmatched RAND BLE. Counts still include them. Extra attention, named signatures, bookmarks, and payload pins stay. Sit export has every radio.",
+                "默认关闭：文本／PDF 观测总结列表跳过未匹配的随机地址 BLE，但计数仍包含它们。保留重点关注、命名特征、已关注设备和载荷位置标记。观测导出包含全部设备。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -427,15 +426,15 @@ fun ReportsScreen(
                 onClick = vm::startAiExport,
                 enabled = !exporting,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("AI Export") }
+            ) { Text("AI 导出") }
             Text(
-                "Paste-ready addendum: rates, RSSI bands, Extra attention and tracking IDs. Does not reprint Debrief inventories. One-radio AI Export is on detail.",
+                "可直接粘贴的补充信息：接收速率、RSSI 区间、重点关注和跟踪 ID，不重复观测总结清单。单个设备的 AI 导出位于详情页。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             }
 
-            SectionCard("Sit export") {
+            SectionCard("观测导出") {
             val sitKind by vm.sitExportKind.collectAsStateWithLifecycle()
             val sitRadios by vm.sitExportRadios.collectAsStateWithLifecycle()
             ExportFormatBlock(
@@ -446,11 +445,11 @@ fun ReportsScreen(
                 onRadios = vm::setSitExportRadios,
                 onShare = vm::startSitExport,
                 onSave = onSaveSitToStorage,
-                hint = "One row per unique radio in this sit (or last 15 minutes). CSV / JSON lines include matched signatures and Extra attention families. Not the rotating log. GPX / KML include this phone’s path as a track plus hear-points. Fieldwatch does not upload. Privacy mode does not mask this file.",
+                hint = "本次观测（或最近 15 分钟）中的每个唯一设备各占一行。CSV／JSON lines 包含匹配特征和重点关注系列，不是轮转日志。GPX／KML 包含本机轨迹及接收点。Fieldwatch 不上传数据。隐私模式不会遮蔽此文件。",
             )
             }
 
-            SectionCard("Compare sits") {
+            SectionCard("对比观测") {
                 Text(
                     compareThisCaption(state),
                     style = MaterialTheme.typography.bodySmall,
@@ -460,13 +459,13 @@ fun ReportsScreen(
                 val choices = SitDiff.secondSitChoices(state.sit.closed, thisSaved)
                 if (choices.isEmpty()) {
                     Text(
-                        "Save a second sit to compare. Start sit, then End sit. Last 15 minutes can be this sit.",
+                        "先开始并结束一次观测，保存第二次观测后即可对比。“最近 15 分钟”也可作为本次观测。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
                     Text(
-                        "Second sit",
+                        "第二次观测",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     choices.forEach { row ->
@@ -475,7 +474,7 @@ fun ReportsScreen(
                             selected = state.sit.compareId == row.id,
                             enabled = !exporting,
                             title = row.name,
-                            subtitle = "${Sit.defaultName(row.startAt)} · $dur · ${row.radioCount} radios",
+                            subtitle = "${Sit.defaultName(row.startAt)} · $dur · ${row.radioCount} 个无线设备",
                             onSelect = { vm.selectCompareSit(row.id) },
                         )
                     }
@@ -488,15 +487,15 @@ fun ReportsScreen(
                         onClick = vm::startSitCompare,
                         enabled = !exporting && state.sit.compareId != null,
                         modifier = Modifier.weight(1f),
-                    ) { Text("Compare (text)") }
+                    ) { Text("对比（文本）") }
                     FieldwatchActionButton(
                         onClick = vm::startSitComparePdf,
                         enabled = !exporting && state.sit.compareId != null,
                         modifier = Modifier.weight(1f),
-                    ) { Text("Compare (PDF)") }
+                    ) { Text("对比（PDF）") }
                 }
                 Text(
-                    "Same report, two formats. Presence only — only in this sit, only in the second, in both. Kind + MAC. Extra attention and Named radios are marked. Not a radio fix.",
+                    "同一报告提供两种格式，仅按无线类型和 MAC 对比出现情况：仅本次、仅第二次、两次都有。重点关注和命名设备会标注。这不代表设备定位。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -504,31 +503,31 @@ fun ReportsScreen(
                     onClick = vm::startSitCompareAiExport,
                     enabled = !exporting && state.sit.compareId != null,
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("AI Export") }
+                ) { Text("AI 导出") }
                 Text(
-                    "Paste-ready addendum: overlap, exclusive Extra attention / Named radios, what another sit would shrink. Does not reprint the compare lists. Sit report AI Export stays this window only.",
+                    "可直接粘贴的补充信息：交集、各自独有的重点关注／命名设备，以及增加一次观测可缩小哪些范围。不重复对比清单。观测报告的 AI 导出仅包含当前时间窗口。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
-            SectionCard("Catalog") {
+            SectionCard("特征库") {
             FieldwatchActionButton(
                 onClick = onSignatureCandidates,
                 enabled = !exporting,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Signature candidates") }
+            ) { Text("候选特征") }
             Text(
-                "Unmatched radios in the log that share a unique ID — not every unknown. You review; nothing is added until you Save.",
+                "查找日志中共享独特标识的未匹配设备，并非列出所有未知设备。由你审核，保存后才会添加。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             }
 
-            SectionCard("Log export") {
+            SectionCard("日志导出") {
             Text(
-                "${state.logLines} lines this session  ·  ${vm.logBytes() / 1024} KB on disk" +
-                    if (settings.loggingEnabled) "" else "  ·  logging off",
+                "本次会话 ${state.logLines} 行 · 磁盘占用 ${vm.logBytes() / 1024} KB" +
+                    if (settings.loggingEnabled) "" else "  ·  日志已关闭",
                 style = MaterialTheme.typography.bodySmall,
             )
             val logKind by vm.logExportKind.collectAsStateWithLifecycle()
@@ -541,30 +540,30 @@ fun ReportsScreen(
                 onRadios = vm::setLogExportRadios,
                 onShare = vm::startExport,
                 onSave = onSaveToStorage,
-                hint = "The rotating file is JSON lines. CSV is the same rows as a spreadsheet. GPX — GPS Exchange, KML — Google Earth, and WiGLE CSV — wigle.net are hear-points: where this phone was when it heard each radio, not a radio fix. Tag detections with GPS and logging on. Share uses the Android share sheet — Fieldwatch does not upload.",
+                hint = "轮转文件采用 JSON lines 格式，CSV 可将相同记录作为表格打开。GPX（GPS 交换格式）、KML（Google Earth）和 WiGLE CSV（wigle.net）记录的是接收点，即本机接收到设备时的位置，不是设备的定位。请开启 GPS 标记和日志记录。分享使用 Android 系统分享面板，Fieldwatch 不上传数据。",
             )
             FieldwatchActionButton(
                 onClick = { confirmClear = true },
                 enabled = !exporting,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Reset / clear log")
+                Text("重置／清除日志")
             }
             if (confirmClear) {
                 AlertDialog(
                     onDismissRequest = { confirmClear = false },
-                    title = { Text("Clear the log?") },
+                    title = { Text("清除日志？") },
                     text = {
-                        Text("This deletes all rotated CSV/JSON files on the phone. It cannot be undone. Live scanning will start a new empty log.")
+                        Text("这会删除手机上所有轮转的 CSV／JSON 文件，无法撤销。实时扫描将创建新的空日志。")
                     },
                     confirmButton = {
                         TextButton(onClick = {
                             confirmClear = false
                             vm.clearLogs()
-                        }) { Text("Clear log") }
+                        }) { Text("清除日志") }
                     },
                     dismissButton = {
-                        TextButton(onClick = { confirmClear = false }) { Text("Cancel") }
+                        TextButton(onClick = { confirmClear = false }) { Text("取消") }
                     },
                 )
             }
@@ -574,16 +573,16 @@ fun ReportsScreen(
     if (startSit) {
         AlertDialog(
             onDismissRequest = { startSit = false },
-            title = { Text("Start sit") },
+            title = { Text("开始观测") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     FieldwatchOutlinedField(
                         value = sitNameDraft,
                         onValueChange = { sitNameDraft = it.take(Sit.NAME_MAX) },
-                        label = "Name",
+                        label = "名称",
                     )
                     Text(
-                        "Debrief and AI Export use this window until you end it. The Live list is unchanged.",
+                        "结束观测前，观测总结和 AI 导出使用此时间窗口。实时列表保持不变。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -600,10 +599,10 @@ fun ReportsScreen(
                 TextButton(onClick = {
                     startSit = false
                     vm.startSit(sitNameDraft)
-                }) { Text("Start") }
+                }) { Text("开始") }
             },
             dismissButton = {
-                TextButton(onClick = { startSit = false }) { Text("Cancel") }
+                TextButton(onClick = { startSit = false }) { Text("取消") }
             },
         )
     }
@@ -611,22 +610,22 @@ fun ReportsScreen(
     if (renaming != null) {
         AlertDialog(
             onDismissRequest = { renameSitId = null },
-            title = { Text("Rename sit") },
+            title = { Text("重命名观测") },
             text = {
                 FieldwatchOutlinedField(
                     value = renameDraft,
                     onValueChange = { renameDraft = it.take(Sit.NAME_MAX) },
-                    label = "Name",
+                    label = "名称",
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
                     renameSitId = null
                     vm.renameSit(renaming, renameDraft)
-                }) { Text("Save") }
+                }) { Text("保存") }
             },
             dismissButton = {
-                TextButton(onClick = { renameSitId = null }) { Text("Cancel") }
+                TextButton(onClick = { renameSitId = null }) { Text("取消") }
             },
         )
     }
@@ -634,32 +633,32 @@ fun ReportsScreen(
     if (deleting != null) {
         AlertDialog(
             onDismissRequest = { deleteSitId = null },
-            title = { Text("Delete this sit?") },
-            text = { Text("Removes the saved sit from this phone. The log is unchanged.") },
+            title = { Text("删除本次观测？") },
+            text = { Text("从手机移除这次已保存的观测。日志保持不变。") },
             confirmButton = {
                 TextButton(onClick = {
                     deleteSitId = null
                     vm.deleteSit(deleting)
-                }) { Text("Delete") }
+                }) { Text("删除") }
             },
             dismissButton = {
-                TextButton(onClick = { deleteSitId = null }) { Text("Cancel") }
+                TextButton(onClick = { deleteSitId = null }) { Text("取消") }
             },
         )
     }
     if (confirmDeleteAll) {
         AlertDialog(
             onDismissRequest = { confirmDeleteAll = false },
-            title = { Text("Delete all sits?") },
-            text = { Text("Removes saved sits from this phone. An open sit is not deleted. The log is unchanged.") },
+            title = { Text("删除所有观测？") },
+            text = { Text("从手机移除所有已保存的观测。正在进行的观测不会被删除，日志保持不变。") },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDeleteAll = false
                     vm.deleteAllSits()
-                }) { Text("Delete all") }
+                }) { Text("全部删除") }
             },
             dismissButton = {
-                TextButton(onClick = { confirmDeleteAll = false }) { Text("Cancel") }
+                TextButton(onClick = { confirmDeleteAll = false }) { Text("取消") }
             },
         )
     }
@@ -827,13 +826,13 @@ private fun PathRadioRow(
 private fun compareThisCaption(state: FieldwatchUi): String {
     val open = state.sit.open
     if (open != null) {
-        return "This sit: ${open.name} — named window (up to ${Sit.RADIO_CAP}). Same as Debrief."
+        return "本次观测：${open.name} — 命名时间窗口（最多 ${Sit.RADIO_CAP} 个设备），与观测总结一致。"
     }
     val selected = state.sit.closed.firstOrNull { it.id == state.sit.selectedId }
     if (selected != null) {
-        return "This sit: ${selected.name} — named window (up to ${Sit.RADIO_CAP}). Same as Debrief."
+        return "本次观测：${selected.name} — 命名时间窗口（最多 ${Sit.RADIO_CAP} 个设备），与观测总结一致。"
     }
-    return "This sit: last 15 minutes in memory (about 400 radios). Same as Debrief."
+    return "本次观测：内存中的最近 15 分钟（约 400 个设备），与观测总结一致。"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -854,7 +853,7 @@ private fun ExportFormatBlock(
         onExpandedChange = { openFormat = it },
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
     ) {
-        FieldwatchDropdownField("Format", kind.label, openFormat)
+        FieldwatchDropdownField("格式", kind.label, openFormat)
         ExposedDropdownMenu(openFormat, { openFormat = false }) {
             LogExportKind.entries.forEach { item ->
                 DropdownMenuItem(
@@ -895,12 +894,12 @@ private fun ExportFormatBlock(
         onClick = onShare,
         enabled = !exporting,
         modifier = Modifier.fillMaxWidth(),
-    ) { Text("Share") }
+    ) { Text("分享") }
     FieldwatchActionButton(
         onClick = onSave,
         enabled = !exporting,
         modifier = Modifier.fillMaxWidth(),
-    ) { Text("Save to SD card / storage…") }
+    ) { Text("保存到 SD 卡／存储空间…") }
     Text(
         hint,
         style = MaterialTheme.typography.bodySmall,
@@ -911,11 +910,11 @@ private fun ExportFormatBlock(
 private fun sitReportCaption(state: FieldwatchUi): String {
     val open = state.sit.open
     if (open != null) {
-        return "This sit (${open.name}) — same window as Path. GPS following test when tagging is on and you have moved. Not a legal finding."
+        return "本次观测（${open.name}）— 与轨迹使用相同时间窗口。开启 GPS 标记并移动后可进行随行检测，不构成法律认定。"
     }
     val selected = state.sit.closed.firstOrNull { it.id == state.sit.selectedId }
     if (selected != null) {
-        return "Sit: ${selected.name} — same window as Path. GPS following test when tagging is on and you have moved. Not a legal finding."
+        return "观测：${selected.name} — 与轨迹使用相同时间窗口。开启 GPS 标记并移动后可进行随行检测，不构成法律认定。"
     }
-    return "Last 15 minutes in memory — same window as Path. Two formats. GPS following test when tagging is on and you have moved. Not a legal finding."
+    return "内存中的最近 15 分钟 — 与轨迹使用相同时间窗口，提供两种格式。开启 GPS 标记并移动后可进行随行检测，不构成法律认定。"
 }

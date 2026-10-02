@@ -29,7 +29,7 @@ object RadioBookmarks {
     fun clipNotes(text: String): String = text.trim().take(MAX_NOTES)
 
     fun observerNotesHint(): String =
-        "Pinned to this MAC. Shows on Debrief, Compare, Path, and AI Export. Does not turn Alert on."
+        "绑定到此 MAC，将显示在观测总结、对比、轨迹和 AI 导出中，不会自动开启提醒。"
 
     fun watchedFleetIds(watchlist: List<WatchTarget>): Set<String> =
         watchlist.mapNotNull { row ->
@@ -61,10 +61,10 @@ object RadioBookmarks {
         if (title.isNotEmpty() && !title.equals(device.mac, ignoreCase = true)) {
             return clip(title)
         }
-        return if (device.kind == RadioKind.BLE) "unnamed LE" else clip(device.mac.takeLast(8))
+        return if (device.kind == RadioKind.BLE) "未命名 BLE" else clip(device.mac.takeLast(8))
     }
 
-    fun clip(name: String): String = name.trim().take(MAX_NAME).ifBlank { "Radio" }
+    fun clip(name: String): String = name.trim().take(MAX_NAME).ifBlank { "无线设备" }
 
     /**
      * BLE privacy addresses rotate; a name would stick to a dead key.
@@ -77,9 +77,9 @@ object RadioBookmarks {
     }
 
     fun customNameHint(device: Sighting): String {
-        val base = "Shows on Live. Bookmark (top-right) is the alert; this does not turn it on."
+        val base = "名称显示在实时页面。右上角的关注按钮用于开启提醒，命名不会自动开启提醒。"
         return if (device.kind == RadioKind.WIFI && device.randomized) {
-            "$base Pinned to this BSSID. Vehicle, mesh, and guest APs often keep a locally administered address."
+            "$base 绑定到此 BSSID。车辆、Mesh 和访客接入点通常使用固定的本地管理地址。"
         } else {
             base
         }

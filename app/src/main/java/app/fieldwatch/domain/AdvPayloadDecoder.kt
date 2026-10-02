@@ -21,7 +21,7 @@ object AdvPayloadDecoder {
             0x004C -> decodeApple(bytes)
             0x0006 -> decodeMicrosoft(bytes)
             0x0157 -> decodeAltBeacon(bytes)
-            0x00E0 -> listOf(Field("Google manufacturer data", "${bytes.size} bytes"))
+            0x00E0 -> listOf(Field("Google 厂商数据", "${bytes.size} 字节"))
             else -> emptyList()
         }
     }
@@ -53,43 +53,43 @@ object AdvPayloadDecoder {
                         if (hex.startsWith(teslaPrefix) || hex.startsWith(teslaPrefix.drop(4))) {
                             out += RoleHint(
                                 "vehicle",
-                                "a Tesla vehicle or phone-as-key",
-                                "Tesla phone-key iBeacon UUID (iOS background find).",
+                                "Tesla 车辆或手机钥匙",
+                                "Tesla 手机钥匙 iBeacon UUID（用于 iOS 后台查找）。",
                                 8,
                             )
                         } else if (hex.startsWith(targetPrefix) || hex.startsWith(targetPrefix.drop(4))) {
                             out += RoleHint(
                                 "beacon",
-                                "a Target Atrius basket tag",
-                                "Target / Atrius iBeacon UUID (shopping-basket asset tag).",
+                                "Target Atrius 购物篮标签",
+                                "Target / Atrius iBeacon UUID（购物篮资产标签）。",
                                 8,
                             )
                         } else {
-                            out += RoleHint("beacon", "an iBeacon", "Apple iBeacon payload.", 7)
+                            out += RoleHint("beacon", "iBeacon 信标", "Apple iBeacon 载荷。", 7)
                         }
                     }
-                    0x05 -> out += RoleHint("phone", "an iPhone or iPad offering AirDrop", "Apple AirDrop advertisement.", 5)
+                    0x05 -> out += RoleHint("phone", "已开启隔空投送的 iPhone 或 iPad", "Apple 隔空投送广播。", 5)
                     0x07 -> {
                         val model = airPodsModel(tlv.data)
                         out += RoleHint(
                             "audio-personal",
-                            model ?: "AirPods or Beats headphones",
-                            if (model != null) "Apple Proximity Pairing: $model."
-                            else "Apple Proximity Pairing (AirPods / Beats).",
+                            model ?: "AirPods 或 Beats 耳机",
+                            if (model != null) "Apple 近距离配对：$model。"
+                            else "Apple 近距离配对（AirPods / Beats）。",
                             8,
                         )
                     }
-                    0x08 -> out += RoleHint("siri", "an Apple device that just heard “Hey Siri”", "Hey Siri advertisement.", 6)
-                    0x09 -> out += RoleHint("audio-speaker", "an AirPlay speaker or Apple TV", "AirPlay advertisement.", 5)
-                    0x0B -> out += RoleHint("phone", "an Apple device doing Handoff", "Handoff advertisement.", 4)
-                    0x0C -> out += RoleHint("phone", "an Apple device looking for Instant Hotspot", "Tethering-target advertisement.", 5)
-                    0x0D, 0x0E -> out += RoleHint("hotspot", "an iPhone/iPad offering Instant Hotspot", "Tethering-source advertisement.", 6)
-                    0x0F -> out += RoleHint("phone", "an Apple device (Nearby Action)", nearbyActionReason(tlv.data), 4)
-                    0x10 -> out += RoleHint("phone", "an iPhone / iPad / Mac (Nearby Info)", nearbyInfoReason(tlv.data), 5)
+                    0x08 -> out += RoleHint("siri", "刚听到“嘿 Siri”的 Apple 设备", "“嘿 Siri”广播。", 6)
+                    0x09 -> out += RoleHint("audio-speaker", "AirPlay 音箱或 Apple TV", "AirPlay 广播。", 5)
+                    0x0B -> out += RoleHint("phone", "正在使用接力的 Apple 设备", "接力广播。", 4)
+                    0x0C -> out += RoleHint("phone", "正在寻找即时热点的 Apple 设备", "网络共享目标端广播。", 5)
+                    0x0D, 0x0E -> out += RoleHint("hotspot", "提供即时热点的 iPhone / iPad", "网络共享源端广播。", 6)
+                    0x0F -> out += RoleHint("phone", "Apple 设备（附近操作）", nearbyActionReason(tlv.data), 4)
+                    0x10 -> out += RoleHint("phone", "iPhone / iPad / Mac（附近信息）", nearbyInfoReason(tlv.data), 5)
                     0x12 -> out += RoleHint(
                         "tag",
-                        "a Find My network radio",
-                        "Apple Offline Finding — AirTag, Find My accessory, or an Apple device locating itself.",
+                        "“查找”网络设备",
+                        "Apple 离线查找：可能是 AirTag、“查找”配件或正在定位自身的 Apple 设备。",
                         4,
                     )
                 }
@@ -104,16 +104,16 @@ object AdvPayloadDecoder {
                         val name = FastPairModels.name(id)
                         out += RoleHint(
                             "audio-personal",
-                            name ?: "a Fast Pair accessory (often earbuds or a speaker)",
-                            if (name != null) "Google Fast Pair model $name (0x%06X), in pairing mode.".format(id)
-                            else "Google Fast Pair model 0x%06X, in pairing mode.".format(id),
+                            name ?: "Fast Pair 配件（通常为耳机或音箱）",
+                            if (name != null) "Google Fast Pair 型号 $name（0x%06X），处于配对模式。".format(id)
+                            else "Google Fast Pair 型号 0x%06X，处于配对模式。".format(id),
                             if (name != null) 8 else 6,
                         )
                     } else {
                         out += RoleHint(
                             "audio-personal",
-                            "a Fast Pair accessory already paired to someone",
-                            "Google Fast Pair account-key broadcast (not in pairing mode).",
+                            "已与某个账户配对的 Fast Pair 配件",
+                            "Google Fast Pair 账户密钥广播（未处于配对模式）。",
                             4,
                         )
                     }
@@ -123,12 +123,12 @@ object AdvPayloadDecoder {
                     when (frame) {
                         0x40, 0x41 -> out += RoleHint(
                             "tag",
-                            "a Google Find Hub tag",
-                            if (frame == 0x41) "Find Hub separated (unwanted-tracking) frame."
-                            else "Find Hub nearby frame.",
+                            "Google Find Hub 寻物标签",
+                            if (frame == 0x41) "Find Hub 分离（防非自愿追踪）帧。"
+                            else "Find Hub 附近帧。",
                             8,
                         )
-                        else -> out += RoleHint("beacon", "an Eddystone beacon", "Eddystone service data.", 6)
+                        else -> out += RoleHint("beacon", "Eddystone 信标", "Eddystone 服务数据。", 6)
                     }
                 }
             }
@@ -140,25 +140,25 @@ object AdvPayloadDecoder {
 
     private fun decodeApple(bytes: ByteArray): List<Field> {
         val tlvs = appleTlvs(bytes)
-        if (tlvs.isEmpty()) return listOf(Field("Apple payload", "${bytes.size} bytes (unparsed)"))
+        if (tlvs.isEmpty()) return listOf(Field("Apple 载荷", "${bytes.size} 字节（未解析）"))
         val out = ArrayList<Field>(8)
         for (tlv in tlvs) {
-            out += Field("Apple Continuity type", "0x%02X · %s".format(tlv.type, appleTypeName(tlv.type)))
+            out += Field("Apple 连续互通类型", "0x%02X · %s".format(tlv.type, appleTypeName(tlv.type)))
             out += when (tlv.type) {
                 0x02 -> decodeIBeacon(tlv.data)
                 0x05 -> decodeAirDrop(tlv.data)
-                0x06 -> listOf(Field("HomeKit", "${tlv.data.size} bytes of HomeKit setup data"))
+                0x06 -> listOf(Field("HomeKit", "${tlv.data.size} 字节的 HomeKit 设置数据"))
                 0x07 -> decodeAirPods(tlv.data)
                 0x08 -> decodeHeySiri(tlv.data)
-                0x09 -> listOf(Field("AirPlay", "This device is advertising as an AirPlay source or target."))
-                0x0A -> listOf(Field("Magic Switch", "Apple Watch wrist / unlock related."))
+                0x09 -> listOf(Field("AirPlay", "此设备正作为 AirPlay 源端或目标端广播。"))
+                0x0A -> listOf(Field("Magic Switch", "与 Apple Watch 佩戴或解锁有关。"))
                 0x0B -> decodeHandoff(tlv.data)
                 0x0C -> decodeHandoffOrTetherTarget(tlv.data)
                 0x0D, 0x0E -> decodeTetherSource(tlv.data)
                 0x0F -> decodeNearbyAction(tlv.data)
                 0x10 -> decodeNearbyInfo(tlv.data)
                 0x12 -> decodeFindMy(tlv.data)
-                else -> listOf(Field("Payload", "${tlv.data.size} bytes"))
+                else -> listOf(Field("载荷", "${tlv.data.size} 字节"))
             }
         }
         return out
@@ -182,20 +182,20 @@ object AdvPayloadDecoder {
         0x03 -> "AirPrint"
         0x05 -> "AirDrop"
         0x06 -> "HomeKit"
-        0x07 -> "Proximity Pairing (AirPods / Beats)"
+        0x07 -> "近距离配对（AirPods / Beats）"
         0x08 -> "Hey Siri"
         0x09 -> "AirPlay"
-        0x0A -> "Magic Switch (Watch)"
-        0x0B -> "Handoff"
-        0x0C -> "Handoff or Instant Hotspot (target)"
-        0x0D -> "Instant Hotspot (source)"
-        0x0E -> "Instant Hotspot (source)"
-        0x0F -> "Nearby Action"
-        0x10 -> "Nearby Info"
-        0x12 -> "Find My / Offline Finding"
-        0x13 -> "Nearby Action (extended)"
-        0x16 -> "Nearby Info"
-        else -> "unlisted"
+        0x0A -> "Magic Switch（手表）"
+        0x0B -> "接力"
+        0x0C -> "接力或即时热点（目标端）"
+        0x0D -> "即时热点（源端）"
+        0x0E -> "即时热点（源端）"
+        0x0F -> "附近操作"
+        0x10 -> "附近信息"
+        0x12 -> "查找 / 离线查找"
+        0x13 -> "附近操作（扩展）"
+        0x16 -> "附近信息"
+        else -> "未收录"
     }
 
     private fun decodeIBeacon(data: ByteArray): List<Field> {
@@ -203,7 +203,7 @@ object AdvPayloadDecoder {
         val body = when {
             data.size >= 22 && data[0] == 0x15.toByte() -> data.copyOfRange(1, 22)
             data.size >= 21 -> data.copyOfRange(0, 21)
-            else -> return listOf(Field("iBeacon", "truncated (${data.size} bytes)"))
+            else -> return listOf(Field("iBeacon", "数据不完整（${data.size} 字节）"))
         }
         val uuid = uuidFromBe(body, 0)
         val major = u16be(body, 16)
@@ -216,49 +216,49 @@ object AdvPayloadDecoder {
         return listOf(
             Field(
                 "iBeacon UUID",
-                if (teslaKey) "$uuid — Tesla phone-as-key (iOS background find). Not a mall beacon." else uuid,
+                if (teslaKey) "$uuid — Tesla 手机钥匙（用于 iOS 后台查找），并非商场信标。" else uuid,
             ),
-            Field("iBeacon major / minor", "$major / $minor"),
-            Field("iBeacon calibrated TX", "$tx dBm at 1 m (used to estimate range)"),
+            Field("iBeacon 主编号 / 次编号", "$major / $minor"),
+            Field("iBeacon 校准发射功率", "1 米处 $tx dBm（用于估算距离）"),
         )
     }
 
     private fun decodeAirDrop(data: ByteArray): List<Field> {
         // 8 zeros, version, appleID hash(2), phone(2), email(2), email2(2), 0
-        if (data.size < 18) return listOf(Field("AirDrop", "Someone nearby is offering AirDrop (${data.size} bytes)."))
+        if (data.size < 18) return listOf(Field("AirDrop", "附近有人开启了隔空投送（${data.size} 字节）。"))
         return listOf(
-            Field("AirDrop", "Someone nearby has AirDrop receiving on. Hashes are truncated IDs, not names."),
-            Field("Apple ID hash (2 bytes)", data.copyOfRange(9, 11).toHexUpper()),
+            Field("AirDrop", "附近有人开启了隔空投送接收。哈希是截断的 ID，并非姓名。"),
+            Field("Apple ID 哈希（2 字节）", data.copyOfRange(9, 11).toHexUpper()),
         )
     }
 
     private fun decodeAirPods(data: ByteArray): List<Field> {
         // prefix 0x01, model u16be, status, batt nibble, charge+case, lid, color, 0x00, enc 16
-        if (data.size < 5) return listOf(Field("AirPods", "Proximity Pairing, truncated."))
+        if (data.size < 5) return listOf(Field("AirPods", "近距离配对，数据不完整。"))
         val start = if (data[0] == 0x01.toByte()) 1 else 0
-        if (data.size < start + 4) return listOf(Field("AirPods", "Proximity Pairing."))
+        if (data.size < start + 4) return listOf(Field("AirPods", "近距离配对。"))
         val model = ((data[start].toInt() and 0xFF) shl 8) or (data[start + 1].toInt() and 0xFF)
         val status = data[start + 2].toInt() and 0xFF
         val batt = data[start + 3].toInt() and 0xFF
         val left = batt and 0x0F
         val right = (batt shr 4) and 0x0F
         val out = ArrayList<Field>(6)
-        out += Field("Product", airPodsModelName(model) ?: "Apple audio 0x%04X".format(model))
-        out += Field("Pod position", airPodsStatus(status))
-        out += Field("Battery (left / right)", "${nibblePct(left)} / ${nibblePct(right)}")
+        out += Field("产品", airPodsModelName(model) ?: "Apple 音频设备 0x%04X".format(model))
+        out += Field("耳机位置", airPodsStatus(status))
+        out += Field("电量（左 / 右）", "${nibblePct(left)} / ${nibblePct(right)}")
         if (data.size > start + 4) {
             val ch = data[start + 4].toInt() and 0xFF
             val caseBatt = ch and 0x0F
             val charging = buildList {
-                if (ch and 0x10 != 0) add("case")
-                if (ch and 0x20 != 0) add("right")
-                if (ch and 0x40 != 0) add("left")
+                if (ch and 0x10 != 0) add("充电盒")
+                if (ch and 0x20 != 0) add("右耳")
+                if (ch and 0x40 != 0) add("左耳")
             }
-            out += Field("Case battery", nibblePct(caseBatt))
-            if (charging.isNotEmpty()) out += Field("Charging", charging.joinToString(", "))
+            out += Field("充电盒电量", nibblePct(caseBatt))
+            if (charging.isNotEmpty()) out += Field("正在充电", charging.joinToString(", "))
         }
         if (data.size > start + 6) {
-            out += Field("Color", airPodsColor(data[start + 6].toInt() and 0xFF))
+            out += Field("颜色", airPodsColor(data[start + 6].toInt() and 0xFF))
         }
         return out
     }
@@ -272,13 +272,13 @@ object AdvPayloadDecoder {
     }
 
     private fun airPodsModelName(id: Int): String? = when (id) {
-        0x0220 -> "AirPods (1st generation)"
-        0x0F20 -> "AirPods (2nd generation)"
-        0x1320 -> "AirPods (3rd generation)"
-        0x1920 -> "AirPods (4th generation)"
+        0x0220 -> "AirPods（第 1 代）"
+        0x0F20 -> "AirPods（第 2 代）"
+        0x1320 -> "AirPods（第 3 代）"
+        0x1920 -> "AirPods（第 4 代）"
         0x1C20 -> "AirPods 4"
         0x0E20 -> "AirPods Pro"
-        0x1420 -> "AirPods Pro (2nd generation)"
+        0x1420 -> "AirPods Pro（第 2 代）"
         0x2420 -> "AirPods Pro 2 (USB-C)"
         0x1F20 -> "AirPods Max"
         0x0A20 -> "Beats Solo3"
@@ -303,69 +303,69 @@ object AdvPayloadDecoder {
     }
 
     private fun airPodsStatus(status: Int): String = when (status) {
-        0x01 -> "One or both out of the case"
-        0x02 -> "Case open"
-        0x03 -> "Taken out / in-ear transition"
-        0x05 -> "One in ear"
-        0x09 -> "Both out, not in ear"
-        0x0B -> "In-ear activity"
-        0x11, 0x13 -> "Both in ear"
-        0x21 -> "One in ear (sharing?)"
-        0x51 -> "Both in case, lid open"
-        0x55 -> "Both in case, lid closed"
-        0x75 -> "In case"
-        else -> "Status 0x%02X".format(status)
+        0x01 -> "一只或两只耳机已取出"
+        0x02 -> "充电盒已打开"
+        0x03 -> "取出 / 入耳切换中"
+        0x05 -> "一只耳机已入耳"
+        0x09 -> "两只均已取出但未入耳"
+        0x0B -> "入耳活动"
+        0x11, 0x13 -> "两只耳机均已入耳"
+        0x21 -> "一只耳机已入耳（可能正在共享）"
+        0x51 -> "两只均在盒内，盒盖打开"
+        0x55 -> "两只均在盒内，盒盖关闭"
+        0x75 -> "在充电盒内"
+        else -> "状态 0x%02X".format(status)
     }
 
     private fun airPodsColor(v: Int): String = when (v) {
-        0x00 -> "White"
-        0x01 -> "Black"
-        0x02 -> "Red"
-        0x03 -> "Blue"
-        0x04 -> "Pink"
-        0x05 -> "Gray"
-        0x06 -> "Silver"
-        0x07 -> "Gold"
-        0x08 -> "Rose gold"
-        0x09 -> "Space gray"
-        0x0A -> "Dark blue"
-        0x0B -> "Light blue"
-        0x0C -> "Yellow"
+        0x00 -> "白色"
+        0x01 -> "黑色"
+        0x02 -> "红色"
+        0x03 -> "蓝色"
+        0x04 -> "粉色"
+        0x05 -> "灰色"
+        0x06 -> "银色"
+        0x07 -> "金色"
+        0x08 -> "玫瑰金"
+        0x09 -> "深空灰"
+        0x0A -> "深蓝色"
+        0x0B -> "浅蓝色"
+        0x0C -> "黄色"
         else -> "0x%02X".format(v)
     }
 
     private fun nibblePct(n: Int): String = when (n) {
         in 0..9 -> "${n * 10}%"
         10, 11, 12, 13, 14 -> "100%"
-        15 -> "unknown / not present"
+        15 -> "未知 / 不在位"
         else -> "$n"
     }
 
     private fun decodeHeySiri(data: ByteArray): List<Field> {
-        if (data.size < 6) return listOf(Field("Hey Siri", "Siri was just triggered on a nearby Apple device."))
+        if (data.size < 6) return listOf(Field("Hey Siri", "附近的 Apple 设备刚触发 Siri。"))
         val klass = u16be(data, 4)
         val device = when (klass) {
             0x0002 -> "iPhone"
             0x0003 -> "iPad"
             0x0007 -> "HomePod"
             0x0009 -> "Mac"
-            0x000A -> "Watch"
-            else -> "class 0x%04X".format(klass)
+            0x000A -> "手表"
+            else -> "类别 0x%04X".format(klass)
         }
         return listOf(
-            Field("Hey Siri", "A $device just heard a Siri trigger. The packet carries a short voice hash, not the words."),
+            Field("Hey Siri", "一台 $device 刚听到 Siri 唤醒词。数据包仅携带简短的语音哈希，不包含说话内容。"),
         )
     }
 
     private fun decodeHandoff(data: ByteArray): List<Field> =
-        listOf(Field("Handoff", "Continuity Handoff: a task can be continued on another Apple device. Payload is encrypted."))
+        listOf(Field("接力", "连续互通接力：可在另一台 Apple 设备上继续任务。载荷已加密。"))
 
     private fun decodeHandoffOrTetherTarget(data: ByteArray): List<Field> =
         if (data.size >= 14) decodeHandoff(data)
-        else listOf(Field("Instant Hotspot (looking)", "This Apple device is searching for a paired phone’s hotspot."))
+        else listOf(Field("即时热点（寻找中）", "此 Apple 设备正在搜索已配对手机的热点。"))
 
     private fun decodeTetherSource(data: ByteArray): List<Field> {
-        if (data.size < 6) return listOf(Field("Instant Hotspot", "An iPhone/iPad is offering a personal hotspot."))
+        if (data.size < 6) return listOf(Field("即时热点", "一台 iPhone / iPad 正在提供个人热点。"))
         val batt = data[2].toInt() and 0xFF
         val cell = if (data.size >= 5) u16be(data, 3) else -1
         val bars = if (data.size >= 6) data[5].toInt() and 0xFF else -1
@@ -377,81 +377,81 @@ object AdvPayloadDecoder {
             4, 5 -> "3G"
             7 -> "LTE"
             8 -> "5G"
-            else -> if (cell >= 0) "type $cell" else null
+            else -> if (cell >= 0) "类型 $cell" else null
         }
         return listOf(
             Field(
-                "Instant Hotspot (offering)",
+                "即时热点（提供中）",
                 buildString {
-                    append("Paired iPhone/iPad hotspot")
-                    if (batt in 0..100) append(" · phone battery $batt%")
+                    append("已配对的 iPhone / iPad 热点")
+                    if (batt in 0..100) append(" · 手机电量 $batt%")
                     cellName?.let { append(" · $it") }
-                    if (bars in 0..5) append(" · $bars/5 bars")
+                    if (bars in 0..5) append(" · 信号 $bars/5 格")
                 },
             ),
         )
     }
 
     private fun decodeNearbyAction(data: ByteArray): List<Field> {
-        if (data.isEmpty()) return listOf(Field("Nearby Action", "Apple Nearby Action"))
+        if (data.isEmpty()) return listOf(Field("附近操作", "Apple 附近操作"))
         val action = if (data.size >= 2) data[1].toInt() and 0xFF else data[0].toInt() and 0xFF
         val name = nearbyActionName(action)
-        return listOf(Field("Nearby Action", name))
+        return listOf(Field("附近操作", name))
     }
 
     private fun nearbyActionReason(data: ByteArray): String {
-        val action = if (data.size >= 2) data[1].toInt() and 0xFF else return "Nearby Action advertisement."
-        return "Nearby Action: ${nearbyActionName(action)}."
+        val action = if (data.size >= 2) data[1].toInt() and 0xFF else return "附近操作广播。"
+        return "附近操作：${nearbyActionName(action)}。"
     }
 
     private fun nearbyActionName(action: Int): String = when (action) {
-        0x01 -> "Apple TV setup"
-        0x04 -> "Mobile backup"
-        0x05 -> "Watch setup"
-        0x06 -> "Apple TV pair"
-        0x08 -> "Wi-Fi password sharing (prompting nearby iPhones)"
-        0x09 -> "iOS setup"
-        0x0A -> "Repair"
-        0x0B -> "Speaker setup"
+        0x01 -> "Apple TV 设置"
+        0x04 -> "移动设备备份"
+        0x05 -> "手表设置"
+        0x06 -> "Apple TV 配对"
+        0x08 -> "Wi-Fi 密码共享（向附近 iPhone 提示）"
+        0x09 -> "iOS 设置"
+        0x0A -> "修复"
+        0x0B -> "音箱设置"
         0x0C -> "Apple Pay"
-        0x0D -> "Whole-home audio setup"
-        0x0F -> "Answered a call"
-        0x10 -> "Ended a call"
-        0x13 -> "Remote AutoFill"
-        0x14 -> "Companion Link proximity"
-        0x17 -> "Remote display"
-        else -> "action 0x%02X".format(action)
+        0x0D -> "全屋音响设置"
+        0x0F -> "已接听电话"
+        0x10 -> "已结束通话"
+        0x13 -> "远程自动填充"
+        0x14 -> "Companion Link 近距离连接"
+        0x17 -> "远程显示"
+        else -> "操作 0x%02X".format(action)
     }
 
     private fun decodeNearbyInfo(data: ByteArray): List<Field> {
-        if (data.isEmpty()) return listOf(Field("Nearby Info", "Apple device usage state."))
+        if (data.isEmpty()) return listOf(Field("附近信息", "Apple 设备使用状态。"))
         val status = data[0].toInt() and 0xFF
         val action = status and 0x0F
         val flagsHi = (status shr 4) and 0x0F
         val dataFlags = if (data.size > 1) data[1].toInt() and 0xFF else 0
         val activity = when (action) {
-            0x00 -> "activity unknown"
-            0x01 -> "activity reporting off"
-            0x03 -> "idle (screen locked)"
-            0x05 -> "audio playing, screen locked"
-            0x07 -> "active (screen on)"
-            0x09 -> "screen on, video playing"
-            0x0A -> "Watch on wrist and unlocked"
-            0x0B -> "recent interaction"
-            0x0D -> "user is driving"
-            0x0E -> "phone or FaceTime call"
-            else -> "activity 0x%X".format(action)
+            0x00 -> "活动未知"
+            0x01 -> "活动报告已关闭"
+            0x03 -> "空闲（屏幕已锁定）"
+            0x05 -> "正在播放音频，屏幕已锁定"
+            0x07 -> "正在使用（屏幕亮起）"
+            0x09 -> "屏幕亮起，正在播放视频"
+            0x0A -> "手表已佩戴且解锁"
+            0x0B -> "最近有交互"
+            0x0D -> "用户正在驾驶"
+            0x0E -> "电话或 FaceTime 通话"
+            else -> "活动 0x%X".format(action)
         }
         val extras = buildList {
-            if (flagsHi and 0x1 != 0) add("primary iCloud device")
-            if (flagsHi and 0x4 != 0) add("AirDrop receiving on")
-            if (dataFlags and 0x04 != 0) add("Wi-Fi on")
-            if (dataFlags and 0x01 != 0) add("AirPods connected")
-            if (dataFlags and 0x20 != 0) add("Watch locked")
+            if (flagsHi and 0x1 != 0) add("主要 iCloud 设备")
+            if (flagsHi and 0x4 != 0) add("隔空投送接收已开启")
+            if (dataFlags and 0x04 != 0) add("Wi-Fi 已开启")
+            if (dataFlags and 0x01 != 0) add("AirPods 已连接")
+            if (dataFlags and 0x20 != 0) add("手表已锁定")
         }
         return listOf(
             Field(
-                "What the Apple device is doing",
+                "Apple 设备当前活动",
                 buildString {
                     append(activity.replaceFirstChar { it.uppercase() })
                     if (extras.isNotEmpty()) {
@@ -465,40 +465,40 @@ object AdvPayloadDecoder {
     }
 
     private fun nearbyInfoReason(data: ByteArray): String {
-        if (data.isEmpty()) return "Nearby Info advertisement."
+        if (data.isEmpty()) return "附近信息广播。"
         val action = data[0].toInt() and 0x0F
         return when (action) {
-            0x03 -> "Phone is idle / locked."
-            0x05 -> "Audio playing with the screen locked."
-            0x07 -> "Screen is on — someone is using it."
-            0x0D -> "Device reports the user is driving."
-            0x0E -> "In a phone or FaceTime call."
-            else -> "Nearby Info advertisement."
+            0x03 -> "手机处于空闲或锁定状态。"
+            0x05 -> "屏幕锁定时正在播放音频。"
+            0x07 -> "屏幕亮起，有人正在使用。"
+            0x0D -> "设备报告用户正在驾驶。"
+            0x0E -> "正在进行电话或 FaceTime 通话。"
+            else -> "附近信息广播。"
         }
     }
 
     private fun decodeFindMy(data: ByteArray): List<Field> {
-        if (data.isEmpty()) return listOf(Field("Find My", "Offline Finding advertisement."))
+        if (data.isEmpty()) return listOf(Field("Find My", "离线查找广播。"))
         val status = data[0].toInt() and 0xFF
         val maintained = status and 0x04 != 0
         val batt = (status shr 6) and 0x3
         val battName = when (batt) {
-            0 -> "full"
-            1 -> "medium"
-            2 -> "low"
-            else -> "critical"
+            0 -> "充足"
+            1 -> "中等"
+            2 -> "偏低"
+            else -> "极低"
         }
         val keyLen = (data.size - 1).coerceAtLeast(0)
         return listOf(
             Field(
-                "Find My / Offline Finding",
+                "查找 / 离线查找",
                 buildString {
-                    append("Broadcasting a public key so the Find My network can report a location. ")
-                    append("Used by AirTags, Find My accessories, and Apple devices locating themselves. ")
-                    if (maintained) append("Owner seen recently. ")
-                    else append("Owner not seen in the current key window. ")
-                    if (maintained || batt in 0..3) append("Battery $battName. ")
-                    append("($keyLen-byte key fragment — not a serial number.)")
+                    append("正在广播公钥，以便“查找”网络报告位置。")
+                    append("用于 AirTag、“查找”配件以及定位自身的 Apple 设备。")
+                    if (maintained) append("最近检测到主人。")
+                    else append("当前密钥时间窗口内未检测到主人。")
+                    if (maintained || batt in 0..3) append("电量：$battName。")
+                    append("（$keyLen 字节的密钥片段，并非序列号。）")
                 },
             ),
         )
@@ -509,10 +509,10 @@ object AdvPayloadDecoder {
             val id = modelId24(bytes)
             val name = FastPairModels.name(id)
             return listOf(
-                Field("Google Fast Pair", "In pairing mode — Android will pop a tap-to-pair card."),
+                Field("Google Fast Pair", "处于配对模式，Android 会弹出点按配对卡片。"),
                 Field(
-                    "Model ID",
-                    if (name != null) "$name  (0x%06X)".format(id) else "0x%06X (not in the local name list)".format(id),
+                    "型号 ID",
+                    if (name != null) "$name  (0x%06X)".format(id) else "0x%06X（本地名称表未收录）".format(id),
                 ),
             )
         }
@@ -523,15 +523,15 @@ object AdvPayloadDecoder {
             val lt = bytes[1].toInt() and 0xFF
             val type = lt and 0x0F
             when (type) {
-                0x0 -> "wants to show a pairing card"
-                0x2 -> "hiding the pairing card (e.g. buds back in the case)"
-                else -> "filter type $type"
+                0x0 -> "请求显示配对卡片"
+                0x2 -> "隐藏配对卡片（例如耳机放回盒中）"
+                else -> "筛选类型 $type"
             }
-        } else "account-key bloom filter"
+        } else "账户密钥布隆过滤器"
         return listOf(
             Field(
                 "Google Fast Pair",
-                "Already paired to an account (not in pairing mode). $ui. Version $version.",
+                "已与账户配对（未处于配对模式）。$ui。版本 $version。",
             ),
         )
     }
@@ -540,17 +540,17 @@ object AdvPayloadDecoder {
         if (bytes.isEmpty()) return emptyList()
         return when (bytes[0].toInt() and 0xFF) {
             0x00 -> {
-                if (bytes.size < 18) listOf(Field("Eddystone-UID", "truncated"))
+                if (bytes.size < 18) listOf(Field("Eddystone-UID", "数据不完整"))
                 else listOf(
-                    Field("Eddystone-UID namespace", bytes.copyOfRange(2, 12).toHexUpper()),
-                    Field("Eddystone-UID instance", bytes.copyOfRange(12, 18).toHexUpper()),
+                    Field("Eddystone-UID 命名空间", bytes.copyOfRange(2, 12).toHexUpper()),
+                    Field("Eddystone-UID 实例", bytes.copyOfRange(12, 18).toHexUpper()),
                 )
             }
-            0x10 -> listOf(Field("Eddystone-URL", eddystoneUrl(bytes) ?: "${bytes.size} bytes"))
-            0x20 -> listOf(Field("Eddystone-TLM", "telemetry (battery / temperature / advert count)"))
-            0x30 -> listOf(Field("Eddystone-EID", "ephemeral ID (rotating)"))
+            0x10 -> listOf(Field("Eddystone-URL", eddystoneUrl(bytes) ?: "${bytes.size} 字节"))
+            0x20 -> listOf(Field("Eddystone-TLM", "遥测（电量 / 温度 / 广播次数）"))
+            0x30 -> listOf(Field("Eddystone-EID", "临时 ID（轮换）"))
             0x40, 0x41 -> {
-                val mode = if (bytes[0].toInt() and 0xFF == 0x41) "separated (unwanted-tracking mode)" else "nearby / with owner"
+                val mode = if (bytes[0].toInt() and 0xFF == 0x41) "分离（防非自愿追踪模式）" else "附近 / 靠近主人"
                 val eidLen = when {
                     bytes.size >= 33 -> 32
                     bytes.size >= 21 -> 20
@@ -559,10 +559,10 @@ object AdvPayloadDecoder {
                 val eid = if (eidLen > 0) bytes.copyOfRange(1, 1 + eidLen).toHexUpper() else ""
                 listOf(
                     Field("Find Hub", mode),
-                    Field("Find Hub EID", eid.ifBlank { "${bytes.size} bytes" }),
+                    Field("Find Hub EID", eid.ifBlank { "${bytes.size} 字节" }),
                 )
             }
-            else -> listOf(Field("Eddystone", "frame 0x%02X".format(bytes[0])))
+            else -> listOf(Field("Eddystone", "帧 0x%02X".format(bytes[0])))
         }
     }
 
@@ -596,25 +596,25 @@ object AdvPayloadDecoder {
                 6 -> "iPhone"
                 7 -> "iPad"
                 8 -> "Android"
-                9 -> "Windows desktop"
-                11 -> "Windows phone"
+                9 -> "Windows 台式电脑"
+                11 -> "Windows 手机"
                 12 -> "Linux"
                 13 -> "Windows IoT"
                 14 -> "Surface Hub"
-                15 -> "Windows laptop"
-                16 -> "Windows tablet"
-                else -> "type $type"
+                15 -> "Windows 笔记本电脑"
+                16 -> "Windows 平板电脑"
+                else -> "类型 $type"
             }
-            return listOf(Field("Microsoft Nearby Sharing / Swift Pair", "A $kind is advertising for quick pairing or sharing."))
+            return listOf(Field("Microsoft 附近共享 / 快速配对", "一台 $kind 正在广播，以便快速配对或共享。"))
         }
-        return listOf(Field("Microsoft manufacturer data", "${bytes.size} bytes"))
+        return listOf(Field("Microsoft 厂商数据", "${bytes.size} 字节"))
     }
 
     private fun decodeAltBeacon(bytes: ByteArray): List<Field> {
         if (bytes.size >= 22 && bytes[0] == 0xBE.toByte() && bytes[1] == 0xAC.toByte()) {
             return listOf(
                 Field("AltBeacon UUID", uuidFromBe(bytes, 2)),
-                Field("AltBeacon major / minor", "${u16be(bytes, 18)} / ${u16be(bytes, 20)}"),
+                Field("AltBeacon 主编号 / 次编号", "${u16be(bytes, 18)} / ${u16be(bytes, 20)}"),
             )
         }
         return emptyList()

@@ -86,7 +86,7 @@ object AircraftTrail {
         val near = walkReady && fixes.isNotEmpty() && fixes.all { fix ->
             path.any { sample -> Geo.meters(fix.lat, fix.lon, sample.lat, sample.lon) <= NEAR_M }
         }
-        val titled = uasId.ifBlank { latest.title.ifBlank { "Advertised position" } }
+        val titled = uasId.ifBlank { latest.title.ifBlank { "广播位置" } }
         return Picture(
             uasId = uasId,
             title = titled,
@@ -147,26 +147,26 @@ object AircraftTrail {
                 val head = if (pic.status.isBlank()) pic.title else "${pic.title} — ${pic.status}"
                 appendLine("• $head")
                 val last = pic.fixes.last()
-                appendLine("  Last ${fmtCoord(last.lat, last.lon)}")
+                appendLine("  最新位置 ${fmtCoord(last.lat, last.lon)}")
                 val motion = listOfNotNull(
                     pic.alt?.let { "${fmtNum(it)} m" },
-                    pic.heading?.let { "course ${fmtNum(it)}°" },
+                    pic.heading?.let { "航向 ${fmtNum(it)}°" },
                     pic.speed?.let { "${fmtNum(it)} m/s" },
                 )
                 if (motion.isNotEmpty()) appendLine("  ${motion.joinToString("  ·  ")}")
                 val length = lengthM(pic.fixes)
                 val count = pic.fixes.size
-                val shape = if (count == 1) "1 advertised fix" else "$count advertised fixes, ${fmtDist(length)}"
+                val shape = if (count == 1) "1 个广播定位点" else "$count 个广播定位点，${fmtDist(length)}"
                 appendLine("  $shape")
                 if (pic.pilotLat != null && pic.pilotLon != null) {
-                    appendLine("  Pilot ${fmtCoord(pic.pilotLat, pic.pilotLon)}")
+                    appendLine("  飞手 ${fmtCoord(pic.pilotLat, pic.pilotLon)}")
                 }
             }
             val hidden = (pictures.count { it.ownFigure } - MAX_OWN_FIGURES).coerceAtLeast(0)
             if (hidden > 0) {
-                appendLine("$hidden more aircraft tracks are listed here and left off the map.")
+                appendLine("此处另列有 $hidden 条航空器轨迹，未在地图上绘制。")
             }
-            append("These positions were broadcast by the radio. They are not this phone's GPS.")
+            append("这些位置由无线设备广播，并非本手机的 GPS 位置。")
         }.trimEnd()
     }
 
@@ -186,12 +186,12 @@ object AircraftTrail {
                 val aStatus = a?.status.orEmpty()
                 val bStatus = b?.status.orEmpty()
                 if (aStatus.isNotBlank() && bStatus.isNotBlank() && aStatus != bStatus) {
-                    appendLine("  Status changed: $aStatus → $bStatus")
+                    appendLine("  状态变化：$aStatus → $bStatus")
                 }
             }
-            looseLeft.forEach { appendLine("$leftName, no UAS id: ${sideBit(it)} (${it.title})") }
-            looseRight.forEach { appendLine("$rightName, no UAS id: ${sideBit(it)} (${it.title})") }
-            append("These positions were broadcast by the radio. They are not this phone's GPS.")
+            looseLeft.forEach { appendLine("$leftName，无 UAS ID：${sideBit(it)}（${it.title}）") }
+            looseRight.forEach { appendLine("$rightName，无 UAS ID：${sideBit(it)}（${it.title}）") }
+            append("这些位置由无线设备广播，并非本手机的 GPS 位置。")
         }.trimEnd()
     }
 
@@ -205,7 +205,7 @@ object AircraftTrail {
 
     fun pilotMark(pic: Picture): SitPathPlot.Mark? {
         if (!pic.pilotOnMap || pic.pilotLat == null || pic.pilotLon == null) return null
-        return SitPathPlot.Mark(pic.pilotLat, pic.pilotLon, "Pilot")
+        return SitPathPlot.Mark(pic.pilotLat, pic.pilotLon, "飞手")
     }
 
     fun applyWalk(base: SitPathPlot.Figure?, pictures: List<Picture>, secondary: Boolean): SitPathPlot.Figure? {
@@ -222,15 +222,15 @@ object AircraftTrail {
             craftKeys = base.craftKeys + near.map { pathKeyLine(it) },
             spanM = Geo.spanM(framed),
             caption = if (secondary) {
-                if ("second sit’s advertised track" in base.caption) {
+                if ("第二次观测的广播轨迹" in base.caption) {
                     base.caption
                 } else {
-                    base.caption + " A blue dotted line is the second sit’s advertised track within 2 km of this path."
+                    base.caption + " 蓝色虚线表示本轨迹 2 千米范围内第二次观测的广播轨迹。"
                 }
-            } else if ("black dotted line is an advertised track" in base.caption) {
+            } else if ("黑色虚线表示广播轨迹" in base.caption) {
                 base.caption
             } else {
-                base.caption + " A black dotted line is an advertised track within 2 km of this path."
+                base.caption + " 黑色虚线表示广播轨迹，位于本轨迹 2 千米范围内。"
             },
         )
     }
@@ -241,7 +241,7 @@ object AircraftTrail {
     private fun pictureFigure(pic: Picture, secondary: Boolean = false): SitPathPlot.Figure {
         val samples = samples(pic.fixes)
         return SitPathPlot.Figure(
-            kicker = "AIRCRAFT",
+            kicker = "航空器",
             tracks = listOf(track(pic, secondary)),
             dots = emptyList(),
             lengthM = lengthM(pic.fixes),
@@ -261,16 +261,16 @@ object AircraftTrail {
             val lenA = a?.let { lengthM(it.fixes) } ?: 0.0
             val lenB = b?.let { lengthM(it.fixes) } ?: 0.0
             SitPathPlot.Figure(
-                kicker = "AIRCRAFT",
+                kicker = "航空器",
                 tracks = tracks,
                 dots = emptyList(),
                 lengthM = maxOf(lenA, lenB),
                 spanM = Geo.spanM(samples),
                 caption = when {
                     a != null && b != null ->
-                        "North-up. Black dots are this sit. Blue dots are the second sit. The marker is the last advertised position."
+                        "上北下南。黑点表示本次观测，蓝点表示第二次观测。标记为最近一次广播位置。"
                     b != null ->
-                        "North-up. The blue dotted line is the advertised track for ${b.title}. The marker is the last advertised position."
+                        "上北下南。蓝色虚线表示 ${b.title} 的广播轨迹。标记为最近一次广播位置。"
                     else -> aircraftCaption(a!!)
                 },
                 pilots = listOfNotNull(a?.let { pilotMark(it) }, b?.let { pilotMark(it) }),
@@ -327,7 +327,7 @@ object AircraftTrail {
         val tracks = fig.tracks.filter { it.aircraft }.ifEmpty { fig.tracks }
         val fixes = tracks.flatMap { it.samples }
         val frames = fixes + fig.pilots.map { GpsSample(0L, it.lat, it.lon, 0) }
-        val title = tracks.firstOrNull()?.name?.takeIf { it.isNotBlank() } ?: "Aircraft"
+        val title = tracks.firstOrNull()?.name?.takeIf { it.isNotBlank() } ?: "航空器"
         return SitPathPlot.Model(
             samples = emptyList(),
             dots = dots,
@@ -356,9 +356,9 @@ object AircraftTrail {
 
     private fun aircraftCaption(pic: Picture): String {
         return if (pic.fixes.size < 2) {
-            "Last advertised position for ${pic.title}. The marker is that position."
+            "${pic.title} 最近一次广播的位置，标记即为该位置。"
         } else {
-            "North-up. The black dotted line is the advertised track for ${pic.title}. The marker is the last advertised position."
+            "上北下南。黑色虚线表示 ${pic.title} 的广播轨迹。标记为最近一次广播位置。"
         }
     }
 
@@ -383,12 +383,12 @@ object AircraftTrail {
         if (state.isNotEmpty()) bits += state
         val id = uasId.trim()
         if (id.isNotEmpty() && !id.equals(label.trim(), ignoreCase = true)) bits += "UAS $id"
-        bits += "last ${fmtCoord(lat, lon)}"
+        bits += "最新位置 ${fmtCoord(lat, lon)}"
         alt?.let { bits += "${fmtNum(it)} m" }
-        heading?.let { bits += "course ${fmtNum(it)}°" }
+        heading?.let { bits += "航向 ${fmtNum(it)}°" }
         speed?.let { bits += "${fmtNum(it)} m/s" }
         if (PayloadLocation.validCoord(pilotLat, pilotLon)) {
-            bits += "pilot ${fmtCoord(pilotLat!!, pilotLon!!)}"
+            bits += "飞手 ${fmtCoord(pilotLat!!, pilotLon!!)}"
         }
         return bits.joinToString(" · ")
     }
@@ -401,7 +401,7 @@ object AircraftTrail {
             .filter { it.isNotEmpty() }
             .distinct()
             .joinToString(" ")
-            .ifBlank { "Advertised position" }
+            .ifBlank { "广播位置" }
         if (last == null) return head
         val note = advertisedNote(
             status = pic.status,
@@ -421,8 +421,8 @@ object AircraftTrail {
     private fun sideBit(pic: Picture): String {
         val status = if (pic.status.isBlank()) "" else "${pic.status}, "
         val last = pic.fixes.lastOrNull()
-        val where = if (last == null) "" else " last ${fmtCoord(last.lat, last.lon)}"
-        val count = if (pic.fixes.size == 1) "1 fix" else "${pic.fixes.size} fixes"
+        val where = if (last == null) "" else " 最新位置 ${fmtCoord(last.lat, last.lon)}"
+        val count = if (pic.fixes.size == 1) "1 个定位点" else "${pic.fixes.size} 个定位点"
         return "$status$count$where".trim()
     }
 
@@ -448,7 +448,7 @@ object AircraftTrail {
         if (n % 1.0 == 0.0) n.toInt().toString() else "%.1f".format(java.util.Locale.US, n)
 
     private fun fmtDist(m: Double): String =
-        if (m >= 1000) "${"%.1f".format(java.util.Locale.US, m / 1000)} km" else "${m.toInt()} m"
+        if (m >= 1000) "${"%.1f".format(java.util.Locale.US, m / 1000)} 千米" else "${m.toInt()} 米"
 
     data class Source(
         val uasId: String,

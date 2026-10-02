@@ -94,7 +94,7 @@ class ScanService : LifecycleService() {
                 val hint = listOf(
                     wifi.throttleHint(),
                     ble.statusHint(),
-                    if (fastBlocked) "Wi-Fi fast scan needs Developer options" else "",
+                    if (fastBlocked) "Wi-Fi 快速扫描需要开发者选项" else "",
                 )
                     .filter { it.isNotBlank() }
                     .joinToString(" · ")
@@ -240,7 +240,7 @@ class ScanService : LifecycleService() {
     }
 
     private fun startAsForeground() {
-        val notification = buildNotification("Starting radios…")
+        val notification = buildNotification("正在启动无线扫描…")
         if (Build.VERSION.SDK_INT >= 34) {
             startForeground(
                 NOTIF_ID,
@@ -264,7 +264,7 @@ class ScanService : LifecycleService() {
         if (now - lastNotifAt < 2_500L) return
         lastNotifAt = now
         val stats = (application as FieldwatchApp).devices.stats.value
-        val text = "${stats.wifiNow} Wi-Fi · ${stats.bleNow} BLE · ${stats.namedNow} signatures"
+        val text = "${stats.wifiNow} 个 Wi-Fi · ${stats.bleNow} 个 BLE · ${stats.namedNow} 个特征"
         val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(NOTIF_ID, buildNotification(text))
     }
@@ -284,12 +284,12 @@ class ScanService : LifecycleService() {
         )
         return NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_fieldwatch)
-            .setContentTitle("Fieldwatch scanning")
+            .setContentTitle("Fieldwatch 正在扫描")
             .setContentText(text)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setContentIntent(launch)
-            .addAction(0, "Stop", stop)
+            .addAction(0, "停止", stop)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
     }
@@ -344,8 +344,8 @@ class ScanService : LifecycleService() {
         if (Build.VERSION.SDK_INT < 26) return
         val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL, "Scanning", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Passive Wi-Fi and Bluetooth scan status"
+            NotificationChannel(CHANNEL, "扫描", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "被动 Wi-Fi 与蓝牙扫描状态"
                 setShowBadge(false)
             },
         )

@@ -155,13 +155,13 @@ private fun DisclaimerGate(onAccept: () -> Unit) {
             .padding(horizontal = 28.dp, vertical = 24.dp),
     ) {
         Text(
-            "Disclaimer and license",
+            "免责声明与许可协议",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
             color = ink,
         )
         Text(
-            "Disclaimer",
+            "免责声明",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             color = ink,
@@ -205,7 +205,7 @@ private fun DisclaimerGate(onAccept: () -> Unit) {
         ) {
             Checkbox(checked = agreed, onCheckedChange = null)
             Text(
-                "I have read this and I agree",
+                "我已阅读并同意",
                 style = MaterialTheme.typography.bodyMedium,
                 color = ink,
                 modifier = Modifier.padding(start = 8.dp),
@@ -217,7 +217,7 @@ private fun DisclaimerGate(onAccept: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
-        ) { Text("Continue") }
+        ) { Text("继续") }
     }
 }
 
@@ -228,14 +228,14 @@ private fun PermissionGate(onRequest: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("Fieldwatch needs the radios", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+        Text("Fieldwatch 需要无线扫描权限", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
         Text(
-            "Location, nearby Wi-Fi, Bluetooth scan, and notifications let Fieldwatch passively watch advertised networks and BLE devices. Nothing is transmitted.",
+            "定位、附近 Wi-Fi、蓝牙扫描和通知权限让 Fieldwatch 能够被动观测广播中的网络与 BLE 设备，不会主动发送数据。",
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(top = 12.dp, bottom = 20.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Button(onClick = onRequest) { Text("Grant permissions") }
+        Button(onClick = onRequest) { Text("授予权限") }
     }
 }
 
@@ -270,25 +270,25 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                 val m = export.message.lowercase()
                 Text(
                     when {
-                        "sit compare" in m && "pdf" in m -> "Sit compare PDF"
-                        "sit compare" in m && "ai" in m -> "Sit compare AI Export"
-                        "sit compare" in m -> "Sit compare"
-                        "ai export" in m || "ai export" in m -> "AI Export"
-                        "pdf" in m -> "Debrief PDF"
-                        "debrief" in m -> "Debrief"
-                        else -> "Export"
+                        ("sit compare" in m || "观测对比" in m) && "pdf" in m -> "观测对比 PDF"
+                        ("sit compare" in m || "观测对比" in m) && "ai" in m -> "观测对比 AI 导出"
+                        "sit compare" in m || "观测对比" in m -> "观测对比"
+                        "ai export" in m || "ai 导出" in m -> "AI 导出"
+                        "pdf" in m -> "观测总结 PDF"
+                        "debrief" in m || "观测总结" in m -> "观测总结"
+                        else -> "导出"
                     },
                 )
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(export.message.ifBlank { "Please wait…" })
-                    if ("debrief" !in export.message.lowercase() &&
-                        "ai export" !in export.message.lowercase() &&
-                        "sit compare" !in export.message.lowercase()
+                    Text(export.message.ifBlank { "请稍候…" })
+                    if ("debrief" !in export.message.lowercase() && "观测总结" !in export.message &&
+                        "ai export" !in export.message.lowercase() && "ai 导出" !in export.message.lowercase() &&
+                        "sit compare" !in export.message.lowercase() && "观测对比" !in export.message
                     ) {
                         Text(
-                            "Live logging is paused until this finishes. Scanning continues.",
+                            "导出完成前暂停写入实时日志，扫描继续运行。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -310,32 +310,32 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
     if (export.error != null) {
         AlertDialog(
             onDismissRequest = vm::consumeExportNotice,
-            title = { Text(export.errorTitle ?: "Could not export") },
+            title = { Text(export.errorTitle ?: "无法导出") },
             text = { Text(export.error ?: "") },
             confirmButton = {
-                TextButton(onClick = vm::consumeExportNotice) { Text("OK") }
+                TextButton(onClick = vm::consumeExportNotice) { Text("确定") }
             },
         )
     }
     if (export.saved) {
         AlertDialog(
             onDismissRequest = vm::consumeExportNotice,
-            title = { Text("Log saved") },
+            title = { Text("日志已保存") },
             text = {
-                Text("The file was written to the folder you picked. In the system picker, use the menu to choose the SD card if you want it off internal storage.")
+                Text("文件已写入所选文件夹。如需保存到内部存储以外的位置，请在系统文件选择器的菜单中选择 SD 卡。")
             },
             confirmButton = {
-                TextButton(onClick = vm::consumeExportNotice) { Text("OK") }
+                TextButton(onClick = vm::consumeExportNotice) { Text("确定") }
             },
         )
     }
     if (export.cleared) {
         AlertDialog(
             onDismissRequest = vm::consumeExportNotice,
-            title = { Text("Log cleared") },
-            text = { Text("Rotated files were deleted. New detections will start a fresh log.") },
+            title = { Text("日志已清除") },
+            text = { Text("轮转文件已删除。新发现的设备将写入新的日志。") },
             confirmButton = {
-                TextButton(onClick = vm::consumeExportNotice) { Text("OK") }
+                TextButton(onClick = vm::consumeExportNotice) { Text("确定") }
             },
         )
     }
@@ -345,7 +345,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
             title = { Text(export.noticeTitle ?: "") },
             text = { Text(export.noticeMessage.orEmpty()) },
             confirmButton = {
-                TextButton(onClick = vm::consumeExportNotice) { Text("OK") }
+                TextButton(onClick = vm::consumeExportNotice) { Text("确定") }
             },
         )
     }
@@ -396,9 +396,9 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             Text(
                                 when {
                                     state.sit.open != null && state.displayPaused ->
-                                        "FIELDWATCH  ·  SIT  ·  PAUSED"
-                                    state.sit.open != null -> "FIELDWATCH  ·  SIT"
-                                    state.displayPaused -> "FIELDWATCH  ·  PAUSED"
+                                        "FIELDWATCH  ·  观测  ·  已暂停"
+                                    state.sit.open != null -> "FIELDWATCH  ·  观测"
+                                    state.displayPaused -> "FIELDWATCH  ·  已暂停"
                                     else -> "FIELDWATCH"
                                 },
                                 style = MaterialTheme.typography.titleMedium,
@@ -415,7 +415,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                                 val muted = MaterialTheme.colorScheme.onSurfaceVariant
                                 HeaderCount(state.wifiNow, Icons.Outlined.Wifi, "Wi-Fi")
                                 HeaderCount(state.bleNow, Icons.Outlined.Bluetooth, "BLE")
-                                HeaderCount(state.namedNow, Icons.Outlined.Hub, "signatures")
+                                HeaderCount(state.namedNow, Icons.Outlined.Hub, "特征")
                                 if (state.throttleHint.isNotBlank()) {
                                     Text(
                                         "·  ${state.throttleHint}",
@@ -445,9 +445,9 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                                         Icons.Outlined.Tune
                                     },
                                     if (state.settings.scanControlsExpanded) {
-                                        "Hide scan options"
+                                        "收起扫描选项"
                                     } else {
-                                        "Show scan options"
+                                        "展开扫描选项"
                                     },
                                     modifier = Modifier.onGloballyPositioned {
                                         tourTargets = tourTargets.copy(tune = it.boundsInRoot())
@@ -503,10 +503,10 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                                         route == "live" && state.displayPaused -> Icons.Outlined.PlayArrow
                                         else -> Icons.Outlined.CellTower
                                     },
-                                    if (route == "live" && !state.displayPaused) "Pause display" else "Live",
+                                    if (route == "live" && !state.displayPaused) "暂停显示" else "实时",
                                 )
                             },
-                            label = if (route == "live" && !state.displayPaused) "Pause" else "Live",
+                            label = if (route == "live" && !state.displayPaused) "暂停" else "实时",
                         )
                         FieldwatchNavTab(
                             weight = 1f,
@@ -514,7 +514,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             onBounds = { tourTargets = tourTargets.copy(filters = it) },
                             onClick = { nav.navigate("filters") { launchSingleTop = true } },
                             icon = { Icon(Icons.Outlined.FilterAlt, null) },
-                            label = "Filters",
+                            label = "筛选",
                         )
                         FieldwatchNavTab(
                             weight = 1.45f,
@@ -522,7 +522,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             onBounds = { tourTargets = tourTargets.copy(signatures = it) },
                             onClick = { nav.navigate("fleets") { launchSingleTop = true } },
                             icon = { Icon(Icons.Outlined.Hub, null) },
-                            label = "Signatures",
+                            label = "特征库",
                         )
                         FieldwatchNavTab(
                             weight = 1f,
@@ -530,7 +530,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             onBounds = { tourTargets = tourTargets.copy(reports = it) },
                             onClick = { nav.navigate("reports") { launchSingleTop = true } },
                             icon = { Icon(Icons.Outlined.Description, null) },
-                            label = "Reports",
+                            label = "报告",
                         )
                         FieldwatchNavTab(
                             weight = 1.05f,
@@ -538,7 +538,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             onBounds = { tourTargets = tourTargets.copy(settings = it) },
                             onClick = { nav.navigate("settings") { launchSingleTop = true } },
                             icon = { Icon(Icons.Outlined.Settings, null) },
-                            label = "Settings",
+                            label = "设置",
                         )
                         }
                     }
@@ -683,17 +683,17 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     Scaffold(
                         topBar = {
                             TopAppBar(
-                                title = { Text("Detail") },
+                                title = { Text("详情") },
                                 navigationIcon = {
                                     IconButton(onClick = onBack) {
-                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                                     }
                                 },
                             )
                         },
                     ) { pad ->
                         Text(
-                            "No radio selected.",
+                            "未选择无线设备。",
                             Modifier.padding(pad).padding(24.dp),
                         )
                     }
@@ -830,15 +830,15 @@ private fun ViewPicker(
     var openTitle by remember { mutableStateOf(false) }
     var openSubtitle by remember { mutableStateOf(false) }
     val sortLabel = when (listSort) {
-        ListSort.STRENGTH -> if (sort == StrengthSort.AVERAGE) "Strongest · avg ${windowSec}s" else "Strongest"
-        ListSort.NEWEST -> "Newest heard"
-        ListSort.NEWEST_ALERT -> "Newest alert"
-        ListSort.FIRST_SEEN -> "Newest arrival"
-        ListSort.ARRIVAL -> "New at bottom"
-        ListSort.NAME -> "Name A–Z"
-        ListSort.SIGNATURES -> "Signatures first"
+        ListSort.STRENGTH -> if (sort == StrengthSort.AVERAGE) "信号最强 · ${windowSec} 秒均值" else "信号最强"
+        ListSort.NEWEST -> "最近接收"
+        ListSort.NEWEST_ALERT -> "最近警报"
+        ListSort.FIRST_SEEN -> "最近出现"
+        ListSort.ARRIVAL -> "新设备置底"
+        ListSort.NAME -> "名称 A–Z"
+        ListSort.SIGNATURES -> "匹配特征优先"
     }
-    val decayLabel = if (decaySec <= 0) "Off" else "Hold ${decaySec}s"
+    val decayLabel = if (decaySec <= 0) "关闭" else "保留 ${decaySec} 秒"
     val scroll = rememberScrollState()
     val panelMax = (maxHeight - 8.dp).coerceAtLeast(140.dp)
     val surfaceColor = MaterialTheme.colorScheme.surface
@@ -861,13 +861,13 @@ private fun ViewPicker(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                "Display",
+                "显示",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             val dropdownPad = Modifier.fillMaxWidth().padding(vertical = 6.dp)
             ExposedDropdownMenuBox(openView, { openView = it }, dropdownPad) {
-                FieldwatchDropdownField("View", viewLabel, openView)
+                FieldwatchDropdownField("视图", viewLabel, openView)
                 ExposedDropdownMenu(openView, { openView = false }) {
                     ViewMode.entries.forEach { item ->
                         DropdownMenuItem(
@@ -878,59 +878,59 @@ private fun ViewPicker(
                 }
             }
             ExposedDropdownMenuBox(openSort, { openSort = it }, dropdownPad) {
-                FieldwatchDropdownField("Sort", sortLabel, openSort)
+                FieldwatchDropdownField("排序", sortLabel, openSort)
                 ExposedDropdownMenu(openSort, { openSort = false }) {
                     DropdownMenuItem(
-                        text = { Text("Strongest signal") },
+                        text = { Text("信号最强") },
                         onClick = { onChangeSort(StrengthSort.INSTANT, null); openSort = false },
                     )
                     DropdownMenuItem(
-                        text = { Text("Strongest (avg 30s)") },
+                        text = { Text("信号最强（30 秒均值）") },
                         onClick = { onChangeSort(StrengthSort.AVERAGE, 30); openSort = false },
                     )
                     DropdownMenuItem(
-                        text = { Text("Newest heard") },
+                        text = { Text("最近接收") },
                         onClick = { onChangeListSort(ListSort.NEWEST); openSort = false },
                     )
                     DropdownMenuItem(
-                        text = { Text("Newest alert") },
+                        text = { Text("最近警报") },
                         onClick = { onChangeListSort(ListSort.NEWEST_ALERT); openSort = false },
                     )
                     DropdownMenuItem(
-                        text = { Text("Newest arrival") },
+                        text = { Text("最近出现") },
                         onClick = { onChangeListSort(ListSort.FIRST_SEEN); openSort = false },
                     )
                     DropdownMenuItem(
-                        text = { Text("New at bottom") },
+                        text = { Text("新设备置底") },
                         onClick = { onChangeListSort(ListSort.ARRIVAL); openSort = false },
                     )
                     DropdownMenuItem(
-                        text = { Text("Name A–Z") },
+                        text = { Text("名称 A–Z") },
                         onClick = { onChangeListSort(ListSort.NAME); openSort = false },
                     )
                     DropdownMenuItem(
-                        text = { Text("Signatures first") },
+                        text = { Text("匹配特征优先") },
                         onClick = { onChangeListSort(ListSort.SIGNATURES); openSort = false },
                     )
                 }
             }
             ExposedDropdownMenuBox(openDecay, { openDecay = it }, dropdownPad) {
-                FieldwatchDropdownField("Brief hold", decayLabel, openDecay)
+                FieldwatchDropdownField("短暂保留", decayLabel, openDecay)
                 ExposedDropdownMenu(openDecay, { openDecay = false }) {
                     DropdownMenuItem(
-                        text = { Text("Off — Stale after only") },
+                        text = { Text("关闭 — 仅按过期时间") },
                         onClick = { onChangeDecay(0); openDecay = false },
                     )
                     listOf(10, 30, 60).forEach { sec ->
                         DropdownMenuItem(
-                            text = { Text("Hold ${sec}s after last packet") },
+                            text = { Text("最后数据包后保留 ${sec} 秒") },
                             onClick = { onChangeDecay(sec); openDecay = false },
                         )
                     }
                 }
             }
             ExposedDropdownMenuBox(openTitle, { openTitle = it }, dropdownPad) {
-                FieldwatchDropdownField("Title line", listLineLabel(titleLine), openTitle)
+                FieldwatchDropdownField("标题行", listLineLabel(titleLine), openTitle)
                 ExposedDropdownMenu(openTitle, { openTitle = false }) {
                     listOf(ListLine.ADVERTISED_NAME, ListLine.NAME_AND_TYPE, ListLine.MAC).forEach { item ->
                         DropdownMenuItem(
@@ -941,7 +941,7 @@ private fun ViewPicker(
                 }
             }
             ExposedDropdownMenuBox(openSubtitle, { openSubtitle = it }, dropdownPad) {
-                FieldwatchDropdownField("Subtitle line", listLineLabel(subtitleLine), openSubtitle)
+                FieldwatchDropdownField("副标题行", listLineLabel(subtitleLine), openSubtitle)
                 ExposedDropdownMenu(openSubtitle, { openSubtitle = false }) {
                     listOf(
                         ListLine.ADVERTISED_NAME,
@@ -956,10 +956,10 @@ private fun ViewPicker(
                     }
                 }
             }
-            OptionSwitch("RSSI bars", showBar, onToggleBar)
-            OptionSwitch("Signature names", showFleet, onToggleFleet)
-            OptionSwitch("Frequency", showFrequency, onToggleFrequency)
-            OptionSwitch("First / last seen", showSeenTimes, onToggleSeenTimes)
+            OptionSwitch("RSSI 信号条", showBar, onToggleBar)
+            OptionSwitch("特征名称", showFleet, onToggleFleet)
+            OptionSwitch("频率", showFrequency, onToggleFrequency)
+            OptionSwitch("首次／末次发现", showSeenTimes, onToggleSeenTimes)
         }
         if (scroll.canScrollForward) {
             Box(
@@ -976,7 +976,7 @@ private fun ViewPicker(
             ) {
                 Icon(
                     Icons.Outlined.ExpandMore,
-                    contentDescription = "More display options below",
+                    contentDescription = "下方还有更多显示选项",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp),
                 )
@@ -987,10 +987,10 @@ private fun ViewPicker(
 }
 
 private fun listLineLabel(line: ListLine): String = when (line) {
-    ListLine.ADVERTISED_NAME -> "Advertised name"
-    ListLine.NAME_AND_TYPE -> "Name + type"
-    ListLine.MAC -> "MAC address"
-    ListLine.NONE -> "None"
+    ListLine.ADVERTISED_NAME -> "广播名称"
+    ListLine.NAME_AND_TYPE -> "名称 + 类型"
+    ListLine.MAC -> "MAC 地址"
+    ListLine.NONE -> "无"
 }
 
 @Composable
@@ -1021,12 +1021,12 @@ private fun LiveSessionBar(
                         onClick = onMarkSeen,
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                    ) { Text("Mark seen") }
+                    ) { Text("标记已见") }
                     FieldwatchActionButton(
                         onClick = onResetSeen,
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                    ) { Text("Reset seen") }
+                    ) { Text("重置已见") }
                 }
             }
             if (movingWithYou) {
@@ -1034,7 +1034,7 @@ private fun LiveSessionBar(
                     onClick = onStartOverFollow,
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                ) { Text("Start over") }
+                ) { Text("重新开始") }
             }
         }
     }

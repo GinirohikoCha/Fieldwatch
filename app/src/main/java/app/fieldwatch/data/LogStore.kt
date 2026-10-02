@@ -158,7 +158,7 @@ class LogStore(context: Context) {
             withContext(Dispatchers.IO) {
                 flushWriter()
                 val stream = resolver.openOutputStream(uri)
-                    ?: error("Could not open the selected location")
+                    ?: error("无法打开所选位置")
                 stream.buffered(64 * 1024).use { dest ->
                     writeExport(dest, asJsonl, radios, onProgress)
                 }

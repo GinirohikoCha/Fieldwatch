@@ -83,7 +83,7 @@ fun RadioClassBadge(
         Box(contentAlignment = Alignment.Center) {
             Icon(
                 ClassGlyphs.of(classKind),
-                contentDescription = classKind?.label() ?: "Unmatched",
+                contentDescription = classKind?.label() ?: "未匹配",
                 modifier = Modifier.size(if (compact) 14.dp else 16.dp),
                 tint = accent,
             )
@@ -99,7 +99,7 @@ fun RadioKindMark(
 ) {
     Icon(
         if (kind == RadioKind.WIFI) Icons.Outlined.Wifi else Icons.Outlined.Bluetooth,
-        contentDescription = if (kind == RadioKind.WIFI) "Wi-Fi access point" else "BLE advertiser",
+        contentDescription = if (kind == RadioKind.WIFI) "Wi-Fi 接入点" else "BLE 广播设备",
         modifier = modifier.size(size),
         tint = MaterialTheme.colorScheme.onSurfaceVariant,
     )

@@ -40,7 +40,7 @@ object PlaceLookup {
         onProgress: ((String) -> Unit)? = null,
     ): DebriefPlaces = withContext(Dispatchers.IO) {
         runCatching { lookupInner(context, path, devices, now, onProgress) }
-            .getOrElse { DebriefPlaces(attempted = true, available = false, note = "Online lookup failed silently. Coordinates only.") }
+            .getOrElse { DebriefPlaces(attempted = true, available = false, note = "在线查询未成功，仅显示坐标。") }
     }
 
     private suspend fun lookupInner(
@@ -54,14 +54,14 @@ object PlaceLookup {
             return DebriefPlaces(
                 attempted = true,
                 available = false,
-                note = "Online lookup skipped: no working internet. Coordinates only.",
+                note = "已跳过在线查询：网络不可用，仅显示坐标。",
             )
         }
         if (!Geocoder.isPresent()) {
             return DebriefPlaces(
                 attempted = true,
                 available = false,
-                note = "Online lookup skipped: this phone has no system geocoder (needs Google Play / network location). Coordinates only.",
+                note = "已跳过在线查询：此手机没有系统地理编码服务（需要 Google Play / 网络定位），仅显示坐标。",
             )
         }
         val fixes = collect(path, devices, now)
@@ -69,19 +69,19 @@ object PlaceLookup {
             return DebriefPlaces(
                 attempted = true,
                 available = true,
-                note = "Online lookup on, but this sit had no GPS stamps to name.",
+                note = "在线查询已开启，但本次观测没有可查询地名的 GPS 记录。",
             )
         }
         val geocoder = Geocoder(context, Locale.getDefault())
         val cache = LinkedHashMap<String, String>()
         val lines = ArrayList<String>(fixes.size)
         for ((i, fix) in fixes.withIndex()) {
-            onProgress?.invoke("Looking up place names (${i + 1} of ${fixes.size})…")
+            onProgress?.invoke("正在查询地名（${i + 1}/${fixes.size}）…")
             val key = app.fieldwatch.domain.Geo.cellKey(fix.lat, fix.lon)
             val name = cache[key] ?: reverse(geocoder, fix.lat, fix.lon)?.also { cache[key] = it }
             val coord = "%.5f, %.5f".format(Locale.US, fix.lat, fix.lon)
             lines += if (name.isNullOrBlank()) {
-                "  · ${fix.label}  $coord  (no name returned)"
+                "  · ${fix.label}  $coord（未返回地名）"
             } else {
                 "  · ${fix.label}  $name  ($coord)"
             }
@@ -91,9 +91,9 @@ object PlaceLookup {
             attempted = true,
             available = named > 0,
             note = if (named > 0) {
-                "Online lookup: system geocoder named $named distinct GPS cell(s). Street names are from the phone’s network geocoder, not a Fieldwatch cloud. Approximate."
+                "在线查询：系统地理编码服务为 $named 个不同的 GPS 网格返回地名。街道名称由手机网络地理编码服务提供，Fieldwatch 没有云端服务。结果仅为近似位置。"
             } else {
-                "Online lookup ran, but the system geocoder returned no street names. Coordinates only."
+                "在线查询已完成，但系统地理编码服务未返回街道名称，仅显示坐标。"
             },
             lines = lines,
             namesByCell = cache.toMap(),
@@ -114,15 +114,15 @@ object PlaceLookup {
         legs.forEach { leg ->
             if (leg.stay) {
                 stayN++
-                add("Stay $stayN", leg.lat, leg.lon)
+                add("停留 $stayN", leg.lat, leg.lon)
             } else {
-                add("Transit from", leg.lat, leg.lon)
-                add("Transit to", leg.endLat, leg.endLon)
+                add("移动起点", leg.lat, leg.lon)
+                add("移动终点", leg.endLat, leg.endLon)
             }
         }
         if (out.isEmpty() && path.isNotEmpty()) {
-            add("Path start", path.first().lat, path.first().lon)
-            if (path.size > 1) add("Path end", path.last().lat, path.last().lon)
+            add("轨迹起点", path.first().lat, path.first().lon)
+            if (path.size > 1) add("轨迹终点", path.last().lat, path.last().lon)
         }
         if (out.size < 8) {
             devices.filter { it.gpsTrail.isNotEmpty() && it.rssi >= -70 }

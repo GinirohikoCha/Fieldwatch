@@ -41,103 +41,103 @@ object SitDiffPrompt {
                 append("  ").append(label)
             }
             row.fleetNames.filter { it.isNotBlank() }.forEach { append("  ").append(it) }
-            if (row.extraAttention) append("  Extra attention")
+            if (row.extraAttention) append("  重点关注")
             val labels = row.liveDecode.reportLabels()
             if (labels.isNotEmpty()) append("  ").append(labels.joinToString(", "))
-            if (row.kind == RadioKind.BLE && row.randomized) append("  RAND")
+            if (row.kind == RadioKind.BLE && row.randomized) append("  随机地址")
         }
         fun exclusive(keys: Set<String>, where: String, pred: (SitDiff.Radio) -> Boolean) =
             keys.mapNotNull { byKey[it] }.filter(pred).map { "$where  ${line(it)}" }
 
         val extraRows =
-            exclusive(onlyThis, "Only in this sit", { it.extraAttention }) +
-                exclusive(onlySecond, "Only in second sit", { it.extraAttention })
+            exclusive(onlyThis, "仅本次观测出现", { it.extraAttention }) +
+                exclusive(onlySecond, "仅第二次观测出现", { it.extraAttention })
         val namedRows =
-            exclusive(onlyThis, "Only in this sit", { it.named }) +
-                exclusive(onlySecond, "Only in second sit", { it.named })
+            exclusive(onlyThis, "仅本次观测出现", { it.named }) +
+                exclusive(onlySecond, "仅第二次观测出现", { it.named })
 
         val body = buildString {
             append(FieldwatchDisclaimer.experimentalMarkdown())
             appendLine()
-            appendLine("You are a field RF analyst for the operator who compared two Fieldwatch sits. Fieldwatch is a stock-Android, receive-only Wi-Fi access-point + BLE-advertiser listener.")
+            appendLine("你是一名现场射频分析师，为对比两次 Fieldwatch 观测的操作者提供分析。Fieldwatch 在原生 Android 上仅接收 Wi-Fi 接入点和 BLE 广播设备的信号。请全程使用简体中文，保留技术缩写、产品名称和原始标识符。")
             appendLine()
-            appendLine("The **onboard Compare** (verbatim below) already split presence: only in this sit, only in the second, in both. **Do not rewrite that report. Do not reprint those lists.** Your job is an addendum the phone cannot write: what kind of change this is, and how much of it is real.")
+            appendLine("**设备内生成的对比**（原文见下方）已将出现情况分为：仅本次出现、仅第二次出现、两次均出现。**不要重写该报告，不要重复这些列表。**你的任务是补充手机无法生成的分析：变化属于什么类型，以及其中多少反映真实变化。")
             appendLine()
-            appendLine("Constraints you must respect:")
-            appendLine("- Hear-only. Kind + MAC. BLE rotation is a new row and will not stitch.")
-            appendLine("- Wi-Fi rows are access points only. Associated clients are invisible.")
-            appendLine("- Extra attention / signature matches are hypotheses, not identity, not a person or vehicle.")
-            appendLine("- GPS stamps (if present) are this phone at hear-time, not the other radio.")
-            appendLine("- Last 15 minutes vs a named sit is not the same net (RAM about 400 vs sit ${Sit.RADIO_CAP}). Missing BLE on the RAM side can be eviction, not gone.")
-            appendLine("- Presence is not co-travel. Do not invent a tail, a follower, or a camera location.")
-            appendLine("- A decoded live value on a row is catalog text for that kind + MAC. If the onboard compare says that value changed, state the change. Do not stitch that value onto a different MAC.")
-            appendLine("- An aircraft block is positions the radio advertised, joined by UAS id. If the onboard compare says the status changed, state the change. That track is not this phone's GPS.")
-            appendLine("- Do not give safety advice. Do not tell the operator they are safe or in danger.")
-            appendLine("- Treat this paste as operationally sensitive.")
+            appendLine("必须遵守的约束：")
+            appendLine("- 仅接收信号，以类型 + MAC 区分。BLE 地址轮换会产生新记录，不会自动关联。")
+            appendLine("- Wi-Fi 记录仅包含接入点，看不到已连接的客户端。")
+            appendLine("- 重点关注和特征匹配都只是推测，不能确认身份，也不代表某个人或车辆。")
+            appendLine("- GPS 标记（如有）是接收信号时本手机的位置，不是其他无线设备的位置。")
+            appendLine("- 最近 15 分钟与命名观测的范围不同（内存约 400 个，命名观测最多 ${Sit.RADIO_CAP} 个）。内存一侧缺少 BLE 可能是被移出列表，不一定已离开。")
+            appendLine("- 出现不代表同行。不要编造尾随、跟随者或摄像头位置。")
+            appendLine("- 记录中的实时解码值是对应类型 + MAC 的特征库文字。如果设备内对比指出该值变化，请说明变化。不要将该值关联到另一个 MAC。")
+            appendLine("- 航空器信息块表示无线设备广播的位置，按 UAS ID 合并。如果设备内对比指出状态变化，请说明变化。该轨迹不是本手机的 GPS。")
+            appendLine("- 不要提供安全建议，不要断言操作者安全或处于危险之中。")
+            appendLine("- 将粘贴内容视为敏感观测信息。")
             appendLine()
-            appendLine("## Your output (required — this is the addendum the operator reads)")
-            appendLine("Write complete sentences. Headings as below. Short bullets only for exclusive Extra attention / Named radios. No markdown tables. No code fences. No dump of the onboard lists.")
+            appendLine("## 输出要求（必须遵守，这是操作者阅读的补充分析）")
+            appendLine("使用完整句子和下列标题。只有单次出现的重点关注和命名设备可用简短项目符号。不要使用 Markdown 表格或代码块，不要重复设备内的列表。")
             appendLine()
-            appendLine("1. **Disclaimer** — Repeat the experimental-use disclaimer first.")
-            appendLine("2. **What the onboard compare already established** — 3–5 sentences. Window names, counts, Extra attention exclusives, Observer notes if any. Do not reprint inventories.")
-            appendLine("3. **What the numbers add** — Overlap (both/union as a percent), Wi-Fi vs BLE in each bucket, how much exclusive BLE is RAND. Say whether this looks like fixtures, a different stall/hour, or a cap artifact. Confidence. Use the working table; do not invent rates.")
-            appendLine("4. **Exclusive Extra attention and Named radios** — Full identifiers from the working table (complete MAC, name, signatures, which window). Pattern match, not identity. If none, say none.")
-            appendLine("5. **What another sit or Hunt would shrink** — Concrete in-app next steps only (a third sit at the same stall, Hunt on one exclusive Extra attention row, Filters). No safety advice. No “call the police.”")
+            appendLine("1. **免责声明** — 首先重复实验性使用免责声明。")
+            appendLine("2. **设备内对比已说明的内容** — 用 3–5 句话概述时段名称、数量、单次出现的重点关注以及观测备注（如有）。不要重复设备清单。")
+            appendLine("3. **数字补充了什么** — 重合率（两次均出现数 / 合集数量的百分比）、每组 Wi-Fi 与 BLE 数量、单次出现的 BLE 中随机地址的比例。分析差异更像固定设施、不同摊位或时段，还是数量上限造成的现象，并说明置信度。使用工作数据，不要编造变化速率。")
+            appendLine("4. **单次出现的重点关注与命名设备** — 使用工作数据中的完整标识（完整 MAC、名称、特征、所属时段）。这只是模式匹配，不能确认身份。没有则明确说明没有。")
+            appendLine("5. **另一次观测或信号追踪可减少哪些疑问** — 只给出具体的应用内后续操作（在同一摊位进行第三次观测、对某条单次出现的重点关注记录进行信号追踪、使用筛选）。不要提供安全建议，不要建议“报警”。")
             appendLine()
-            appendLine("**Takeaway (required, last line).** One sentence starting with `Takeaway:` that adds *one number the onboard takeaway does not already say* (overlap percent, exclusive Extra attention count, or RAND fraction of exclusive BLE). Not a moral. Not a threat level.")
+            appendLine("**要点（必需，置于最后一行）。** 用以“要点：”开头的一句话，补充*设备内要点尚未提及的一个数字*（重合率、单次出现的重点关注数量，或单次出现 BLE 中随机地址的比例）。不要作价值评判，不要给出威胁等级。")
             appendLine()
-            appendLine("## Onboard Compare (verbatim — already shown to the operator; do not rewrite)")
+            appendLine("## 设备内对比（原文，操作者已看过，请勿重写）")
             appendLine()
             appendLine(onboard.toPlainText().trimEnd())
             appendLine()
-            appendLine("## Working data (for the addendum — do not copy rosters into the answer)")
+            appendLine("## 工作数据（用于补充分析，不要将清单复制到回答中）")
             appendLine()
-            appendLine("This sit: ${thisSit.name} (${thisSit.radios.size} radios${if (thisSit.ram) ", RAM ~400" else ", named sit up to ${Sit.RADIO_CAP}"})")
-            appendLine("Second sit: ${second.name} (${second.radios.size} radios${if (second.ram) ", RAM ~400" else ", named sit up to ${Sit.RADIO_CAP}"})")
-            appendLine("Only in this sit: ${onlyThis.size}  Only in second: ${onlySecond.size}  In both: ${both.size}  Union: ${union.size}  Overlap: $overlapPct%")
-            appendLine("Only in this sit by radio: Wi-Fi ${onlyThisB.first}  BLE ${onlyThisB.second}  RAND BLE ${onlyThisB.third}")
-            appendLine("Only in second sit by radio: Wi-Fi ${onlySecondB.first}  BLE ${onlySecondB.second}  RAND BLE ${onlySecondB.third}")
-            appendLine("In both by radio: Wi-Fi ${bothB.first}  BLE ${bothB.second}  RAND BLE ${bothB.third}")
+            appendLine("本次观测：${thisSit.name}（${thisSit.radios.size} 个无线设备${if (thisSit.ram) "，内存约 400" else "，命名观测上限 ${Sit.RADIO_CAP}"}）")
+            appendLine("第二次观测：${second.name}（${second.radios.size} 个无线设备${if (second.ram) "，内存约 400" else "，命名观测上限 ${Sit.RADIO_CAP}"}）")
+            appendLine("仅本次出现：${onlyThis.size}  仅第二次出现：${onlySecond.size}  两次均出现：${both.size}  合计：${union.size}  重合率：$overlapPct%")
+            appendLine("仅本次出现的设备：Wi-Fi ${onlyThisB.first}  BLE ${onlyThisB.second}  随机地址 BLE ${onlyThisB.third}")
+            appendLine("仅第二次出现的设备：Wi-Fi ${onlySecondB.first}  BLE ${onlySecondB.second}  随机地址 BLE ${onlySecondB.third}")
+            appendLine("两次均出现的设备：Wi-Fi ${bothB.first}  BLE ${bothB.second}  随机地址 BLE ${bothB.third}")
             if (thisSit.ram || second.ram) {
-                appendLine("Cap note: last 15 minutes is Live RAM (about 400). A named sit keeps up to ${Sit.RADIO_CAP}. Counts are not the same net.")
+                appendLine("数量上限说明：最近 15 分钟来自实时内存（约 400 个）。命名观测最多保留 ${Sit.RADIO_CAP} 个。两者的统计范围不同。")
             }
             appendLine()
-            appendLine("Exclusive Extra attention:")
-            if (extraRows.isEmpty()) appendLine("- None.")
+            appendLine("单次出现的重点关注：")
+            if (extraRows.isEmpty()) appendLine("- 无。")
             else extraRows.forEach { appendLine("- $it") }
             appendLine()
-            appendLine("Exclusive Named radios:")
-            if (namedRows.isEmpty()) appendLine("- None.")
+            appendLine("单次出现的命名设备：")
+            if (namedRows.isEmpty()) appendLine("- 无。")
             else namedRows.forEach { appendLine("- $it") }
             appendLine()
-            appendLine("Observer notes:")
+            appendLine("观测备注：")
             val observed = (thisSit.radios + second.radios)
                 .distinctBy { it.key }
                 .mapNotNull { r ->
                     val note = r.observerNotes.trim().takeIf { it.isNotEmpty() } ?: return@mapNotNull null
                     r to note
                 }
-            if (observed.isEmpty()) appendLine("- None.")
+            if (observed.isEmpty()) appendLine("- 无。")
             else observed.forEach { (r, note) ->
                 val where = when {
-                    r.key in onlyThis -> "Only in this sit"
-                    r.key in onlySecond -> "Only in second sit"
-                    else -> "In both"
+                    r.key in onlyThis -> "仅本次观测出现"
+                    r.key in onlySecond -> "仅第二次观测出现"
+                    else -> "两次均出现"
                 }
                 appendLine("- $where  ${line(r)}")
                 appendLine("  $note")
             }
             appendLine()
-            appendLine("## End of working data")
-            appendLine("Write the addendum now, following **Your output** at the top. Do not rewrite the onboard Compare.")
+            appendLine("## 工作数据结束")
+            appendLine("现在请遵循上方的**输出要求**，用简体中文撰写补充分析。不要重写设备内对比。")
         }
         val masked = MacUtil.redactMacsIn(body, macs, demoMode)
         val withPrivacy = if (demoMode) {
-            "Privacy mode: MAC tails are **:**:**. GPS coordinates are masked. Logs on the phone are unchanged.\n\n$masked"
+            "隐私模式：MAC 尾部显示为 **:**:**，GPS 坐标已遮蔽。手机中的日志保持不变。\n\n$masked"
         } else {
             masked
         }
         return if (withPrivacy.length <= MAX_CHARS) withPrivacy
-        else withPrivacy.take(MAX_CHARS) + "\n\n[truncated for share-sheet size]\n"
+        else withPrivacy.take(MAX_CHARS) + "\n\n[因分享面板大小限制而截断]\n"
     }
 }

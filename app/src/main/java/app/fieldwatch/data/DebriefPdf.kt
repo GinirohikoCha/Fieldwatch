@@ -126,7 +126,7 @@ object DebriefPdf {
         val out = ArrayList<Block>()
         out += titleBlock(doc.pdfTitle)
         out += spacer(6f)
-        out += sectionHead("", "Disclaimer", alert = false)
+        out += sectionHead("", "免责声明", alert = false)
         doc.disclaimer.split("\n\n").forEach { para ->
             chunkText(para.trim().ifBlank { " " }, CONTENT_W, 9f, muted = true).forEach { sl ->
                 out += textBlock(sl)
@@ -151,7 +151,7 @@ object DebriefPdf {
             out += spacer(10f)
         }
         for (section in doc.sections) {
-            if (section.title == "Extra attention" && doc.extraAttention.isNotEmpty()) {
+            if (section.title in setOf("Extra attention", "重点关注") && doc.extraAttention.isNotEmpty()) {
                 out += sectionHead(section.number, section.title, alert = true)
                 out += spacer(4f)
                 doc.extraAttention.forEach { hit ->
@@ -278,7 +278,7 @@ object DebriefPdf {
             canvas.drawRoundRect(panel, 7f, 7f, fill)
             canvas.drawRoundRect(panel, 7f, 7f, stroke)
             val kicker = Paint().apply {
-                color = if (fig.kicker == "AIRCRAFT") AIRCRAFT else PHOS
+                color = if (fig.kicker in setOf("AIRCRAFT", "航空器")) AIRCRAFT else PHOS
                 textSize = 8f
                 typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
                 isAntiAlias = true
@@ -287,18 +287,18 @@ object DebriefPdf {
             canvas.drawText(fig.kicker, MARGIN + 8f, y + 15f, kicker)
             val stats = Paint().apply { color = MUTED; textSize = 8f; isAntiAlias = true }
             val span = if (fig.spanM >= 1000) {
-                "${"%.1f".format(Locale.US, fig.spanM / 1000)} km span"
+                "跨度 ${"%.1f".format(Locale.US, fig.spanM / 1000)} 千米"
             } else {
-                "${fig.spanM.toInt()} m span"
+                "跨度 ${fig.spanM.toInt()} 米"
             }
             val len = if (fig.lengthM >= 1000) {
-                "${"%.1f".format(Locale.US, fig.lengthM / 1000)} km path"
+                "轨迹 ${"%.1f".format(Locale.US, fig.lengthM / 1000)} 千米"
             } else {
-                "${fig.lengthM.toInt()} m path"
+                "轨迹 ${fig.lengthM.toInt()} 米"
             }
             val fixes = fig.tracks.filter { it.aircraft }.sumOf { it.samples.size }
             val right = if (fig.tracks.all { it.aircraft } && fixes == 1) {
-                "1 advertised fix"
+                "1 个广播定位点"
             } else {
                 "$len  ·  $span"
             }
@@ -422,12 +422,12 @@ object DebriefPdf {
             isAntiAlias = true
         }
         canvas.drawCircle(nx, ny - 2f, 8f, nDisc)
-        canvas.drawText("N", nx, ny + 1f, nP)
+        canvas.drawText("北", nx, ny + 1f, nP)
         val barW = plot.width() * lay.scaleBarFrac
         val label = if (lay.scaleBarM >= 1000) {
-            "${(lay.scaleBarM / 1000).toInt()} km"
+            "${(lay.scaleBarM / 1000).toInt()} 千米"
         } else {
-            "${lay.scaleBarM.toInt()} m"
+            "${lay.scaleBarM.toInt()} 米"
         }
         val barPaint = Paint().apply {
             color = MUTED
@@ -551,8 +551,8 @@ object DebriefPdf {
                 textSize = 7.5f
                 isAntiAlias = true
             }
-            canvas.drawText("Start", ox(pts.first().x) + 6f, oy(pts.first().y) - 4f, lab)
-            canvas.drawText("End", ox(pts.last().x) + 6f, oy(pts.last().y) - 4f, lab)
+            canvas.drawText("起点", ox(pts.first().x) + 6f, oy(pts.first().y) - 4f, lab)
+            canvas.drawText("终点", ox(pts.last().x) + 6f, oy(pts.last().y) - 4f, lab)
         }
     }
 
@@ -563,20 +563,20 @@ object DebriefPdf {
         val out = ArrayList<LegendSwatch>()
         when {
             phone.size >= 2 -> {
-                out += LegendSwatch("This sit", MARK_STAY)
-                out += LegendSwatch("Second sit", MARK_SLATE)
+                out += LegendSwatch("本次观测", MARK_STAY)
+                out += LegendSwatch("第二次观测", MARK_SLATE)
             }
-            phone.any { it.samples.size >= 2 } -> out += LegendSwatch("Stay", MARK_STAY)
+            phone.any { it.samples.size >= 2 } -> out += LegendSwatch("停留", MARK_STAY)
         }
         val craft = fig.tracks.filter { it.aircraft }
         if (craft.isNotEmpty()) {
-            out += LegendSwatch("Advertised", MARK_AMBER)
-            if (craft.any { it.secondary }) out += LegendSwatch("Second advertised", MARK_AMBER_DASH)
+            out += LegendSwatch("广播位置", MARK_AMBER)
+            if (craft.any { it.secondary }) out += LegendSwatch("第二次广播位置", MARK_AMBER_DASH)
         }
-        if (fig.dots.any { it.extraAttention }) out += LegendSwatch("Extra attention", MARK_RED)
-        if (fig.dots.any { it.named }) out += LegendSwatch("MAC alert", MARK_BLUE)
-        if (fig.dots.any { !it.extraAttention && !it.named }) out += LegendSwatch("Signature alert", MARK_ALERT)
-        if (fig.pilots.isNotEmpty()) out += LegendSwatch("Pilot", MARK_PILOT)
+        if (fig.dots.any { it.extraAttention }) out += LegendSwatch("重点关注", MARK_RED)
+        if (fig.dots.any { it.named }) out += LegendSwatch("MAC 提醒", MARK_BLUE)
+        if (fig.dots.any { !it.extraAttention && !it.named }) out += LegendSwatch("特征提醒", MARK_ALERT)
+        if (fig.pilots.isNotEmpty()) out += LegendSwatch("飞手", MARK_PILOT)
         return out
     }
 
@@ -821,7 +821,7 @@ object DebriefPdf {
         val craft = fig.craftKeys.filter { it.isNotBlank() }
         if (piles.isEmpty() && craft.isEmpty()) return emptyList()
         val out = ArrayList<Block>()
-        out += sectionHead("", "Path key", alert = false)
+        out += sectionHead("", "轨迹图例", alert = false)
         out += spacer(4f)
         piles.forEachIndexed { i, pile ->
             out += pathKeyRow(i + 1, pile)
@@ -838,16 +838,16 @@ object DebriefPdf {
         val radios = pile.members.joinToString("  ·  ") { m ->
             val d = m.dot
             val kind = if (d.kind.name == "WIFI") "WIFI" else "BLE"
-            val tag = if (d.extraAttention) "Extra attention" else null
+            val tag = if (d.extraAttention) "重点关注" else null
             val fleets = d.fleetNames.filter { it.isNotBlank() }.joinToString(", ")
-            val obs = d.observerNotes.trim().takeIf { it.isNotEmpty() }?.let { "Observer: $it" }
+            val obs = d.observerNotes.trim().takeIf { it.isNotEmpty() }?.let { "观测备注：$it" }
             val who = listOfNotNull(kind, d.label.ifBlank { d.mac }, fleets.ifBlank { null }, tag, obs)
                 .joinToString(" ")
             val advertised = d.advertisedNote.trim()
             if (advertised.isEmpty()) who else "$who — $advertised"
         }
         return if (pile.stacked) {
-            "$n  ${pile.members.size} radios at this stop — $radios"
+            "$n  此停留点有 ${pile.members.size} 个无线设备 — $radios"
         } else {
             "$n  $radios"
         }
@@ -862,15 +862,15 @@ object DebriefPdf {
 
     private fun isStayHead(line: String): Boolean {
         val t = line.trim()
-        return t.matches(Regex("""^\d+\.\s+(Stay|Transit)\b.*""")) ||
+        return t.matches(Regex("""^\d+\.\s+(?:(?:Stay|Transit)\b|停留|途经).*""")) ||
             t.startsWith("• ")
     }
 
     private fun isKickerLine(line: String): Boolean {
         val t = line.trim()
-        if (t.startsWith("Phone GPS")) return true
+        if (t.startsWith("Phone GPS") || t.startsWith("这是接收信号时手机的 GPS")) return true
         if (t.contains(". ")) return false
-        return t.matches(Regex("""^[A-Z][A-Za-z0-9 +/'()&.,-]{0,48}:(\s.*)?$"""))
+        return t.matches(Regex("""^[\p{L}][\p{L}0-9 +/'()（）&.,，、-]{0,48}[:：](\s.*)?$"""))
     }
 
     private fun isBullet(line: String): Boolean {
@@ -994,7 +994,7 @@ object DebriefPdf {
         val innerW = CONTENT_W - 24
         val radio = layout(hit.radioLabel, innerW, 9f, muted = false, bold = true)
         val note = layout(hit.note, innerW, 9.5f, muted = false)
-        val foot = layout("Pattern match, not identity. Not a safety finding.", innerW, 8f, muted = true)
+        val foot = layout("仅为模式匹配，不代表身份或安全结论。", innerW, 8f, muted = true)
         val h = 22f + radio.height + 6f + note.height + 8f + foot.height + 12f
         return Block(h) { canvas, y ->
             val box = RectF(MARGIN - 6f, y, PAGE_W - MARGIN + 6f, y + h - 4f)
@@ -1009,7 +1009,7 @@ object DebriefPdf {
                 isAntiAlias = true
                 letterSpacing = 0.06f
             }
-            val label = "EXTRA ATTENTION  ·  ${hit.signature}".uppercase()
+            val label = "重点关注  ·  ${hit.signature}".uppercase()
             canvas.drawText(label, MARGIN + 10f, y + 14f, kicker)
             var ty = y + 20f
             canvas.save()
@@ -1044,7 +1044,7 @@ object DebriefPdf {
                 typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
                 isAntiAlias = true
             }
-            canvas.drawText("TAKEAWAY", MARGIN + 10f, y + 14f, k)
+            canvas.drawText("要点", MARGIN + 10f, y + 14f, k)
             canvas.save()
             canvas.translate(MARGIN + 10f, y + 20f)
             body.draw(canvas)
@@ -1082,7 +1082,7 @@ object DebriefPdf {
             textSize = 8f
             isAntiAlias = true
         }
-        canvas.drawText("Off Grid Pete LLC  ·  operationally sensitive", MARGIN, PAGE_H - 18f, f)
+        canvas.drawText("Off Grid Pete LLC  ·  敏感观测信息", MARGIN, PAGE_H - 18f, f)
         val pn = "$page / $total"
         canvas.drawText(pn, PAGE_W - MARGIN - f.measureText(pn), PAGE_H - 18f, f)
     }
@@ -1126,6 +1126,7 @@ object DebriefPdf {
         val tp = TextPaint().apply {
             color = if (muted) MUTED else INK
             textSize = size
+            textLocale = Locale.SIMPLIFIED_CHINESE
             isAntiAlias = true
             typeface = Typeface.create(
                 Typeface.SANS_SERIF,

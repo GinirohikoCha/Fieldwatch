@@ -1,444 +1,386 @@
-FIELDWATCH — install for a test phone
-==================================
-Receive-only Wi-Fi access-point and Bluetooth LE watcher for Android.
-Package: app.fieldwatch
-Needs Android 10 or newer (API 29+). Tested on a Galaxy A54; meant for most Android 10+ phones.
+FIELDWATCH 中文版 — 测试手机安装说明
+====================================
+在 Android 上仅接收 Wi-Fi 接入点和低功耗蓝牙（BLE）广播的观测工具。
+应用包名：app.fieldwatch
+中文版版本：1.1.17-zh-CN。
+需要 Android 10 或更新版本（API 29+）。上游曾在 Galaxy A54 上测试，面向多数 Android 10+ 手机。
 
-This card
----------
-  Fieldwatch.apk                 the app (sideload build)
-  Fieldwatch_User_Manual.pdf     user manual v1.1.17 (screenshots: Privacy mode on; Live display shots BLE only)
-  instruction.txt             this file
+文件说明
+--------
+  Fieldwatch.apk              应用安装包（侧载构建）
+  Fieldwatch_User_Manual.pdf   1.1.17 用户手册中文版
+  instruction.txt             本文件
 
-SHA-256 of Fieldwatch.apk:
+中文版 APK SHA-256：
+  0e0b773a36ed025a689a1fb16193ac7819b4cfcda02d1cda46f0bb1cea867501
+
+中文版签名证书 SHA-256（本地 Android Debug 证书）：
+  0d864055ba6bd00ce98cfa4db1c999bc893b71b5ac3720c3cba41f091ae6657f
+
+上游 1.1.17 发布版参考（不用于校验中文构建）：
+  APK SHA-256：
   f6249aab9c977e747f19bfb570e81c2c0e773086286dfee1819b12e53cd5268a
-
-Signing certificate SHA-256 (Off Grid Pete LLC):
+  Off Grid Pete LLC 签名证书 SHA-256：
   72f0da99823cdcb7a72b075a148a59cc3f01839734270f1ea59d597bd6732609
 
-Fieldwatch is experimental software. Use at your own risk. It does not guarantee
-that trackers or other devices will be found. Each phone has radio limits
-this app cannot fix. Do not use it in any situation where safety is in
-question. Full notice: Fieldwatch_User_Manual.pdf, page after the cover.
+本次中文 APK 由此工作副本源码构建，使用本地 Android Debug 证书，并非上游 Off Grid Pete LLC 发布证书。不能直接覆盖已安装的上游版本；请先备份数据，再卸载上游版本后安装。上游下载的 APK 可能仍为英文版。
+不要用上游 APK 的摘要或证书指纹校验本地中文构建。
 
-Fieldwatch is not on the Play Store. You install the APK yourself (sideload).
-It does not self-update. Keep this APK if you want the same build later.
+Fieldwatch 是实验性软件，使用风险由您自行承担。不保证能够发现追踪器或其他设备。
+每部手机都有本应用无法消除的无线接口限制。请勿将它用于任何涉及安全判断的场景。
+完整声明见 Fieldwatch_User_Manual.pdf 封面后的声明页。
 
-Copyright (c) 2026 Off Grid Pete LLC. All rights reserved.
+Fieldwatch 未上架 Play 商店，需自行安装 APK（侧载），也不会自动更新。
+如果以后仍需要相同构建，请保留对应 APK。
 
-License: MIT License. AndroidX/Kotlin remain Apache-2.0; IEEE and
-Bluetooth SIG lookup tables have their own terms (NOTICE). Full text:
-LICENSE, and the Notice page in Fieldwatch_User_Manual.pdf.
-
-
-1. Get the APK onto the phone
------------------------------
-If this microSD card fits the phone:
-  insert it, open Files (or My Files), open the card, tap Fieldwatch.apk.
-
-Otherwise copy Fieldwatch.apk to the phone (USB, Drive, AirDrop to Files, etc.)
-and tap it there.
-
-If Android blocks the install:
-  Settings → Apps → Special app access → Install unknown apps
-  (Samsung: Settings → Security and privacy → Install unknown apps)
-  allow the app you used to open the APK (Files, Chrome, Drive, …)
-  then tap Fieldwatch.apk again.
-
-Play Protect may warn that the app is not from Play. That is expected for
-a sideload. Choose Install anyway only if you trust this APK.
-
-If a previous Fieldwatch (1.0.4 or earlier) is already on the phone, uninstall
-it first. Those builds used a different signature; Android will not update
-over them. Settings and logs on that phone are wiped by uninstall.
-
-When it finishes, open Fieldwatch from the launcher.
+版权所有 (c) 2026 Off Grid Pete LLC。保留所有权利。
+许可证：MIT。AndroidX / Kotlin 仍采用 Apache-2.0；IEEE 和 Bluetooth SIG 查询表适用各自条款（见 NOTICE）。
+许可证全文见 LICENSE，以及 Fieldwatch_User_Manual.pdf 中的声明页。
 
 
-2. Turn on the radios (system settings)
----------------------------------------
-Before or right after first launch:
-
-  • Location  ON  (Android will not give Wi-Fi BSSIDs or useful BLE without it)
-  • Wi-Fi     ON
-  • Bluetooth ON
-
-Fieldwatch only listens to Wi-Fi access-point beacons and BLE advertisements.
-It does not join networks, pair, or scan Bluetooth Classic (HC-05 / HC-06
-will not appear).
-
-
-3. Grant what Fieldwatch asks
---------------------------
-First screen: “Fieldwatch needs the radios” → Grant permissions.
-
-Allow all of these (wording varies by Android version):
-
-  Location
-    Precise / fine location. Required for Wi-Fi scan results and BLE.
-    Tag detections with GPS ships on (Settings) and uses this same
-    permission for live stamps. High-accuracy Location or the path stays 0.
-
-  Nearby Wi-Fi devices   (Android 13+)
-    Lets Fieldwatch run Wi-Fi scans.
-
-  Nearby devices / Bluetooth scan + connect   (Android 12+)
-    BLE observer. “Connect” is required by the stack to read some names.
-    Fieldwatch does not create a Bluetooth connection for detection.
-
-  Notifications   (Android 13+)
-    Persistent “Fieldwatch scanning” status, and optional watchlist alerts.
-
-If you Deny any required item, Fieldwatch stays on the permission screen.
-You can also grant later:
-  Android Settings → Apps → Fieldwatch → Permissions
-
-
-4. First launch checklist
--------------------------
-  1. First launch shows Disclaimer and license. Check “I have read this and I agree,”
-     then Continue. Radios do not start until you do.
-  2. Grant the permission screen. Radios do not start until that set is complete.
-  3. A notification “Fieldwatch scanning” appears. Leave it. Stop on that
-     notification (or swipe Fieldwatch out of Recents) ends collection.
-  4. Live should show Wi-Fi access points and BLE advertisers. Header:
-     Wi-Fi, Bluetooth, and signatures icons with counts (a radio
-     hint may follow).
-  5. If both counts stay at zero: Location, Wi-Fi, and Bluetooth must be
-     on at the system level, not only inside Fieldwatch.
-
-After first launch (stay scanning):
-  • In Fieldwatch Settings turn on “Allow background usage” (Battery page,
-    that Android switch).
-  • Then “Unrestricted battery”. Some phones do not open onto
-    Unrestricted / Optimized / Restricted. If you only see Allow
-    background usage, tap that row (the words, not the switch) to click
-    through and select Unrestricted.
-  • Keep screen on ships on. Leave it on while you are watching Live, or
-    some phones park BLE when the screen locks. Turn it off when you pocket
-    the phone.
-  • If the phone has “Background usage limits” or “Put unused apps to
-    sleep,” do not sleep Fieldwatch.
-
-Max collection (battery is the cost) — full walk-through:
-  User Manual §4.5. In short: Location Precise + Wi-Fi + Bluetooth on at
-  the system level; grant every Fieldwatch permission; Unrestricted battery
-  and do not sleep the app; Keep screen on while you watch; High
-  performance (ships on). Optional: Developer options → Wi-Fi scan
-  throttling Off, then Fieldwatch → Faster Wi-Fi AP scans On (~8 s AP
-  batches on a drive). Leave the “Fieldwatch scanning” notification.
-  Swiping Fieldwatch out of Recents ends collection. The phone will get
-  warm. Pocket / overnight is Battery saver, not this list.
-
-
-5. What you are looking at
---------------------------
-  Live         Five pictures of what is on the air: radar, list, timeline,
-               hybrid, or By class. You can show more or less on each list row.
-               The circle is a class glyph (unmatched = ?) — that is the
-               glanceable mark. Radio kind is a small Wi-Fi or Bluetooth
-               icon on the subtitle (access point vs BLE advertiser), not
-               two-letter AP/LE tags and not the title. Tap the tune icon
-               (top right) to open Display, then close it when the list
-               looks the way you want.
-                 View         radar, Strength list, timeline, hybrid, or By class
-                              (every class A–Z → signatures A–Z → radios → detail.
-                              Show all keeps empty classes; Collapse empty hides
-                              zeros. Those chips scroll with the list.
-                              Radio rows use the same Display switches and class glyph as the list.
-                              A watchlist hit (pip and/or spoken class)
-                              opens that class and signature so the row
-                              can flash, and the jump keeps those
-                              headers on screen when the radio is close enough.
-                              On radar the blip pings, then a phosphor
-                              ring stays. A phosphor bell stays on the
-                              list row for the rest of the session.)
-                 Sort         Strongest signal; Strongest averaged over 30 s
-                              (the default); Newest heard; Newest alert;
-                              Newest arrival; New at bottom; Name A–Z
-                              (uses the Title line); Signatures first.
-                              Sort only changes the order. It does not hide
-                              radios. New at bottom keeps new rows at the end.
-                              Newest alert puts the last watchlist hit on
-                              top; a phosphor bell stays on that row.
-                 Brief hold   Off, or keep a row 10 / 30 / 60 s after the
-                              last packet
-                 Title line   Advertised name, Name + type, or MAC (default)
-                 Subtitle     the same choices, plus None (hides the second
-                              line; rand/gone move onto the title). A Wi-Fi
-                              or Bluetooth icon always leads this line and
-                              does not move onto the title. Default: Name +
-                              type. Unnamed BLE here is “unnamed”.
-                 switches     RSSI bars, signature names, Frequency
-                              (channel and MHz under the RSSI), first/last seen
-               Filters choose which radios appear. Display chooses how much
-               of each row you see. Maker/vendor is on the detail page, not
-               the list. “Apple, Inc. · AirTag…” on the subtitle is Name + type
-               (a type guess). IEEE vendor is on the detail page.
-               In a crowded plaza, set Subtitle to None and turn the extra
-               switches off. The first line is already a MAC if you need to
-               copy an address. Turn Frequency on for a Wi-Fi channel sit.
-               Full write-up: User Manual §5.3.
-               Tap Live while already on Live to Pause: the picture freezes,
-               radios still scan and log, Filters still apply when you run
-               again. Tap Live to run the list.
-               While New detections only is on, Live shows a New only hint
-               and Mark seen / Reset seen just above the tabs.
-  Filters      Next to Live. This tab chooses which radios appear, not how
-               each row looks. Presets at the top (two across): tap one to replace the
-               whole filter. Save current as… keeps a named copy.
-                 All traffic, Wi-Fi only, BLE only, Strong signal (−70 dBm),
-                 Moving with you, Watched only.
-               Watched only = bookmarked signatures and Named radios with
-               Alert on. Cameras / Drones / Finder tags / Phones / PCs and the
-               rest are class chips further down — Show only, then Save
-               current as… if you want a named preset. Live only — matching
-               always labels.
-               Moving with you sits under Radios to show;
-               New detections only sits under it. Signatures only, Watched
-               only, and Named radios only sit just above the class chips.
-               Watched only keeps bookmarked signature matches and Named
-               radios with Alert on (Hide these still applies). The Moving
-               with you switch starts a BLE follow test (Wi-Fi APs stay
-               off — range looks like co-travel). It
-               clears Signatures only, Watched only, Named radios only, and
-               class Show only so those filters do not empty the list.
-               Class chips sit two across with the same glyphs as Live.
-               Show only or Hide these. Empty Show
-               only does not hide unmatched. Under Show only, Signatures
-               only is already true (switch dimmed). Hide these leaves
-               unmatched; Signatures only stays a real switch then. Hide
-               selected hides one family (your bag AirTag). Show only selected
-               keeps only the families you pick.
-               Hide Fast Pair account-key (under Named radios only) drops
-               already-paired Fast Pair chips when that is the only match;
-               pairing-mode stays (chip Fast Pair pairing). A mall of unnamed
-               Fast Pair is plaza noise, not Android identity. Manual §9.5.
-               Save current as… keeps a named copy.
-               Long-press any chip to delete it. Stock chips stay gone
-               until Restore default signatures & presets. Reset filter
-               clears this tab. Manual §8.4.
-  Signatures   Named match rules. The circle is the class glyph (same
-               icons as Live / Filters). Sort: Name A–Z (default) or Class A–Z
-               (classes start collapsed; tap a class to open its signatures).
-               Every stock row always labels when it
-               hits. Bookmark = watch (beep and/or spoken class). Hide a noisy family
-               on Filters (class Hide these, or Hide selected). Extra attention
-               (“!” on Live, card on detail) and a stock bookmark ship on
-               body-cam, camera glasses, recording wearables, pentest,
-               public-safety vehicle APs, and roadside / public camera +
-               ALPR (Flock, Penguin, Pigvision, FS Ext Battery, Genetec
-               AutoVu, Rekor, Motorola Vigilant, Verkada, Avigilon, Axis,
-               Hikvision, Dahua, Hanwha Wisenet, Uniview, Rhombus) and
-               GhostESP / Bruce. Tesla, headphones, UniFi Protect,
-               BlueTOAD Spectra, BlipTrack, and access-control locks do not. Flock LiteOn / Espressif OUIs
-               can be noisy; unbookmark that row if it is.
-               UniFi AP is Wi-Fi-only (Ubiquiti OUIs + factory SSIDs), ISP / routers class.
-               A separate UniFi row matches advertised names on either radio (same class).
-               UniFi Protect Instant cameras stay Surveillance.
-               Campus APs (Meraki, Cisco, Aruba, Ruckus, Ruijie, Fortinet, Mist, Sophos,
-               Extreme, Edgecore, WatchGuard AP, Mojo) are ISP / routers, not
-               Surveillance. A Meraki BSSID that also carries a Cisco vendor IE
-               stays Meraki only. DWnet / WAVLINK / GL.iNet 94:83:C4 are ISP too.
-               Unmatched Wi-Fi is often a house name, a car hotspot, or a
-               randomized BSSID — not a missing campus AP. Roku hidden
-               Wi-Fi Direct remote APs hit Home IoT on vendor IE C8:3A:6B.
-               Franklin RG3100* / OUI 50:FB:FF is ISP / routers (carrier 5G gateway).
-               Samsung [fridge]* / [oven]* and EcoWater H2O-xxxxxxxxxxxx are Home IoT.
-               Each rule has its own on/off switch in the editor.
-               BLE rows have Decode fields (optional). After the signature
-               matches, detail maps cleartext advertisement bytes to labels
-               (Ruuvi temp, Remote ID location, GoPro model, …). Encrypted
-               ads stay hex. Not pairing. How to type a map from a payload
-               spec: User Manual §9.6.1–§9.6.5. Stock maps: §9.6.6.
-               Stock chip colors by class (change any row):
-                 red    pentest / cheap serial (incl. GhostESP / Bruce)
-                 green  mesh / LoRa (Meshtastic, MeshCore, Helium, goTenna, SenseCAP, RAK)
-                 amber  cameras / ALPR / municipal / UniFi Protect / BlueTOAD / BlipTrack / DJI
-                 purple phones / Find My (Apple Device, Fast Pair, AirTags, Chipolo, Google)
-                 cyan   wearable trackers / beacons (SmartTag, Tile, iBeacon, Target Atrius basket, Minew)
-                 orange glasses and audio (same color; class splits them)
-                 teal   public safety (body-cam / public-safety AP) and vehicle (same color; class splits them).
-                        Public safety class is used in law enforcement, not exclusive to it —
-                        government, municipal, and other corporate fleets likely
-                        run some of the same kit.
-                 silver consumer cameras (Wyze / Ring / GoPro / Osmo / Insta360) / home IoT / ISP Wi-Fi / thermostats / Tuya / access control / retail signage / Unknown Signature
-               Unmatched radios color by RSSI, not class. Full catalog:
-               User Manual §9.5 and Appendix B.
-  Reports      Path, Debrief, Sit export, Compare, AI Export,
-               Signature candidates, Log export (Format: CSV,
-               JSON lines, GPX — GPS Exchange, KML — Google Earth,
-               WiGLE CSV — wigle.net; Both / Wi-Fi only / BLE only).
-               Reset / clear log.
-               The selected sit drives Path, Debrief, Sit export, and
-               Compare’s this-sit side.
-               Sit export vs Log export: Sit export is one row per unique
-               radio in that window (sit cap 3000 / last 15 min RAM ~400).
-               Logging can be off. GPX/KML include this phone’s path as a
-               track. Log export is the rotating session file — every hear
-               while logging was on. Clearing the log does not delete sits.
-               Fieldwatch does not upload. Custom names replace
-               advertised names on Debrief / Compare / Path / GPX / KML
-               (WiGLE keeps the advertised SSID). Observer notes is a
-               section after Where you were (Debrief) or Windows (Compare).
-               Compare sits: this sit (same as Debrief) vs a second saved
-               sit. Presence only — kind + MAC. Extra attention is marked.
-               Last 15 minutes vs a named sit is not the same net
-               (RAM ~400 vs sit 3000). Compare AI Export is an addendum
-               (overlap, exclusive Extra attention / Named / Observer notes),
-               not a second roster. Sit report AI Export stays this window.
-               Debrief is the last 15 minutes in RAM (about 400 radios,
-               not the log). Unnamed BLE drop after ~3 min; named stay
-               ~15 min. On a drive, tap Debrief every 10–15 min or at
-               stops — radios moving with you stay in each report;
-               roadside clutter does not. Signature candidates mines
-               the rotating log for unmatched families (shared name
-               glob / vendor IE / UUID / OUI on 2+ radios). Create
-               signature is a draft with the shared rule, no MAC pin;
-               Save returns to the list. Share log is the full file.
-               GPS co-travel is split: finder tags (Possible trackers /
-               Possible tail), retail beacons, wearables. Sit AI Export
-               is an addendum (rates, Extra attention / tracking IDs),
-               not a second roster. Logging on/off and GPS tagging
-               stay on Settings.
-  Settings     Scan intensity, Faster Wi-Fi AP scans, GPS tagging,
-               Online place names and maps, Keep screen on, logging on/off and
-               rotate size (rotating file is JSON lines; Format is on
-               Reports → Log), Watchlist, Named radios (custom name +
-               Observer notes). Footer: Fieldwatch version · Catalog N.
-               Update stock catalog from GitHub needs internet; replaces
-               stock rows (Extra attention too); bookmarks stay. Offline:
-               Import signatures. GPS tagging, Online place names and maps, Keep screen
-               on, Watchlist alerts, and Beep ship on. Voice on watched
-               signature ships off. Beep and Voice are independent:
-               pip, spoken phrase, or both. What to say (while Voice is
-               on): Class, Signature, or Class + signature. Default
-               Class (finder tags, audio, …). Signature is the catalog
-               row (Apple AirTags, Axon). Not Hunt. Test alert plays
-               whatever is on. Jump works with beep, voice, or both. Faster Wi-Fi AP scans is off until you turn
-               off Developer options → Wi-Fi scan throttling, then
-               flip the Fieldwatch switch (Android 11+; Fieldwatch checks
-               the OS flag first). About every 8 s AP batches instead
-               of ~30 s — more chances to catch a signed AP (IBR*,
-               AirLink, UniFi, Cisco, hidden fleet MAC) while driving.
-               Privacy mode (off): last three MAC octets on the screen
-               and in Debrief / AI Export / detail Share become **:**:**
-               so those views do not show full addresses. GPS last-fix
-               and sit-report coordinates show as masked. The log file
-               stays full. How the list looks is only on Live → Display,
-               not here.
-  Detail       Tap a Live row. The bookmark (top right) watches this MAC
-               until you turn it off — it does not disappear when the radio
-               leaves. Extra attention card if a matched signature has one.
-               Share as text, or AI Export a prompt for that one
-               radio. BLE: Decoded fields when that signature has a map
-               (temp / model / Remote ID — Manual §9.6). A saved custom
-               name is the large title; advertised name is smaller.
-               Observer notes (cyan) sit under the name. Custom name /
-               notes edit is hidden on a random / privacy MAC.
-               BLE: Hunt — closer or further by loudness; rings around
-               YOU pull in on Closer and push out on Further. Very Close when
-               it is screaming (~−45 dBm or louder). Beep / Vibrate at the
-               bottom tick faster as RSSI gets louder (off until you turn
-               them on). Not meters.
-               Optional: hold the phone to your chest (your body blocks one
-               side) and turn slowly; a stronger heading is a candidate
-               bearing. Then walk. Walls and metal change the number without
-               a change in range. Manual §12.8 / §12.13.
-
-Wi-Fi rows are access points only (routers, hotspots, mesh, phone hotspots).
-Phones using Wi-Fi that are not broadcasting a network do not appear.
-The default first line is the MAC. The default second line starts with a
-Wi-Fi or Bluetooth icon, then Name + type (SSID, BLE name, or a guess).
-The number on the right is RSSI in dBm.
-
-A pattern match is not proof of identity. “Moving with you” and Debrief
-following are educated guesses, not legal findings.
-
-
-6. Quick field start
+1. 将 APK 放到手机上
 --------------------
-  • Settings → scan intensity: High performance for the first minutes.
-    For signed APs on a drive: Developer options → Wi-Fi scan
-    throttling Off, then Settings → Faster Wi-Fi AP scans On
-    (manual §7.1.1 / §10.3.1).
-  • Live: Strength list, all traffic. Tune Display to the job
-    (Subtitle None in a crowd; Frequency on for a Wi-Fi sit).
-  • Signatures always label. Hide noise on Filters (class Hide these
-    or Hide selected). Stock bookmarks already alert on
-    body-cam, Meta/Snap glasses, and pentest kit. Beep ships on;
-    Voice ships off — Settings → Voice on watched signature.
-    What to say: Class, Signature, or Class + signature
-    (default Class). Test alert plays whatever is on. Not Hunt.
-  • Tag detections with GPS, Keep screen on, and Online place names
-    and maps ship on. Location → high accuracy,
-    then walk/drive until Filters shows a path that is not 0 m;
-    Filters → Moving with you (loud stable radios: bag/car tag, not a second iPhone).
-    After the walk, Reports → Debrief still has the last-15-minute tracking
-    line even if you leave that filter or switch Live to radar / timeline.
-  • Sit a room: Filters → New detections only, then Mark seen on Live
-    once the room is the baseline
-  • Tap a Live row: Share as text, AI Export, or (BLE) Hunt to walk toward
-    it by loudness. Body-block turn for a crude heading; walls/metal/floors
-    change RSSI without a change in range. Not meters. Manual §12.8 / §12.13.
-  • Unknown tracker: Filters → Show only Finder tags, hide your own tags,
-    and hold the phone at likely hiding spots (each wheel, bumpers, cabin).
-    If a row jumps to the top, open Hunt and repeat. A quiet sweep does not
-    mean the area is clean. §12.8. If you want to know whether something
-    stayed with you, Reports → Debrief still has the last 15 minutes of
-    that test, even after you leave the Finder-tags filter.
-  • After ~15 minutes, or at each stop on a drive: Reports → Debrief
-    (text) or Debrief (PDF). Keep those shares — each file is that
-    window, not the whole trip. City RF can fill ~400 live radios in a
-    few kilometers; unnamed BLE is already gone after ~3 minutes.
-    Radios moving with you (bag tag, car TPMS, planted tracker) keep
-    being heard and stay in the next Debrief. AI Export pastes the
-    onboard Debrief plus working data and asks a chat for statistical
-    depth the phone report cannot do (not a rewrite). Streets in those
-    files if Online place names and maps is on (it ships on) and the phone is
-    online. Live view and Filters do not change Debrief. Share log /
-    Save to SD are on the same tab.
-  • Full after-action file: Reports → Share log (logging must have been on).
-    With GPS tagging on, new log rows include lat,lon (your phone at hear-time).
-    New Wi-Fi rows also include vendor_ie (pipe-separated vendor-IE OUIs).
-    Use this when you need rows the 15-minute Debrief already dropped.
-  • Unmatched families in that log: Reports → Signature candidates.
-    Recurring name globs / vendor IEs / OUIs on 2+ radios. Create
-    signature, Save. Not every unknown radio. Vendor-IE families need
-    packets logged after this build.
+如果手机支持这张 microSD 卡：
+  插入卡片，打开“文件”或“我的文件”，进入存储卡并点击 Fieldwatch.apk。
 
-Playbooks (followed on a walk, new arrival in a room, Hunt a BLE radio,
-hide clutter, camera sit, Extra attention / pentest kit / card-reader
-caution) and which report to tap: User Manual chapter 12.
+否则，将 Fieldwatch.apk 复制到手机（USB、网盘或其他文件传输方式），再点击安装。
+
+如果 Android 阻止安装：
+  设置 → 应用 → 特殊应用权限 → 安装未知应用
+  （Samsung：设置 → 安全与隐私 → 安装未知应用）
+  允许用于打开 APK 的应用（文件、Chrome、网盘等）安装，再次点击 Fieldwatch.apk。
+
+Play Protect 可能提示该应用并非来自 Play 商店，这是侧载时可能出现的提示。
+只有信任这个 APK 时才选择“仍要安装”。
+
+如果手机已安装上游 Fieldwatch 1.0.4 或更早版本，需先卸载。
+这些版本使用不同签名，Android 不允许直接覆盖更新；卸载会清除手机上的应用设置和日志。
+本地中文构建若与已安装版本签名不同，同样需要先备份，再卸载安装。
+
+安装完成后，从启动器打开“Fieldwatch 中文版”。
 
 
-7. Uninstall
+2. 开启系统无线功能
+--------------------
+首次启动前或启动后，确保系统设置中的以下功能已开启：
+
+  • 位置信息：开启。否则 Android 不会提供 Wi-Fi BSSID 或有效的 BLE 结果。
+  • Wi-Fi：开启。
+  • 蓝牙：开启。
+
+Fieldwatch 仅监听 Wi-Fi 接入点信标和 BLE 广播，不会加入网络、配对或扫描经典蓝牙。
+HC-05 / HC-06 不会出现。
+
+
+3. 授予 Fieldwatch 所需权限
+---------------------------
+在“Fieldwatch 需要无线权限”页面点击“授予权限”。
+
+允许以下权限（名称可能随 Android 版本变化）：
+
+  位置信息
+    精确位置权限，用于 Wi-Fi 扫描结果和 BLE。
+    “设置”中的“为检测记录添加 GPS 标记”默认开启，也使用此权限记录实时位置。
+    请启用高精度定位，否则轨迹可能一直为 0 米。
+
+  附近的 Wi-Fi 设备（Android 13+）
+    允许 Fieldwatch 执行 Wi-Fi 扫描。
+
+  附近的设备 / 蓝牙扫描和连接（Android 12+）
+    用于 BLE 观测。系统协议栈读取部分名称时需要“连接”权限，
+    但 Fieldwatch 不会为检测而建立蓝牙连接。
+
+  通知（Android 13+）
+    用于持续显示“Fieldwatch 正在扫描”状态，以及可选的关注列表提醒。
+
+如果拒绝任何必要权限，Fieldwatch 会停留在权限页。之后也可手动授予：
+  Android 设置 → 应用 → Fieldwatch → 权限。
+
+
+4. 首次启动检查
+----------------
+  1. 首次启动显示免责声明和许可证。勾选“我已阅读并同意”，然后点击“继续”。
+     完成前不会启动无线扫描。
+  2. 完成权限页授权。所有必需权限齐全后才开始扫描。
+  3. 出现“Fieldwatch 正在扫描”通知，请保留该通知。
+     点击通知中的“停止”，或从最近任务中划掉 Fieldwatch，会结束采集。
+  4. “实时”页应显示 Wi-Fi 接入点和 BLE 广播设备。
+     顶部显示 Wi-Fi、蓝牙、特征库图标及数量，也可能带有无线状态提示。
+  5. 如果两类设备数都一直为零，请检查系统的位置信息、Wi-Fi 和蓝牙，而不只是应用内开关。
+
+首次启动后，为保持扫描：
+  • 在 Fieldwatch“设置”中打开“允许后台使用”，进入系统电池页并开启对应选项。
+  • 将电池使用设为“不受限制”。部分手机不会直接显示“不受限制 / 已优化 / 受限制”。
+    如果只看到“允许后台使用”，点击该行文字而不是开关，进入后再选择“不受限制”。
+  • “保持屏幕常亮”默认开启。查看实时列表时建议保持开启；部分手机锁屏后会暂停 BLE。
+    将手机放入口袋时可以关闭它。
+  • 如果系统有“后台使用限制”或“将未使用的应用置于休眠”，不要让 Fieldwatch 休眠。
+
+尽可能多地采集会增加耗电，完整步骤见用户手册 §4.5：
+  开启系统精确位置、Wi-Fi 和蓝牙；授予全部所需权限；
+  将电池设为不受限制且不让应用休眠；观测时保持屏幕常亮；使用默认的高性能扫描。
+  可选：关闭“开发者选项 → Wi-Fi 扫描节流”，再开启 Fieldwatch 的“加快 Wi-Fi AP 扫描”，
+  以便行车时约每 8 秒获取一批 AP。保留扫描通知；从最近任务划掉应用会结束采集。
+  手机可能发热。放入口袋或整夜运行时应改用省电模式。
+
+
+5. 界面内容
 ------------
-  Android Settings → Apps → Fieldwatch → Uninstall
-  Uninstall deletes logs and config. Copy a Share log / Debrief off the
-  phone first if you need them.
+
+实时
+  通过雷达、信号列表、时间线、混合视图或按类别显示，查看空中无线信号。
+  可调整每条列表记录的信息量。圆形图标表示设备类别，未匹配时显示“?”。
+  副标题前的小 Wi-Fi 或蓝牙图标表示接入点 / BLE 广播设备；不使用 AP / LE 字母标签，
+  也不会将该图标移到主标题。点击右上角调节图标打开“显示”，调整后可收起。
+
+  视图
+    雷达、信号列表、时间线、混合视图、按类别。
+    “按类别”的层级为：类别 A–Z → 特征 A–Z → 无线设备 → 详情。
+    “显示全部”保留空类别，“折叠空类别”隐藏数量为零的类别，相关选项随列表滚动。
+    设备记录使用与列表相同的显示开关和类别图标。
+    关注列表命中时，会播放已启用的提示音和 / 或语音，并展开对应类别与特征以突出显示记录。
+    距离足够近时，自动跳转会将相关标题保留在屏幕内。
+    雷达目标先闪烁，再保留荧光圆环；列表记录会在本次会话中保留荧光铃铛。
+
+  排序
+    最强信号、30 秒平均最强信号（默认）、最近接收、最新提醒、最新出现、
+    新设备置底、名称 A–Z（使用标题行）、特征优先。
+    排序只改变顺序，不隐藏设备。“新设备置底”将新记录放到末尾；
+    “最新提醒”将最近的关注命中置顶，并保留荧光铃铛。
+
+  短暂保留
+    可关闭，或在最后一个数据包后继续保留记录 10 / 30 / 60 秒。
+
+  标题行
+    广播名称、名称 + 类型、MAC（默认）。
+
+  副标题
+    与标题行相同，也可选“无”隐藏第二行；随机地址 / 已离开状态会移到标题行。
+    Wi-Fi 或蓝牙图标只位于副标题，不会移到标题。
+    默认“名称 + 类型”；未命名 BLE 会显示为“未命名”。
+
+  附加开关
+    RSSI 条、特征名称、频率（RSSI 下方的信道和 MHz）、首次 / 上次发现。
+
+  “筛选”决定显示哪些设备，“显示”决定每条记录显示多少信息。
+  制造商 / 厂商信息位于详情页。“Apple, Inc. · AirTag…”之类的副标题来自“名称 + 类型”
+  （其中类型是推测），IEEE 厂商请查看详情页。
+  在拥挤广场可将副标题设为“无”并关闭附加信息；默认第一行已经是 MAC，便于复制。
+  观测 Wi-Fi 信道时可开启频率。完整说明见用户手册 §5.3。
+  已在实时页时，再次点击“实时”可暂停画面；扫描和日志继续运行，恢复时仍应用筛选。
+  再次点击“实时”恢复列表。开启“仅新发现”后，页面会显示提示，
+  并在底部标签栏上方提供“标记已见 / 重置已见”。
+
+筛选
+  位于“实时”旁边，用于决定哪些设备出现。
+  顶部预设每行两个，点击会替换整套筛选；“将当前筛选另存为…”可保存命名副本。
+  默认预设：全部信号、仅 Wi-Fi、仅 BLE、强信号（−70 dBm）、随行、仅已关注。
+  “仅已关注”包括已关注的特征，以及开启提醒的命名设备。
+  摄像头、无人机、寻物标签、手机、电脑等类别位于下方；可选择“仅显示”，
+  再另存为命名预设。筛选只影响实时视图，匹配始终会标记。
+  “随行”位于“要显示的无线设备”下方，其下是“仅新发现”。
+  “仅特征匹配”“仅已关注”“仅命名设备”位于类别选项上方。
+  “仅已关注”仍受“隐藏这些”规则影响。
+  开启“随行”会开始 BLE 跟随检测，Wi-Fi AP 不参与，因为覆盖范围可能看起来像同行。
+  同时清除“仅特征匹配”“仅已关注”“仅命名设备”和类别的“仅显示”，避免这些筛选清空列表。
+  类别选项每行两个，与实时页使用相同图标。可选择“仅显示”或“隐藏这些”。
+  “仅显示”未选类别时不会隐藏未匹配设备；选中类别时“仅特征匹配”自动开启并变灰。
+  “隐藏这些”保留未匹配设备，此时“仅特征匹配”仍可独立切换。
+  “隐藏所选”可隐藏某个系列（例如包里的 AirTag）；“仅显示所选”只保留选中的系列。
+  “隐藏 Fast Pair 账户密钥”（位于“仅命名设备”下）会移除只匹配到已配对 Fast Pair 的记录；
+  配对模式仍保留，并显示“Fast Pair 配对”。商场内大量未命名 Fast Pair 是环境背景，
+  不是 Android 身份。详见用户手册 §9.5。
+  长按预设可删除。默认预设删除后，只有“恢复默认特征库和预设”才能恢复。
+  “重置筛选”清空本页条件。详见用户手册 §8.4。
+
+特征库
+  保存带名称的匹配规则。圆形图标表示类别，与实时 / 筛选页一致。
+  排序可选名称 A–Z（默认）或类别 A–Z；类别初始折叠，点击后展开特征。
+  每个默认特征命中后都会标记。关注表示为命中启用提示音和 / 或类别语音。
+  可在筛选页按类别“隐藏这些”，或“隐藏所选”，减少嘈杂系列。
+  以下默认特征附带重点关注文字（实时页的“!”和详情卡片）并已关注：
+    随身摄像头、摄像眼镜、可穿戴录音设备、渗透测试工具、公共安全车载 AP，
+    路侧 / 公共摄像头和车牌识别设备（Flock、Penguin、Pigvision、FS Ext Battery、
+    Genetec AutoVu、Rekor、Motorola Vigilant、Verkada、Avigilon、Axis、Hikvision、
+    Dahua、Hanwha Wisenet、Uniview、Rhombus），以及 GhostESP / Bruce。
+  Tesla、耳机、UniFi Protect、BlueTOAD Spectra、BlipTrack 和门禁锁默认不含这些提醒。
+  如果某条自定义或旧版特征因通用模块 OUI 产生过多命中，可取消关注。
+  当前 Flock 特征已将 LiteOn 等模块前缀拆分为独立摄像头无线模块特征。
+  UniFi AP 仅匹配 Wi-Fi（Ubiquiti OUI 和出厂 SSID），属于“运营商 / 路由器”。
+  独立的 UniFi 条目可匹配任一无线类型的广播名称，类别相同。
+  UniFi Protect Instant 摄像头仍属于“监控设备”。
+  园区 AP（Meraki、Cisco、Aruba、Ruckus、Ruijie、Fortinet、Mist、Sophos、
+  Extreme、Edgecore、WatchGuard AP、Mojo）属于“运营商 / 路由器”，不属于监控设备。
+  同时携带 Cisco 厂商 IE 的 Meraki BSSID 只保留 Meraki 标签。
+  DWnet / WAVLINK / GL.iNet 94:83:C4 同样属于运营商类。
+  未匹配的 Wi-Fi 常见于家庭网络名称、车载热点或随机 BSSID，不一定是遗漏的园区 AP。
+  Roku 隐藏 Wi-Fi Direct 遥控 AP 通过厂商 IE C8:3A:6B 匹配“家庭物联网”。
+  Franklin RG3100* / OUI 50:FB:FF 属于运营商 / 路由器（运营商 5G 网关）。
+  Samsung [fridge]* / [oven]* 和 EcoWater H2O-xxxxxxxxxxxx 属于家庭物联网。
+  编辑器中每条规则都有独立开关。
+  BLE 条目可配置“解码字段”。匹配特征后，详情页将明文广播字节映射为标签，
+  如 Ruuvi 温度、Remote ID 位置、GoPro 型号等。加密广播仍显示十六进制，不进行配对。
+  根据载荷规范填写映射的方法见用户手册 §9.6.1–§9.6.5，默认映射见 §9.6.6。
+
+  默认类别颜色（每个条目都可以修改）：
+    红色：渗透测试 / 廉价串口模块，包括 GhostESP / Bruce。
+    绿色：Mesh / LoRa，如 Meshtastic、MeshCore、Helium、goTenna、SenseCAP、RAK。
+    琥珀色：摄像头 / 车牌识别 / 市政设备 / UniFi Protect / BlueTOAD / BlipTrack / DJI。
+    紫色：手机 / Find My，如 Apple Device、Fast Pair、AirTags、Chipolo、Google。
+    青色：可穿戴追踪设备 / 信标，如 SmartTag、Tile、iBeacon、Target Atrius 购物篮、Minew。
+    橙色：眼镜和音频设备；颜色相同，类别不同。
+    蓝绿色：公共安全（随身摄像头 / 公共安全 AP）和车辆；颜色相同，类别不同。
+      公共安全类设备常用于执法，但并非执法专用；政府、市政及企业车队也可能使用相同装备。
+    银色：消费级摄像头（Wyze / Ring / GoPro / Osmo / Insta360）、家庭物联网、
+      运营商 Wi-Fi、温控器、Tuya、门禁、零售标牌及旧版未知特征。
+  未匹配设备按 RSSI 着色，不按类别。完整特征库见用户手册 §9.5 和附录 B。
+
+报告
+  包含轨迹、观测总结、观测导出、对比、AI 导出、特征候选及日志导出。
+  日志格式：CSV、JSON Lines、GPX（GPS 交换格式）、KML（Google Earth）、
+  WiGLE CSV（wigle.net）；可选两者、仅 Wi-Fi 或仅 BLE，也可重置 / 清除日志。
+  选中的观测决定轨迹、观测总结、观测导出及对比中“本次观测”的数据。
+  观测导出：选定时段中每个独立无线设备一条记录，命名观测上限 6000 个，
+  最近 15 分钟内存数据约 400 个。无需开启日志；GPX / KML 包含本手机的轨迹。
+  日志导出：滚动会话文件，包含启用日志期间的每次接收。清除日志不会删除观测。
+  Fieldwatch 不上传文件。观测总结 / 对比 / 轨迹 / GPX / KML 使用自定义设备名；
+  WiGLE 仍保留广播 SSID。“观测备注”位于观测总结的“所在地点”之后，
+  或对比报告的“观测时段”之后。
+  对比观测：本次观测（与观测总结相同）对比第二次已保存观测。
+  仅比较出现情况，以类型 + MAC 区分，并标出重点关注。
+  最近 15 分钟与命名观测统计范围不同（内存约 400，命名观测 6000）。
+  对比的 AI 导出生成补充分析（重合率、单次出现的重点关注 / 命名设备 / 观测备注），
+  不重复设备清单。观测报告的 AI 导出仍只针对当前时段。
+  未选择命名观测时，观测总结使用内存中最近 15 分钟数据，约 400 个无线设备，
+  不读取日志。未命名 BLE 约 3 分钟后移除，命名设备约保留 15 分钟。
+  行车时可每 10–15 分钟或在停留点生成总结；持续随行设备会在各报告中继续出现，
+  已经过的路侧背景设备则不会一直保留。
+  特征候选从滚动日志中查找未匹配系列，例如至少两个无线设备共享名称通配模式、
+  厂商 IE、UUID 或 OUI。创建特征会生成带共同规则的草稿，不固定单个 MAC；
+  保存后返回特征库。分享日志导出完整文件。
+  GPS 同行分析分为寻物标签（可能随行的追踪器 / 可能尾随）、零售信标和可穿戴设备。
+  观测 AI 导出用于补充变化速率、重点关注和追踪标识分析，不再列一份设备清单。
+  日志开关和 GPS 位置标记仍位于“设置”。
+
+设置
+  扫描强度、加快 Wi-Fi AP 扫描、GPS 位置标记、在线地名和地图、保持屏幕常亮、
+  日志开关及轮换大小、关注列表、命名设备（自定义名称 + 观测备注）。
+  滚动日志文件为 JSON Lines；导出格式在“报告 → 日志导出”选择。
+  页脚显示 Fieldwatch 版本和特征库版本。
+  “从 GitHub 更新默认特征库”需要网络，会替换默认条目及重点关注说明，保留关注状态。
+  上游特征库可能包含英文说明；离线可使用“导入特征库”。
+  GPS 位置标记、在线地名和地图、保持屏幕常亮、关注提醒、提示音默认开启。
+  当前版本的“关注特征语音提醒”也默认开启，默认播报“类别 + 特征”。
+  提示音与语音互相独立，可以只响一声、只播报或同时启用。
+  开启语音后，“播报内容”可选类别、特征、类别 + 特征。
+  类别如寻物标签、音频；特征是特征库条目名称，如 Apple AirTags、Axon。
+  这不是信号追踪提示音。“测试提醒”播放当前启用的内容。
+  自动跳转适用于提示音、语音或两者同时开启的情况。
+  “加快 Wi-Fi AP 扫描”默认关闭。先关闭系统“开发者选项 → Wi-Fi 扫描节流”，
+  再开启应用开关（Android 11+；Fieldwatch 会先检查系统标志）。
+  这样约每 8 秒而非约 30 秒获取一批 AP，行车时更有机会捕获已知特征 AP
+  （IBR*、AirLink、UniFi、Cisco、隐藏的车队 MAC）。
+  隐私模式默认关闭。开启后，屏幕、观测总结、AI 导出及设备详情文字分享中的
+  MAC 最后三个字节显示为 **:**:**，GPS 上次定位及观测报告坐标显示为“已隐藏”，
+  街道名称被省略，TAK / CoT 发送暂停。日志仍保留完整数据。
+  地图瓦片由“在线地名和地图”控制；当前版本的隐私模式不会隐藏这些地图。
+  列表显示方式仅在“实时 → 显示”调整，不在设置页。
+
+详情
+  点击实时记录进入。右上角关注按钮关注此 MAC，直到手动关闭；设备离开后也不会取消。
+  若匹配特征带有重点关注文字，将显示对应卡片。
+  可以“以文字分享”，也可 AI 导出针对这个无线设备的分析提示。
+  BLE 匹配到解码映射时显示解码字段，如温度 / 型号 / Remote ID（手册 §9.6）。
+  已保存的自定义名称作为大标题，广播名称以较小文字显示。
+  青色观测备注位于名称下方。BLE 随机 / 隐私 MAC 不提供自定义名称与备注编辑。
+  BLE 的“信号追踪”根据强弱变化提示更近或更远；“您”周围的圆环会相应收缩或扩大。
+  信号约达到 −45 dBm 或更强时提示“非常近”。
+  底部提示音 / 振动默认关闭，开启后会随 RSSI 增强而加快，但不能换算为米。
+  可选：将手机贴近胸前，用身体遮挡一侧并缓慢转身。
+  信号较强的朝向可作为粗略候选方向，然后移动观察。
+  墙壁和金属会改变 RSSI，即使实际距离没有变化。详见手册 §12.8 / §12.13。
+
+Wi-Fi 记录仅包含接入点：路由器、热点、Mesh 节点、手机热点。
+使用 Wi-Fi 但没有广播网络的手机不会出现。
+默认第一行是 MAC，第二行以 Wi-Fi 或蓝牙图标开头，随后显示名称 + 类型
+（SSID、BLE 名称或推测类型）。右侧数字是 RSSI，单位 dBm。
+模式匹配不能证明身份。“随行”和观测总结的跟随分析属于基于信息的推测，不是法律结论。
 
 
-Limits
-------
-  • Stock Android: no Wi-Fi clients or probe-only stations, and no
-    802.11 monitor mode
-  • BLE advertisements only. No Bluetooth Classic inquiry (HC-05 / HC-06
-    will not appear)
-  • No cellular. Quiet or cellular-only camera poles may never appear
-  • No direction finding. RSSI is loudness, not distance
-  • Live holds about 400 radios (hard cap 900). Debrief reads that
-    same RAM, not the log. On a drive, tap Debrief more than once.
-  • Sideload build: not Play-signed, no auto-update
+6. 现场快速开始
+----------------
+  • 开始几分钟使用“设置 → 扫描强度 → 高性能”。
+    行车观测已知特征 AP 时，先关闭“开发者选项 → Wi-Fi 扫描节流”，
+    再开启“设置 → 加快 Wi-Fi AP 扫描”（手册 §7.1.1 / §10.3.1）。
+  • 实时页选择信号列表和全部信号，按任务调整显示。
+    人群中可隐藏副标题；Wi-Fi 观测可开启频率。
+  • 特征命中始终标记。在筛选页按类别“隐藏这些”或“隐藏所选”减少背景信息。
+    默认关注已涵盖随身摄像头、Meta / Snap 眼镜和渗透测试设备。
+    当前版本默认开启提示音和语音，可在设置中分别调整。
+    播报内容默认“类别 + 特征”，也可只选类别或特征。“测试提醒”播放当前内容，
+    与信号追踪无关。
+  • GPS 位置标记、保持屏幕常亮、在线地名和地图默认开启。
+    开启系统高精度定位，步行 / 驾车直至筛选页显示非零轨迹，再开启“随行”。
+    该筛选寻找信号较强且稳定的随行设备（包 / 车内标签，不是另一台 iPhone 的身份）。
+    移动后，“报告 → 观测总结”仍保留最近 15 分钟的追踪分析，
+    即使已离开该筛选，或切换到雷达 / 时间线。
+  • 观测房间：开启“筛选 → 仅新发现”，待环境成为基线后，在实时页点击“标记已见”。
+  • 点击实时记录，可文字分享、AI 导出，或对 BLE 进行信号追踪，根据信号强度移动。
+    身体遮挡并转向只能提供粗略候选朝向；墙壁、金属和楼层可能在距离不变时改变 RSSI。
+    不能换算为米。详见手册 §12.8 / §12.13。
+  • 查看未知追踪设备：在筛选页仅显示寻物标签，隐藏自有标签，
+    将手机靠近可能放置设备的位置（各车轮、保险杠、车厢）。
+    若某记录跃到顶部，可打开信号追踪并重复观察。
+    没有信号不代表区域已确认无设备。详见 §12.8。
+    若要查看某设备是否持续随行，即使已离开寻物标签筛选，
+    观测总结仍包含最近 15 分钟的相关检测。
+  • 约每 15 分钟，或行车途中每个停留点，生成“观测总结（文字）”或“观测总结（PDF）”。
+    保存这些分享文件；每份只覆盖对应时段，并非整段行程。
+    城市环境中几千米内可能填满约 400 个实时设备，未命名 BLE 约 3 分钟后就会移除。
+    持续随行的设备（包内标签、汽车胎压传感器、被放置的追踪器）会被持续接收，
+    因而保留到下一份总结。AI 导出包含设备内观测总结和工作数据，
+    请求聊天模型补充统计分析，不重写原报告。
+    开启在线地名和地图且手机联网时，报告可包含街道名；隐私模式会省略它们。
+    实时视图与筛选不改变观测总结。“分享日志”和“保存到 SD 卡”在同一标签页。
+  • 完整的事后记录：使用“报告 → 分享日志”，采集时必须已开启日志。
+    开启 GPS 标记后，新日志包含 lat,lon（接收时手机的位置）；
+    新 Wi-Fi 记录还包含 vendor_ie（以竖线分隔的厂商 IE OUI）。
+    需要已被 15 分钟观测总结丢弃的记录时，使用日志。
+  • 日志中的未匹配系列：使用“报告 → 特征候选”。
+    它寻找至少两个无线设备共享的名称通配模式、厂商 IE 或 OUI。
+    创建特征并保存，并非每个未知设备都能成为候选。
+    厂商 IE 系列需要包含相应数据的日志记录。
 
-Read Fieldwatch_User_Manual.pdf for install / permissions / max collection (§4, §4.5),
-Live Display (Sort, Title/Subtitle, extras, §5.3),
-filter presets (§8.4), the stock catalog and class colors (§9.5, Appendix B),
-Decode fields (how to type a map §9.6.1–§9.6.5, stock maps §9.6.6),
-alerts / stock bookmarks / voice (§10.1–10.2.1), logging (JSON lines on disk; CSV / GPX / KML / WiGLE on Share: lat,lon, vendor_ie, §11.2–11.3),
-Signature candidates (§5.6.4, §11.5), Moving with you, New detections only,
-Field Playbooks, Debrief / AI Export (sit-level and one-radio on detail;
-RAM window and trip strategy §11.4.1).
+关于步行随行、房间新增设备、BLE 信号追踪、隐藏背景、摄像头观测、重点关注、
+渗透测试设备和读卡器提示，以及对应报告入口，请参阅用户手册第 12 章“现场操作指南”。
+
+
+7. 卸载
+--------
+  Android 设置 → 应用 → Fieldwatch → 卸载。
+  卸载会删除日志和配置。需要保留时，请先将分享日志或观测总结保存到手机之外。
+
+
+能力限制
+--------
+  • 原生 Android：无法捕获 Wi-Fi 客户端或仅发出探测请求的终端，不支持 802.11 监听模式。
+  • 仅接收 BLE 广播，不执行经典蓝牙查询；HC-05 / HC-06 不会出现。
+  • 不监听蜂窝网络。静默或仅使用蜂窝网络的摄像头杆可能始终不出现。
+  • 不进行无线测向。RSSI 是信号强度，不是距离。
+  • 实时列表通常保留约 400 个无线设备（硬上限 900）。
+    未选择命名观测时，观测总结读取同一份内存数据，不读取日志；行车时应多次生成总结。
+  • 侧载版本未经 Play 签名，不会自动更新。
+
+进一步阅读 Fieldwatch_User_Manual.pdf：
+  安装、权限、最大化采集：§4、§4.5。
+  实时显示（排序、标题 / 副标题、附加信息）：§5.3。
+  筛选预设：§8.4；默认特征库及类别颜色：§9.5、附录 B。
+  解码字段：映射填写 §9.6.1–§9.6.5，默认映射 §9.6.6。
+  提醒、默认关注与语音：§10.1–§10.2.1。
+  日志：磁盘上为 JSON Lines；分享为 CSV / GPX / KML / WiGLE，
+    包含 lat,lon、vendor_ie，见 §11.2–§11.3。
+  特征候选：§5.6.4、§11.5；以及随行、仅新发现和现场操作指南。
+  观测总结 / AI 导出包括观测级及详情页单设备分析；内存时段与行程策略见 §11.4.1。
 
 Off Grid Pete LLC    Instagram @OffGridPete    X @OGridPete
-Copyright (c) 2026 Off Grid Pete LLC. All rights reserved.
+版权所有 (c) 2026 Off Grid Pete LLC。保留所有权利。

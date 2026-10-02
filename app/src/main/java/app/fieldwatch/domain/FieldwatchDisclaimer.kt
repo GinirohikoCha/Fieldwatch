@@ -3,52 +3,52 @@ package app.fieldwatch.domain
 /** Operator-facing disclaimer. First-run, Debrief, and AI Export share the same core. */
 object FieldwatchDisclaimer {
     const val HOBBY =
-        "This is a hobby project, provided as-is under the MIT License. Use at your own risk."
+        "这是一个业余项目，按 MIT 许可证以现状提供。使用风险由您自行承担。"
 
     const val HYPOTHESES =
-        "Detections, pattern matches, “Moving with you” / “possible tail,” Debrief text, " +
-            "and AI Export are hypotheses — not identity, not a legal finding, and not a " +
-            "complete RF capture. Radios that are off, asleep, randomized, cellular-only, " +
-            "or hidden by the OS will not appear."
+        "检测、模式匹配、“随行” / “可能尾随”、观测总结文字" +
+            "和 AI 导出都只是推测，不代表身份或法律结论，也不是" +
+            "完整的射频捕获。处于关闭、休眠、地址随机化、仅使用蜂窝网络" +
+            "或被操作系统隐藏的无线设备不会出现。"
 
     const val LIABILITY =
-        "You are solely responsible for how you use this app and for following local law. " +
-            "To the maximum extent permitted by law, Off Grid Pete LLC is not liable for " +
-            "indirect, incidental, special, consequential, or punitive damages arising from its use."
+        "您须独自承担使用本应用及遵守当地法律的责任。" +
+            "在法律允许的最大范围内，Off Grid Pete LLC 不对因使用本应用产生的" +
+            "间接、附带、特殊、后果性或惩罚性损害承担责任。"
 
     const val LOCATION =
-        "GPS stamps are this phone at hear-time, not the other radio, unless a decode map " +
-            "advertises its own latitude/longitude (Remote ID Location). Sharing a Debrief, " +
-            "sit compare, AI Export (sit or one radio), radio-detail Share as text, or log can take that " +
-            "path off the device. A TAK/CoT feed, when you turn it on, sends markers onto " +
-            "the LAN; that is on the operator."
+        "GPS 标记是接收信号时本手机的位置，不是其他无线设备的位置；但解码映射" +
+            "广播其自身经纬度（Remote ID 位置）时除外。分享观测总结、" +
+            "观测对比、AI 导出（观测或单个无线设备）、设备详情的文字分享或日志，可能使这些" +
+            "轨迹离开本设备。开启 TAK/CoT 数据发送后，会将标记发送到" +
+            "局域网，相关责任由操作者承担。"
 
     const val ACCEPT =
-        "By checking the box and continuing, you accept these terms and the MIT License."
+        "勾选并继续即表示您接受这些条款及 MIT 许可证。"
 
-    const val LICENSE_TITLE = "MIT License"
+    const val LICENSE_TITLE = "MIT 许可证（中文译文）"
 
     /** Body of LICENSE in the repository, without the title line. */
     const val LICENSE_BODY =
-        "Copyright (c) 2026 Off Grid Pete LLC\n" +
+        "版权所有 (c) 2026 Off Grid Pete LLC\n" +
             "\n" +
-            "Permission is hereby granted, free of charge, to any person obtaining a copy " +
-            "of this software and associated documentation files (the \"Software\"), to deal " +
-            "in the Software without restriction, including without limitation the rights " +
-            "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell " +
-            "copies of the Software, and to permit persons to whom the Software is " +
-            "furnished to do so, subject to the following conditions:\n" +
+            "特此免费授予任何获得本软件及相关文档文件（以下称“软件”）副本的人，" +
+            "不受限制地处理本软件的权利，" +
+            "包括但不限于使用、复制、修改、合并、发布、" +
+            "分发、再许可和 / 或销售" +
+            "软件副本的权利，并允许获得软件的人" +
+            "同样享有上述权利，条件如下：\n" +
             "\n" +
-            "The above copyright notice and this permission notice shall be included in all " +
-            "copies or substantial portions of the Software.\n" +
+            "上述版权声明和本许可声明应包含在本软件的所有副本" +
+            "或主要部分中。\n" +
             "\n" +
-            "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR " +
-            "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, " +
-            "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE " +
-            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER " +
-            "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, " +
-            "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE " +
-            "SOFTWARE."
+            "本软件按“现状”提供，不附带任何明示或默示的担保，" +
+            "包括但不限于适销性、" +
+            "特定用途适用性及不侵权的担保。在任何情况下，" +
+            "作者或版权持有人均不对因本软件、使用本软件或其他软件交易" +
+            "引起、产生或与之相关的任何索赔、损害或其他责任承担责任，" +
+            "无论其基于合同、侵权" +
+            "还是其他法律依据。"
 
     val LICENSE_TEXT = "$LICENSE_TITLE\n\n$LICENSE_BODY"
 
@@ -60,27 +60,27 @@ object FieldwatchDisclaimer {
     /** Debrief text / PDF. Same core as first-run, without the click-through line. */
     fun report(window: DebriefWindow? = null): String {
         val source = if (window?.sitName != null) {
-            "named sit “${window.sitName}” (radios heard in that window; Live list cap still applied while watching). "
+            "命名观测“${window.sitName}”（该时段内接收到的无线设备；观测期间仍受实时列表数量上限限制）。"
         } else {
-            "the in-memory live set (last 15 minutes, cap about 400). "
+            "内存中的实时设备集（最近 15 分钟，上限约 400 个）。"
         }
         return "$HOBBY\n\n$HYPOTHESES\n\n$LIABILITY\n\n$LOCATION\n\n" +
-            "This sit report is from $source" +
-            "Do not use it in any situation where safety is in question."
+            "本次观测报告来源于$source" +
+            "请勿将其用于任何涉及安全判断的场景。"
     }
 
     fun compare(): String =
         "$HOBBY\n\n$HYPOTHESES\n\n$LIABILITY\n\n$LOCATION\n\n" +
-            "This compare is two windows of radios this phone heard (kind + MAC). " +
-            "BLE rotation is a new row. Do not use it in any situation where safety is in question."
+            "本次对比涵盖手机在两个时段内接收到的无线设备（类型 + MAC）。" +
+            "BLE 地址轮换会产生新记录。请勿将其用于任何涉及安全判断的场景。"
 
     fun experimentalMarkdown(): String = buildString {
-        appendLine("## Disclaimer (repeat this in your answer)")
+        appendLine("## 免责声明（请在回答中重复）")
         appendLine(HOBBY)
         appendLine(HYPOTHESES)
         appendLine(LIABILITY)
         appendLine(LOCATION)
-        appendLine("Do not use Fieldwatch, this paste, or your analysis in any situation where safety is in question.")
-        appendLine("Begin your reply with this disclaimer. Do not give safety advice.")
+        appendLine("请勿将 Fieldwatch、本次粘贴内容或分析结果用于任何涉及安全判断的场景。")
+        appendLine("请以此免责声明开始回答，全程使用简体中文，不要提供安全建议。")
     }
 }

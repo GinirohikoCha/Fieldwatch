@@ -135,7 +135,7 @@ class ConfigStore(context: Context) {
 
     suspend fun overlayStockCatalog(pack: SignaturePack): StockCatalogUpdateResult = mutex.withLock {
         if (pack.catalogVersion <= 0) {
-            return@withLock StockCatalogUpdateResult(error = "This pack has no catalog version.")
+            return@withLock StockCatalogUpdateResult(error = "此包缺少特征库版本。")
         }
         val local = _config.value
         if (pack.catalogVersion <= local.version) {

@@ -200,11 +200,11 @@ class Alerter(private val context: Context) {
         )
         val note = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_fieldwatch)
-            .setContentTitle("Fieldwatch watchlist")
+            .setContentTitle("Fieldwatch 关注列表")
             .setContentText("$label  ${device.rssi} dBm  ${MacUtil.screenMac(device.mac, demoMode)}")
             .setStyle(
                 NotificationCompat.BigTextStyle().bigText(
-                    "$label appeared\n${device.kind}  ${MacUtil.screenMac(device.mac, demoMode)}\n${device.rssi} dBm  ${MacUtil.redactMacIn(device.displayName, device.mac, demoMode)}",
+                    "发现 $label\n${device.kind}  ${MacUtil.screenMac(device.mac, demoMode)}\n${device.rssi} dBm  ${MacUtil.redactMacIn(device.displayName, device.mac, demoMode)}",
                 ),
             )
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -409,11 +409,12 @@ class Alerter(private val context: Context) {
                     .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                     .build(),
             )
-            runCatching {
-                val lang = engine.setLanguage(Locale.getDefault())
-                if (lang == TextToSpeech.LANG_MISSING_DATA || lang == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    engine.language = Locale.US
-                }
+            ttsReady = runCatching {
+                engine.setLanguage(Locale.SIMPLIFIED_CHINESE) >= TextToSpeech.LANG_AVAILABLE
+            }.getOrDefault(false)
+            if (!ttsReady) {
+                pendingSpeak = null
+                return@TextToSpeech
             }
             engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String?) {
@@ -497,8 +498,8 @@ class Alerter(private val context: Context) {
         runCatching { manager.deleteNotificationChannel("fieldwatch_watch_v2") }
         if (manager.getNotificationChannel(CHANNEL) != null) return
         manager.createNotificationChannel(
-            NotificationChannel(CHANNEL, "Watchlist", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "Appearing signatures and devices on your watchlist. Beep is played separately."
+            NotificationChannel(CHANNEL, "关注列表", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "关注列表中特征和设备的出现提醒。提示音单独播放。"
                 enableVibration(true)
                 enableLights(true)
                 setSound(null, null)

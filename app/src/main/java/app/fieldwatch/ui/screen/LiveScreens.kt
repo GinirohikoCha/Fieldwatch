@@ -132,7 +132,7 @@ fun LivePane(
     Column(Modifier.fillMaxSize()) {
         if (state.displayPaused) {
             Text(
-                "Display paused · radios still scanning and logging. Filters still apply when you run again. Tap Live to run the list again.",
+                "显示已暂停 · 无线扫描和日志仍在运行。恢复后仍应用当前筛选。点按“实时”恢复列表。",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
@@ -141,9 +141,9 @@ fun LivePane(
         if (state.filter.arrivalsOnly) {
             Text(
                 when {
-                    state.arrivalsLearning -> "New only · learning sitting Wi-Fi"
-                    state.hiddenKnown > 0 -> "New only · ${state.hiddenKnown} hidden"
-                    else -> "New only"
+                    state.arrivalsLearning -> "仅新设备 · 正在学习现有 Wi-Fi"
+                    state.hiddenKnown > 0 -> "仅新设备 · 已隐藏 ${state.hiddenKnown} 个"
+                    else -> "仅新设备"
                 },
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -152,7 +152,7 @@ fun LivePane(
         }
         if (state.filter.movingWithYou) {
             Text(
-                "Follow · path ${state.operatorSpanM.toInt()} m · Start over clears the path",
+                "随行 · 轨迹 ${state.operatorSpanM.toInt()} 米 · “重新开始”可清除轨迹",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
@@ -160,7 +160,7 @@ fun LivePane(
         }
         if (state.filter.watchedOnly) {
             Text(
-                "Watched only",
+                "仅已关注",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
@@ -168,7 +168,7 @@ fun LivePane(
         }
         if (state.filter.customNamesOnly) {
             Text(
-                "Named radios only",
+                "仅命名设备",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
@@ -179,8 +179,8 @@ fun LivePane(
             val now = System.currentTimeMillis()
             val dur = Sit.fmtDuration(openSit.durationMs(now))
             val cap = when {
-                state.sit.memoryTight -> " · memory cap"
-                state.sit.atCap -> " · ${Sit.RADIO_CAP} cap"
+                state.sit.memoryTight -> " · 已达内存上限"
+                state.sit.atCap -> " · 上限 ${Sit.RADIO_CAP} 个"
                 else -> ""
             }
             Row(
@@ -190,7 +190,7 @@ fun LivePane(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "Sit · ${openSit.name} · $dur · ${state.sit.radioCount} radios$cap",
+                    "观测 · ${openSit.name} · $dur · ${state.sit.radioCount} 个无线设备$cap",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
@@ -207,12 +207,12 @@ fun LivePane(
         if (renameSit && openSit != null) {
             AlertDialog(
                 onDismissRequest = { renameSit = false },
-                title = { Text("Rename sit") },
+                title = { Text("重命名观测") },
                 text = {
                     FieldwatchOutlinedField(
                         value = renameDraft,
                         onValueChange = { renameDraft = it.take(Sit.NAME_MAX) },
-                        label = "Name",
+                        label = "名称",
                     )
                 },
                 confirmButton = {
@@ -221,10 +221,10 @@ fun LivePane(
                             renameSit = false
                             vm.renameSit(openSit.id, renameDraft)
                         },
-                    ) { Text("Save") }
+                    ) { Text("保存") }
                 },
                 dismissButton = {
-                    TextButton(onClick = { renameSit = false }) { Text("Cancel") }
+                    TextButton(onClick = { renameSit = false }) { Text("取消") }
                 },
             )
         }
@@ -252,32 +252,32 @@ private fun arrivalsEmpty(state: FieldwatchUi): String? {
     if (state.filter.movingWithYou) {
         return when {
             !state.settings.tagLocation ->
-                "Moving with you needs Settings → Tag detections with GPS, then a walk or drive."
+                "使用“随行”前，请在“设置”中开启“为探测结果添加 GPS 标记”，然后步行或驾车移动。"
             state.operatorSpanM < 45.0 ->
-                "GPS path ${state.operatorSpanM.toInt()} m — too short. Keep moving. " +
-                    "If this stays 0, Location is not updating (use high accuracy)."
+                "GPS 轨迹 ${state.operatorSpanM.toInt()} 米 — 距离太短，请继续移动。" +
+                    "若一直为 0，说明定位未更新，请使用高精度定位。"
             state.filter.customNamesOnly || state.filter.watchedOnly ||
                 state.filter.namedOnly || state.filter.namedOnlyImplied() ->
-                "No loud BLE has stayed with you among the radios still allowed. " +
-                    "Tap the Moving with you preset to test BLE, or turn off Signatures only / Show only / Named radios only / Watched only."
+                "当前筛选允许的设备中，没有持续随行的强信号 BLE。" +
+                    "点按“随行”预设以检测 BLE，或关闭“仅匹配特征／仅显示／仅命名设备／仅已关注”。"
             else ->
-                "No loud BLE has stayed with you along this path. Wi-Fi access points stay hidden. A tag in your bag or car should show. Find My MAC rotation will not stitch."
+                "此轨迹上没有持续随行的强信号 BLE。Wi-Fi 接入点保持隐藏。包内或车内的标签应会显示。“查找”设备轮换 MAC 后不会合并为同一设备。"
         }
     }
     if (state.filter.arrivalsOnly) {
         return when {
-            state.arrivalsLearning -> "Hiding sitting access points until the next Wi-Fi scan. New Bluetooth still shows right away."
+            state.arrivalsLearning -> "在下次 Wi-Fi 扫描前隐藏现有接入点。新的蓝牙设备仍会立即显示。"
             state.hiddenKnown > 0 ->
-                "${state.hiddenKnown} already seen are hidden. A new radio stays while we hear it, then at least as long as Brief hold after the last packet."
+                "已隐藏 ${state.hiddenKnown} 个已见设备。接收期间持续显示新设备，最后数据包之后至少保留“短暂保留”设定的时间。"
             else ->
-                "Waiting for a new Wi-Fi or BLE radio. It stays while we hear it, then at least as long as Brief hold after the last packet."
+                "正在等待新的 Wi-Fi 或 BLE 设备。接收期间持续显示，最后数据包之后至少保留“短暂保留”设定的时间。"
         }
     }
     if (state.filter.watchedOnly) {
-        return "No watched radios on the air. Bookmark a signature, turn Alert on a Named radio, or turn off Filters → Watched only."
+        return "当前没有已关注设备在广播。请关注特征、为命名设备开启警报，或关闭“筛选 → 仅已关注”。"
     }
     if (state.filter.customNamesOnly) {
-        return "No named radios on the air. Set a custom name on detail, or turn off Filters → Named radios only."
+        return "当前没有命名设备在广播。请在详情中设置自定义名称，或关闭“筛选 → 仅命名设备”。"
     }
     return null
 }
@@ -356,13 +356,13 @@ private fun ClassOutlineView(
                 FieldwatchFilterChip(
                     selected = !hideEmpty,
                     onClick = { vm.updateSettings { it.copy(outlineHideEmpty = false) } },
-                    label = { Text("Show all") },
+                    label = { Text("显示全部") },
                     modifier = Modifier.weight(1f),
                 )
                 FieldwatchFilterChip(
                     selected = hideEmpty,
                     onClick = { vm.updateSettings { it.copy(outlineHideEmpty = true) } },
-                    label = { Text("Collapse empty") },
+                    label = { Text("收起空类别") },
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -371,7 +371,7 @@ private fun ClassOutlineView(
             item {
                 Text(
                     emptyHint
-                        ?: "No live emitters match the current filter. If this just emptied, the OS may be between scan windows — the last set is held and should return without a burst.",
+                        ?: "没有符合当前筛选的实时设备。如果列表刚刚清空，系统可能正处于两次扫描之间；上次结果会保留，恢复时不会集中弹出警报。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(24.dp),
@@ -382,10 +382,10 @@ private fun ClassOutlineView(
         item(key = "outline-summary") {
             val hidden = slices.count { it.radios.isEmpty() }
             val summary = buildString {
-                append("${devices.size} radios")
-                if (unmatched > 0) append(" · $unmatched unmatched")
-                if (multi > 0) append(" · $multi in more than one class")
-                if (hideEmpty && hidden > 0) append(" · $hidden empty hidden")
+                append("${devices.size} 个无线设备")
+                if (unmatched > 0) append(" · $unmatched 个未匹配")
+                if (multi > 0) append(" · $multi 个属于多个类别")
+                if (hideEmpty && hidden > 0) append(" · 已隐藏 $hidden 个空类别")
             }
             Text(
                 summary,
@@ -400,9 +400,9 @@ private fun ClassOutlineView(
                     count = slice.radios.size,
                     subtitle = when {
                         slice.radios.isEmpty() -> null
-                        slice.kind == null -> "no signature"
+                        slice.kind == null -> "无匹配特征"
                         slice.signatures.size == 1 -> vm.fleetName(slice.signatures.first().fleetId)
-                        else -> "${slice.signatures.size} signatures"
+                        else -> "${slice.signatures.size} 个特征"
                     },
                     accent = slice.accent(vm).nightIf(LocalNightMode.current),
                     expanded = slice.id in openClasses,
@@ -891,7 +891,7 @@ private fun RadarView(
 
             drawCircle(youColor, radius = 7f, center = c)
             drawCircle(youColor.copy(alpha = 0.2f), radius = 16f, center = c)
-            val you = measurer.measure("YOU", ringStyle.copy(color = youColor, fontWeight = FontWeight.Bold))
+            val you = measurer.measure("你", ringStyle.copy(color = youColor, fontWeight = FontWeight.Bold))
             drawText(you, topLeft = Offset(c.x - you.size.width / 2f, c.y + 12f))
         }
 
@@ -902,14 +902,14 @@ private fun RadarView(
         ) {
             Text(
                 if (devices.isEmpty()) {
-                    emptyHint ?: "No devices match the current filter"
+                    emptyHint ?: "没有符合当前筛选的设备"
                 } else {
                     val zoomBit = if (zoom > 1.04f) {
-                        " · ×${"%.1f".format(Locale.US, zoom)} · double-tap reset"
+                        " · ×${"%.1f".format(Locale.US, zoom)} · 双击重置"
                     } else {
-                        " · pinch to zoom"
+                        " · 双指缩放"
                     }
-                    "$onAir on-air · ${devices.size} in filter · dim = gone · tap a blip$zoomBit"
+                    "$onAir 个正在广播 · 筛选内 ${devices.size} 个 · 暗色表示已离开 · 点按光点$zoomBit"
                 },
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1075,7 +1075,7 @@ private fun RankedList(
             item {
                 Text(
                     emptyHint
-                        ?: "No live emitters match the current filter. If this just emptied, the OS may be between scan windows — the last set is held and should return without a burst. Use Timeline for recent disappearances.",
+                        ?: "没有符合当前筛选的实时设备。如果列表刚刚清空，系统可能正处于两次扫描之间；上次结果会保留，恢复时不会集中弹出警报。可在时间线中查看最近消失的设备。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(24.dp),
@@ -1200,13 +1200,13 @@ fun DeviceRow(
                     if (showNewAge) {
                         val ageSec = ((now - device.firstSeen) / 1000L).coerceAtLeast(0L)
                         Text(
-                            if (ageSec < 60L) "new ${ageSec}s" else "new ${ageSec / 60L}m",
+                            if (ageSec < 60L) "新发现 ${ageSec} 秒" else "新发现 ${ageSec / 60L} 分钟",
                             style = compactLine(10.sp, 11.sp).copy(fontFamily = FontFamily.Monospace),
                             color = MaterialTheme.colorScheme.primary,
                         )
                     } else if (sort == StrengthSort.AVERAGE) {
                         Text(
-                            "avg $rankRssi",
+                            "均值 $rankRssi",
                             style = compactLine(10.sp, 11.sp).copy(fontFamily = FontFamily.Monospace),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -1281,7 +1281,7 @@ private fun FleetNameChips(
             ) {
                 Icon(
                     Icons.AutoMirrored.Outlined.Notes,
-                    contentDescription = "Observer notes",
+                    contentDescription = "观测备注",
                     modifier = Modifier
                         .padding(horizontal = 5.dp, vertical = 1.dp)
                         .size(11.dp),
@@ -1297,7 +1297,7 @@ private fun FleetNameChips(
             ) {
                 Icon(
                     Icons.Outlined.Notifications,
-                    contentDescription = "Alerted this session",
+                    contentDescription = "本次会话已报警",
                     modifier = Modifier
                         .padding(horizontal = 5.dp, vertical = 1.dp)
                         .size(11.dp),
@@ -1413,7 +1413,7 @@ private fun TimelineView(
     ) {
         item {
             Text(
-                "Last 15 minutes · solid bars are on-air windows",
+                "最近 15 分钟 · 实心条表示广播时段",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -1549,7 +1549,7 @@ private fun listSubtitle(
     watchName: String? = null,
 ): String {
     val raw = MacUtil.redactMacIn(device.listLineText(subtitleLine, names, watchName), device.mac, demoMode)
-    val body = if (raw.equals("unnamed LE", ignoreCase = true)) "unnamed" else raw
+    val body = if (raw.equals("unnamed LE", ignoreCase = true)) "未命名" else raw
     val crumbs = device.statusCrumbs()
     return buildString {
         if (body.isNotEmpty()) append(body)
@@ -1561,7 +1561,7 @@ private fun listSubtitle(
 }
 
 private fun radioFactLine(device: Sighting): String? {
-    val ch = if (device.channel != 0) "ch${device.channel}" else null
+    val ch = if (device.channel != 0) "信道 ${device.channel}" else null
     val mhz = if (device.frequencyMhz != 0) "${device.frequencyMhz}MHz" else null
     return listOfNotNull(ch, mhz).takeIf { it.isNotEmpty() }?.joinToString(" · ")
 }
@@ -1569,23 +1569,23 @@ private fun radioFactLine(device: Sighting): String? {
 private fun seenTimesLabel(device: Sighting, now: Long): String {
     val first = formatAge(now - device.firstSeen)
     val lastMs = now - device.lastSeen
-    val last = if (lastMs < 1_000L) "now" else formatAge(lastMs)
-    return "first $first  ·  last $last"
+    val last = if (lastMs < 1_000L) "现在" else formatAge(lastMs)
+    return "首次 $first  ·  末次 $last"
 }
 
 private fun formatAge(ms: Long): String {
     val sec = (ms / 1000L).coerceAtLeast(0L)
     return when {
-        sec < 60L -> "${sec}s"
+        sec < 60L -> "${sec} 秒"
         sec < 3600L -> {
             val m = sec / 60L
             val s = sec % 60L
-            if (s == 0L) "${m}m" else "${m}m ${s}s"
+            if (s == 0L) "${m} 分钟" else "${m} 分 ${s} 秒"
         }
         else -> {
             val h = sec / 3600L
             val m = (sec % 3600L) / 60L
-            if (m == 0L) "${h}h" else "${h}h ${m}m"
+            if (m == 0L) "${h} 小时" else "${h} 小时 ${m} 分"
         }
     }
 }

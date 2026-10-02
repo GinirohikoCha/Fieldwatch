@@ -145,8 +145,8 @@ object SitDiff {
         val onlySecond = secondKeys.minus(thisKeys)
         val both = thisKeys.intersect(secondKeys)
         val ramNote = if (thisSit.ram || second.ram) {
-            "Last 15 minutes is the Live RAM set (about 400 radios). " +
-                "A named sit keeps up to ${Sit.RADIO_CAP}. Counts are not the same net."
+            "最近 15 分钟使用实时内存数据（约 400 个无线设备）。" +
+                "命名观测最多保留 ${Sit.RADIO_CAP} 个设备。两者的统计范围不同。"
         } else {
             null
         }
@@ -156,56 +156,56 @@ object SitDiff {
         fun next() = n++.toString()
         sections += DebriefSection(
             next(),
-            "Windows",
+            "观测时段",
             buildString {
-                append(sideBlock("This sit", thisSit))
-                append(sideBlock("Second sit", second))
+                append(sideBlock("本次观测", thisSit))
+                append(sideBlock("第二次观测", second))
                 if (ramNote != null) {
                     appendLine(ramNote)
                     appendLine()
                 }
-                append("Radios this phone heard. Kind + MAC. BLE rotation is a new row. Not a radio fix.")
+                append("本手机接收到的无线设备，以类型 + MAC 区分。BLE 地址轮换会产生新记录。这不是无线设备的定位结果。")
             },
         )
         val thisCraft = AircraftTrail.pictures(thisSit.radios.mapNotNull { it.toCraftSource() }, thisSit.path)
         val secondCraft = AircraftTrail.pictures(second.radios.mapNotNull { it.toCraftSource() }, second.path)
         val aircraftBody = AircraftTrail.compareBody(thisSit.name, thisCraft, second.name, secondCraft)
         if (aircraftBody.isNotEmpty()) {
-            sections += DebriefSection(next(), "Aircraft", aircraftBody)
+            sections += DebriefSection(next(), "航空器", aircraftBody)
         }
         observerNotesSection(thisSit, second)?.let { body ->
-            sections += DebriefSection(next(), "Observer notes", body)
+            sections += DebriefSection(next(), "观测备注", body)
         }
         if (extraHits.isNotEmpty()) {
             sections += DebriefSection(
                 next(),
-                "Extra attention",
+                "重点关注",
                 extraHits.joinToString("\n") { "${it.radioLabel}\n${it.note}" },
                 alert = true,
             )
         }
-        sections += DebriefSection(next(), "Only in this sit (${onlyThis.size})", listBody(onlyThis, byKey))
-        sections += DebriefSection(next(), "Only in second sit (${onlySecond.size})", listBody(onlySecond, byKey))
-        sections += DebriefSection(next(), "In both (${both.size})", bothBody(both, thisSit, second))
+        sections += DebriefSection(next(), "仅本次观测出现（${onlyThis.size}）", listBody(onlyThis, byKey))
+        sections += DebriefSection(next(), "仅第二次观测出现（${onlySecond.size}）", listBody(onlySecond, byKey))
+        sections += DebriefSection(next(), "两次均出现（${both.size}）", bothBody(both, thisSit, second))
         val meta = buildList {
-            add("This sit" to thisSit.name)
-            add("Second sit" to second.name)
-            add("This radios" to thisSit.radios.size.toString())
-            add("Second radios" to second.radios.size.toString())
-            if (ramNote != null) add("Caps" to "RAM ~400 vs sit ${Sit.RADIO_CAP}")
+            add("本次观测" to thisSit.name)
+            add("第二次观测" to second.name)
+            add("本次设备数" to thisSit.radios.size.toString())
+            add("第二次设备数" to second.radios.size.toString())
+            if (ramNote != null) add("数量上限" to "内存约 400，命名观测 ${Sit.RADIO_CAP}")
         }
         return DebriefDoc(
             generatedUtc = "",
-            windowLine = "${thisSit.name} vs ${second.name}",
+            windowLine = "${thisSit.name} 对比 ${second.name}",
             meta = meta,
             disclaimer = FieldwatchDisclaimer.compare(),
             trackingAlert = extraHits.isNotEmpty(),
-            takeaway = "${onlyThis.size} only in this sit · ${onlySecond.size} only in the second · ${both.size} in both.",
+            takeaway = "${onlyThis.size} 个仅本次出现 · ${onlySecond.size} 个仅第二次出现 · ${both.size} 个两次均出现。",
             sections = sections,
             extraAttention = extraHits,
-            heading = "FIELDWATCH SIT COMPARE",
-            pdfKicker = "SIT COMPARE",
-            pdfTitle = "Sit compare",
+            heading = "FIELDWATCH 观测对比",
+            pdfKicker = "观测对比",
+            pdfTitle = "观测对比",
             pathFigure = AircraftTrail.applyWalk(
                 AircraftTrail.applyWalk(
                     pathFigure(thisSit, second, watchedFleetIds),
@@ -233,7 +233,7 @@ object SitDiff {
             },
         )
         if (tracks.isEmpty()) return null
-        val pinNote = "A MAC alert or a signature alert is drawn once. A decoded latitude and longitude is the last advertised position. Anything else is the strongest hear. A number is that place (Path key)."
+        val pinNote = "每个 MAC 提醒或特征提醒只绘制一次。解码得到的经纬度表示最近一次广播位置，其余表示接收信号最强的位置。数字对应该地点（见轨迹图例）。"
         val points = (thisSit.radios + second.radios)
             .filter { it.bookmarked || it.fleetIds.any { id -> id in watchedFleetIds } }
             .distinctBy { it.key }
@@ -278,12 +278,12 @@ object SitDiff {
         val dots = points
         val all = tracks.flatMap { it.samples }
         val cap = if (tracks.size == 2) {
-            "Two walks on one north-up frame. Green = this sit. Slate = second sit. $pinNote"
+            "两次轨迹绘制于同一张上北下南的图中。绿色 = 本次观测，灰蓝色 = 第二次观测。$pinNote"
         } else {
-            "North-up. Line is this phone. $pinNote"
+            "上北下南。线条表示本手机的轨迹。$pinNote"
         }
         return SitPathPlot.Figure(
-            kicker = if (tracks.size == 2) "OPERATOR PATHS" else "OPERATOR PATH",
+            kicker = if (tracks.size == 2) "操作者轨迹" else "操作者轨迹",
             tracks = tracks,
             dots = dots,
             lengthM = Geo.pathLengthM(all),
@@ -331,11 +331,11 @@ object SitDiff {
 
     private fun sideBlock(heading: String, side: Side): String {
         val net = if (side.ram) {
-            "last 15 minutes in memory (about 400 radios)"
+            "内存中的最近 15 分钟（约 400 个无线设备）"
         } else {
-            "named window (up to ${Sit.RADIO_CAP})"
+            "命名观测时段（最多 ${Sit.RADIO_CAP} 个）"
         }
-        return "$heading: ${side.name}\n${side.radios.size} radios · $net\n"
+        return "$heading：${side.name}\n${side.radios.size} 个无线设备 · $net\n"
     }
 
     private fun exclusiveExtra(
@@ -347,16 +347,16 @@ object SitDiff {
             val row = byKey[key] ?: return@mapNotNull null
             if (!row.extraAttention) return@mapNotNull null
             ExtraAttentionHit(
-                signature = row.fleetNames.firstOrNull() ?: "Extra attention",
+                signature = row.fleetNames.firstOrNull() ?: "重点关注",
                 radioLabel = line(row),
                 note = where,
             )
         }
-        return hits(onlyThis, "Only in this sit.") + hits(onlySecond, "Only in second sit.")
+        return hits(onlyThis, "仅本次观测出现。") + hits(onlySecond, "仅第二次观测出现。")
     }
 
     private fun listBody(keys: Set<String>, byKey: Map<String, Radio>): String {
-        if (keys.isEmpty()) return "(none)"
+        if (keys.isEmpty()) return "（无）"
         return keys.mapNotNull { byKey[it] }
             .sortedWith(
                 compareByDescending<Radio> { it.extraAttention }
@@ -369,7 +369,7 @@ object SitDiff {
 
     /** Kind + MAC is the same radio. A live label can still change between windows. */
     private fun bothBody(keys: Set<String>, thisSit: Side, second: Side): String {
-        if (keys.isEmpty()) return "(none)"
+        if (keys.isEmpty()) return "（无）"
         val earlier = thisSit.radios.associateBy { it.key }
         val later = second.radios.associateBy { it.key }
         return keys.mapNotNull { key ->
@@ -390,7 +390,7 @@ object SitDiff {
         val right = later.liveDecode.reportLabels()
         when {
             left.isNotEmpty() && right.isNotEmpty() && left != right -> {
-                append("  decoded value changed: ")
+                append("  解码值变化：")
                 append(left.joinToString(", "))
                 append(" → ")
                 append(right.joinToString(", "))
@@ -412,7 +412,7 @@ object SitDiff {
             append("  ")
             append(name)
         }
-        if (row.extraAttention) append("  Extra attention")
+        if (row.extraAttention) append("  重点关注")
         if (chips) append(chipSuffix(row.liveDecode))
     }
 
@@ -434,9 +434,9 @@ object SitDiff {
 
     private fun observerNotesSection(thisSit: Side, second: Side): String? {
         fun where(key: String): String = when {
-            key in thisSit.keys && key in second.keys -> "both"
-            key in thisSit.keys -> "this sit"
-            else -> "second sit"
+            key in thisSit.keys && key in second.keys -> "两次均出现"
+            key in thisSit.keys -> "本次观测"
+            else -> "第二次观测"
         }
         val rows = (thisSit.radios + second.radios)
             .distinctBy { it.key }
@@ -446,7 +446,7 @@ object SitDiff {
             }
         if (rows.isEmpty()) return null
         return buildString {
-            appendLine("Your captions on radios heard in either window. Same KIND+MAC as Named radios. Not catalog Notes.")
+            appendLine("您为任一时段接收到的无线设备所写的备注。按类型 + MAC 对应命名设备，不属于特征库说明。")
             rows.sortedWith(
                 compareBy<Pair<Radio, String>> { where(it.first.key) }.thenBy { it.first.mac },
             ).forEach { (r, note) ->

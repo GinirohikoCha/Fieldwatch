@@ -7,17 +7,17 @@ import java.util.TimeZone
 
 /** Share/save format for Reports → Log. Disk is always CSV; JSON lines is an export. */
 enum class LogExportKind(val label: String) {
-    LOG_CSV("Log file — CSV"),
-    LOG_JSONL("Log file — JSON lines"),
-    GPX("GPX — GPS Exchange"),
-    KML("KML — Google Earth"),
+    LOG_CSV("日志文件 — CSV"),
+    LOG_JSONL("日志文件 — JSON Lines"),
+    GPX("GPX — GPS 交换格式"),
+    KML("KML — Google 地球"),
     WIGLE("WiGLE CSV — wigle.net"),
 }
 
 enum class LogExportRadios(val label: String) {
-    BOTH("Both radios"),
-    WIFI("Wi-Fi only"),
-    BLE("BLE only"),
+    BOTH("Wi-Fi 和 BLE"),
+    WIFI("仅 Wi-Fi"),
+    BLE("仅 BLE"),
     ;
 
     fun matches(kind: RadioKind): Boolean = when (this) {
@@ -92,7 +92,7 @@ object GeoExport {
         }
         if (n == 0) onProgress(0, 0)
         if (track.size >= 2) {
-            append("  <trk>\n    <name>Operator path</name>\n    <trkseg>\n")
+            append("  <trk>\n    <name>此手机轨迹</name>\n    <trkseg>\n")
             track.forEach { s ->
                 append("""      <trkpt lat="${coord(s.lat)}" lon="${coord(s.lon)}">""")
                 append("<time>${iso(s.at)}</time></trkpt>\n")
@@ -127,7 +127,7 @@ object GeoExport {
         }
         if (n == 0) onProgress(0, 0)
         if (track.size >= 2) {
-            append("  <Placemark>\n    <name>Operator path</name>\n    <LineString><coordinates>")
+            append("  <Placemark>\n    <name>此手机轨迹</name>\n    <LineString><coordinates>")
             append(track.joinToString(" ") { "${coord(it.lon)},${coord(it.lat)}" })
             append("</coordinates></LineString>\n  </Placemark>\n")
         }
@@ -173,7 +173,7 @@ object GeoExport {
         val custom = customNames[r.key]?.trim()
         if (!custom.isNullOrEmpty()) return custom
         return when {
-            r.hiddenSsid -> "<hidden>"
+            r.hiddenSsid -> "<隐藏>"
             r.name.isBlank() || r.name.equals(r.mac, ignoreCase = true) -> r.mac
             else -> r.name
         }
@@ -189,9 +189,9 @@ object GeoExport {
             r.vendor?.takeIf { it.isNotBlank() }?.let { add(it) }
             names[r.key]?.takeIf { it.isNotEmpty() }?.let { add(it.joinToString(", ")) }
             add("${r.rssi} dBm")
-            if (r.channel != 0) add("ch ${r.channel}")
-            observerNotes[r.key]?.trim()?.takeIf { it.isNotEmpty() }?.let { add("Observer: $it") }
-            add("Heard at this phone. Not a radio fix.")
+            if (r.channel != 0) add("信道 ${r.channel}")
+            observerNotes[r.key]?.trim()?.takeIf { it.isNotEmpty() }?.let { add("观察备注：$it") }
+            add("此手机接收到信号的位置，并非无线设备的实际位置。")
         }.joinToString(" · ")
 
     private fun xml(s: String): String = buildString(s.length) {

@@ -43,12 +43,12 @@ class TakPublisher {
     ) {
         if (!settings.takEnabled) {
             last.clear()
-            _status.value = TakFeedStatus(detail = "Off")
+            _status.value = TakFeedStatus(detail = "关闭")
             return
         }
         if (settings.demoMode) {
             last.clear()
-            _status.value = TakFeedStatus(paused = true, detail = "Privacy mode — feed paused")
+            _status.value = TakFeedStatus(paused = true, detail = "隐私模式 — 推送已暂停")
             return
         }
         val host = settings.takHost.trim().ifBlank { TakDefaults.HOST }
@@ -59,7 +59,7 @@ class TakPublisher {
             _status.value = TakFeedStatus(
                 at = now,
                 dest = "$host:$port",
-                error = "Host $host did not resolve",
+                error = "无法解析主机 $host",
             )
             return
         }
@@ -77,7 +77,7 @@ class TakPublisher {
                     last[SELF_UID] = TakSent(SELF_UID, SELF_UID, now, selfFix.first, selfFix.second)
                     sent++
                 } else {
-                    lastErr = "send failed"
+                    lastErr = "发送失败"
                 }
             }
         }
@@ -133,7 +133,7 @@ class TakPublisher {
                     pilot = mark.pilot,
                 )
                 if (!sendAll(dests, xml.toByteArray(Charsets.UTF_8))) {
-                    lastErr = "send failed"
+                    lastErr = "发送失败"
                     continue
                 }
                 last[mark.uid] = TakSent(mark.uid, mark.deviceKey, now, lat, lon, peakRssi)
@@ -159,7 +159,7 @@ class TakPublisher {
                 last.remove(uid)
                 gone++
             } else {
-                lastErr = "send failed"
+                lastErr = "发送失败"
             }
         }
 
@@ -172,7 +172,7 @@ class TakPublisher {
         val detail = when {
             lastErr != null -> lastErr
             sent == 0 && gone == 0 && chosen.isEmpty() && !selfOk ->
-                "0 eligible radios (need Extra attention / payload latlon / GPS stamp)"
+                "0 个符合条件的设备（需要重点关注／载荷经纬度／GPS 标记）"
             else -> ""
         }
         _status.value = TakFeedStatus(
@@ -194,7 +194,7 @@ class TakPublisher {
             unicast = null
         }
         last.clear()
-        _status.value = TakFeedStatus(detail = "Off")
+        _status.value = TakFeedStatus(detail = "关闭")
     }
 
     private fun destinations(host: String, port: Int): List<Pair<InetAddress, Int>> {

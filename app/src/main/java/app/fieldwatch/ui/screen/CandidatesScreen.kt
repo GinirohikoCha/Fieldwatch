@@ -64,10 +64,10 @@ fun CandidatesScreen(
         contentWindowInsets = NestedTabInsets,
         topBar = {
             NestedTopBar(
-                title = "Signature candidates",
+                title = "候选特征",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                     }
                 },
             )
@@ -83,7 +83,7 @@ fun CandidatesScreen(
                     CircularProgressIndicator()
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "Reading the log and re-matching the catalog…",
+                        "正在读取日志并重新匹配特征库…",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -103,9 +103,9 @@ fun CandidatesScreen(
                 ) {
                     item {
                         Text(
-                            (report?.sourceLabel ?: "Rotating log") +
-                                " · re-matched now" +
-                                (report?.let { " · ${it.families.size} ${if (it.families.size == 1) "family" else "families"}" } ?: ""),
+                            (report?.sourceLabel ?: "轮转日志") +
+                                " · 已重新匹配" +
+                                (report?.let { " · ${it.families.size} ${if (it.families.size == 1) "个系列" else "个系列"}" } ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -129,7 +129,7 @@ fun CandidatesScreen(
                     if (report == null || report.families.isEmpty()) {
                         item {
                             Text(
-                                "No signature families in this log. Randomized addresses and house-like names are skipped. A candidate needs a unique on-air ID on two or more radios.",
+                                "此日志中没有候选特征系列。已跳过随机地址和类似家庭网络的名称。候选特征需要至少两个无线设备具有相同的独特广播标识。",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = 12.dp),
@@ -205,7 +205,7 @@ private fun CandidateCard(
             )
             val examples = cand.examples.map { MacUtil.redactMacIn(it, it, demoMode && looksLikeMac(it)) }
             if (examples.isNotEmpty()) {
-                val extra = if (cand.extraCount > 0) "\nand ${cand.extraCount} more" else ""
+                val extra = if (cand.extraCount > 0) "\n另有 ${cand.extraCount} 个" else ""
                 Text(
                     examples.joinToString(" · ") + extra,
                     style = compact(12.sp, 15.sp),
@@ -220,7 +220,7 @@ private fun CandidateCard(
                 FieldwatchActionButton(onClick = { onCreate(cand) }) {
                     Icon(Icons.Outlined.GroupAdd, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Create signature")
+                    Text("创建特征")
                 }
             }
         }
@@ -228,12 +228,12 @@ private fun CandidateCard(
 }
 
 private fun skipLine(report: app.fieldwatch.domain.CandidateReport): String = buildString {
-    append("Skipped ")
+    append("已跳过 ")
     val bits = ArrayList<String>(2)
-    if (report.skippedRandomized > 0) bits += "${report.skippedRandomized} randomized addresses"
-    if (report.skippedHouseLike > 0) bits += "${report.skippedHouseLike} house-like names"
-    append(bits.joinToString(" and "))
-    append(". Those are not catalog families.")
+    if (report.skippedRandomized > 0) bits += "${report.skippedRandomized} 个随机地址"
+    if (report.skippedHouseLike > 0) bits += "${report.skippedHouseLike} 个类似家庭网络的名称"
+    append(bits.joinToString("和"))
+    append("。这些不属于特征库系列。")
 }
 
 private fun looksLikeMac(text: String): Boolean =

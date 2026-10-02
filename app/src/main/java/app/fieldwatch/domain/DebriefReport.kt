@@ -39,14 +39,14 @@ data class DebriefPlaces(
     }
 
     fun areaLine(): String {
-        if (!attempted) return "off"
+        if (!attempted) return "关闭"
         val named = namesByCell.values.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
         if (named.isEmpty()) return note
         return named.joinToString(" · ")
     }
 
     companion object {
-        val Off = DebriefPlaces(false, false, "off")
+        val Off = DebriefPlaces(false, false, "关闭")
     }
 }
 
@@ -65,16 +65,16 @@ data class DebriefDoc(
     val takeaway: String,
     val sections: List<DebriefSection>,
     val extraAttention: List<ExtraAttentionHit> = emptyList(),
-    val heading: String = "FIELDWATCH FIELD DEBRIEF",
-    val pdfKicker: String = "FIELD DEBRIEF",
-    val pdfTitle: String = "Field debrief",
+    val heading: String = "FIELDWATCH 观测总结",
+    val pdfKicker: String = "观测总结",
+    val pdfTitle: String = "观测总结",
     val pathFigure: SitPathPlot.Figure? = null,
     val extraFigures: List<SitPathPlot.Figure> = emptyList(),
 ) {
     fun toPlainText(): String = buildString {
         appendLine(heading)
         appendLine()
-        appendLine("DISCLAIMER")
+        appendLine("免责声明")
         appendLine(disclaimer)
         appendLine()
         meta.forEach { (k, v) -> appendLine("${k.padEnd(14)}$v") }
@@ -85,15 +85,15 @@ data class DebriefDoc(
             appendLine()
         }
         appendLine("—")
-        appendLine("Takeaway: $takeaway")
+        appendLine("要点：$takeaway")
     }
 
     fun withDemoMacs(macs: Collection<String>, demo: Boolean): DebriefDoc {
         if (!demo) return this
         fun t(s: String) = Geo.redactCoordsIn(MacUtil.redactMacsIn(s, macs, true), true)
-        val note = "MAC tails (**:**:**) and GPS coordinates masked. Logs on the phone are unchanged."
+        val note = "MAC 尾部（**:**:**）及 GPS 坐标已遮蔽。手机中的日志保持不变。"
         return copy(
-            meta = listOf("Privacy" to note) + meta.map { it.first to t(it.second) },
+            meta = listOf("隐私" to note) + meta.map { it.first to t(it.second) },
             disclaimer = t(disclaimer),
             takeaway = t(takeaway),
             sections = sections.map { it.copy(title = t(it.title), body = t(it.body)) },
@@ -187,24 +187,24 @@ object DebriefReport {
 
         val byCh = wifi.groupBy { it.channel }.toSortedMap()
         val networks = buildString {
-            appendLine("Heard ${wifi.size} AP(s); ${hidden.size} hidden SSID; ${persistent.count { it.kind == RadioKind.WIFI }} sat most of the window.")
+            appendLine("接收到 ${wifi.size} 个 AP；${hidden.size} 个隐藏 SSID；${persistent.count { it.kind == RadioKind.WIFI }} 个在该时段的大部分时间持续出现。")
             if (byCh.isNotEmpty()) {
-                appendLine("Channel occupancy:")
+                appendLine("信道占用：")
                 byCh.forEach { (ch, list) ->
-                    val label = if (ch == 0) "unknown" else "ch $ch"
-                    appendLine("  $label — ${list.size} AP(s), strongest ${list.maxOf { it.rssi }} dBm")
+                    val label = if (ch == 0) "未知" else "信道 $ch"
+                    appendLine("  $label — ${list.size} 个 AP，最强 ${list.maxOf { it.rssi }} dBm")
                 }
             }
-            appendLine("Loudest APs:")
+            appendLine("信号最强的 AP：")
             wifi.take(12).forEach { d ->
                 appendLine("  · ${wifiLine(d, names, windowStart, now, customNames)}")
                 d.attentionNotes(fleets).forEach { (sig, note) ->
-                    appendLine("    extra attention ($sig): $note")
+                    appendLine("    重点关注（$sig）：$note")
                 }
             }
             if (hidden.isNotEmpty()) {
-                appendLine("Hidden SSIDs:")
-                hidden.forEach { appendLine("  · ${it.mac}  ${it.vendor ?: ""}  ${it.rssi} dBm  ch ${it.channel}") }
+                appendLine("隐藏 SSID：")
+                hidden.forEach { appendLine("  · ${it.mac}  ${it.vendor ?: ""}  ${it.rssi} dBm  信道 ${it.channel}") }
             }
         }
         val notable = ble.filter {
@@ -213,17 +213,17 @@ object DebriefReport {
         }.sortedByDescending { it.rssi }.take(20)
         val omittedRand = ble.count { !inventoryKeep(it, settings, bookmarkedKeys) }
         val bleBody = buildString {
-            appendLine("Heard ${ble.size} advertiser(s); $randomized with randomized addresses; ${named.count { it.kind == RadioKind.BLE }} signature-matched.")
+            appendLine("接收到 ${ble.size} 个广播设备；$randomized 个使用随机地址；${named.count { it.kind == RadioKind.BLE }} 个匹配了特征。")
             if (omittedRand > 0) {
-                appendLine("Unmatched rotating BLE omitted from lists ($omittedRand). Counts include them. Sit export has every radio.")
+                appendLine("列表中省略了未匹配特征的轮换地址 BLE 设备（$omittedRand 个），统计数量仍包含它们。观测导出包含所有无线设备。")
             }
             if (notable.isNotEmpty()) {
-                appendLine("Notable BLE:")
+                appendLine("值得留意的 BLE：")
                 notable.forEach { d ->
                     val guess = DeviceExplain.guess(d, d.fleetIds.map { names[it] ?: it })
                     appendLine("  · ${bleLine(d, names, windowStart, now, customNames)}  |  ${guess.headline}")
                     d.attentionNotes(fleets).forEach { (sig, note) ->
-                        appendLine("    extra attention ($sig): $note")
+                        appendLine("    重点关注（$sig）：$note")
                     }
                     val decoded = SignatureFieldDecoder.decodeSighting(d, fleets)
                     if (decoded.isNotEmpty()) {
@@ -242,7 +242,7 @@ object DebriefReport {
             }
         }
         val sigBody = buildString {
-            if (named.isEmpty()) appendLine("None in this window.")
+            if (named.isEmpty()) appendLine("本时段内没有。")
             else {
                 named.groupBy { it.fleetIds.joinToString("+") { id -> names[id] ?: id } }
                     .toList().sortedByDescending { it.second.size }
@@ -255,25 +255,25 @@ object DebriefReport {
                             appendLine()
                         }
                         list.flatMap { it.attentionNotes(fleets) }.distinct().forEach { (name, note) ->
-                            appendLine("  extra attention ($name): $note")
+                            appendLine("  重点关注（$name）：$note")
                         }
                     }
             }
         }
         val persistBody = buildString {
-            appendLine("Sat most of this window: ${persistent.size}")
+            appendLine("本时段大部分时间持续出现：${persistent.size}")
             persistent.filter { inventoryKeep(it, settings, bookmarkedKeys) }.take(15).forEach {
-                appendLine("  · ${it.reportName(customNames)}  ${it.mac}  dwell ${fmtDur(dwellMs(it, windowStart, now))}")
+                appendLine("  · ${it.reportName(customNames)}  ${it.mac}  停留 ${fmtDur(dwellMs(it, windowStart, now))}")
             }
-            if (persistent.isEmpty()) appendLine("  · None.")
-            appendLine("First seen in this window: ${arrived.size} (loudest 8 below)")
+            if (persistent.isEmpty()) appendLine("  · 无。")
+            appendLine("本时段首次发现：${arrived.size}（下方列出信号最强的 8 个）")
             arrived.filter { inventoryKeep(it, settings, bookmarkedKeys) }.sortedByDescending { it.rssi }.take(8).forEach {
                 appendLine("  · ${it.reportName(customNames)}  ${it.mac}  ${it.rssi} dBm")
             }
         }
         val flags = anomalyLines(inWin, customNames, settings, bookmarkedKeys)
         val anomalyBody = if (flags.isEmpty()) {
-            "No extra flags. Signature hits, Extra attention, and tracking callouts already cover named pattern matches."
+            "没有其他标记。特征命中、重点关注和追踪提示已涵盖已命名的模式匹配。"
         } else flags.joinToString("\n") { "  · $it" }
         val attentionHits = inWin.flatMap { d ->
             d.attentionNotes(fleets).map { (sig, note) -> Triple(d, sig, note) }
@@ -282,12 +282,12 @@ object DebriefReport {
             .joinToString("\n") { "  · $it" }
 
         val distanceLine = when {
-            !settings.tagLocation -> "GPS tagging off — no path"
-            path.size < 2 -> "GPS tagging on, fewer than 2 fixes in this window"
-            else -> "traveled ${fmtDist(pathLen)} along path · span ${fmtDist(pathSpan)} · ${path.size} fixes"
+            !settings.tagLocation -> "GPS 位置标记已关闭，无轨迹"
+            path.size < 2 -> "GPS 位置标记已开启，本时段内不足 2 个定位点"
+            else -> "沿轨迹移动 ${fmtDist(pathLen)} · 跨度 ${fmtDist(pathSpan)} · ${path.size} 个定位点"
         }
         val lookupLine = when {
-            !places.attempted -> "off"
+            !places.attempted -> "关闭"
             places.namesByCell.isNotEmpty() -> places.areaLine()
             else -> places.note
         }
@@ -301,18 +301,18 @@ object DebriefReport {
         var n = 1
         fun next() = (n++).toString()
         val sections = buildList {
-            add(DebriefSection(next(), "Executive summary", execSummary(wifi, ble, named, hidden, randomized, pathSpan, pathLen, following, withYou, ownLikely, beaconsWithYou, wearablesWithYou, settings, places, win) + craftSentence(pictures)))
-            add(DebriefSection(next(), "Where you were", whereYouWere(settings, path, pathLen, pathSpan, inWin, names, places, windowEnd, customNames, bookmarkedKeys)))
+            add(DebriefSection(next(), "概要", execSummary(wifi, ble, named, hidden, randomized, pathSpan, pathLen, following, withYou, ownLikely, beaconsWithYou, wearablesWithYou, settings, places, win) + craftSentence(pictures)))
+            add(DebriefSection(next(), "所在地点", whereYouWere(settings, path, pathLen, pathSpan, inWin, names, places, windowEnd, customNames, bookmarkedKeys)))
             if (aircraftBody.isNotEmpty()) {
-                add(DebriefSection(next(), "Aircraft", aircraftBody))
+                add(DebriefSection(next(), "航空器", aircraftBody))
             }
             observerNotesSection(inWin, customNames, observerNotes)?.let { body ->
-                add(DebriefSection(next(), "Observer notes", body))
+                add(DebriefSection(next(), "观测备注", body))
             }
             add(
                 DebriefSection(
                     next(),
-                    "Tracking assessment",
+                    "追踪评估",
                     trackingSection(settings, path, pathSpan, pathLen, following, wholeSit, beaconsWithYou, wearablesWithYou),
                 ),
             )
@@ -320,12 +320,12 @@ object DebriefReport {
                 add(
                     DebriefSection(
                         next(),
-                        "Possible trackers with you",
+                        "可能随行的追踪器",
                         trackerCallout(
-                            "Finder tags (AirTag / Find My, SmartTag, Tile, Chipolo, Pebblebee) and loud pocket Apple BLE. " +
-                                "These radios stayed with your GPS path for this sit. " +
-                                "Fieldwatch cannot tell your own tag or phone from a tracker planted in the car, bag, or on you before you started. " +
-                                "Account for each MAC. Not a finding and not identity.",
+                            "寻物标签（AirTag / Find My、SmartTag、Tile、Chipolo、Pebblebee）及信号较强、可能在口袋中的 Apple BLE 设备。" +
+                                "这些无线设备在本次观测期间持续随您的 GPS 轨迹出现。" +
+                                "Fieldwatch 无法区分您的标签或手机，和出发前被放入车内、包中或身上的追踪器。" +
+                                "请逐一核实每个 MAC。这不代表已确认的事实或身份。",
                             wholeSit,
                             customNames,
                         ),
@@ -337,11 +337,11 @@ object DebriefReport {
                 add(
                     DebriefSection(
                         next(),
-                        "Possible tail",
+                        "可能尾随",
                         trackerCallout(
-                            "Finder tags that were not heard when this sit started, then stayed with your path. " +
-                                "That can mean someone started following you (their phone or tag), or a device was added during the trip. " +
-                                "Not a finding and not identity.",
+                            "这些寻物标签在本次观测开始时未被接收到，随后持续沿您的轨迹出现。" +
+                                "这可能表示有人开始随行（其手机或标签），也可能是途中新增了设备。" +
+                                "这不代表已确认的事实或身份。",
                             following,
                             customNames,
                         ),
@@ -353,12 +353,12 @@ object DebriefReport {
                 add(
                     DebriefSection(
                         next(),
-                        "Retail beacons with you",
+                        "随行的零售信标",
                         trackerCallout(
-                            "iBeacon / Minew / Estimote / Kontakt.io / Target Atrius basket radios that stayed with your GPS path. " +
-                                "Location beacons are usually fixtures in a store or venue — they do not typically move with you. " +
-                                "If one did, account for it (a Target basket you pushed, your own test tag, a badge, or a short path that still overlaps a fixture). " +
-                                "Not the same as a Find My tail. Not a finding and not identity.",
+                            "iBeacon / Minew / Estimote / Kontakt.io / Target Atrius 购物篮无线设备持续沿您的 GPS 轨迹出现。" +
+                                "定位信标通常固定在商店或场馆内，一般不会随您移动。" +
+                                "若出现随行，请核实原因（例如您推着 Target 购物篮、自有测试标签、胸牌，或较短轨迹仍处于固定设备覆盖范围内）。" +
+                                "这不同于 Find My 尾随，也不代表已确认的事实或身份。",
                             beaconsWithYou,
                             customNames,
                         ),
@@ -370,11 +370,11 @@ object DebriefReport {
                 add(
                     DebriefSection(
                         next(),
-                        "Wearables with you",
+                        "随行的可穿戴设备",
                         trackerCallout(
-                            "Garmin / Fitbit / Oura radios that stayed with your GPS path. " +
-                                "Watches and rings usually move with the person wearing them — often your own kit or someone walking with you. " +
-                                "They are not typically planted trackers. Account for each MAC. Not a finding and not identity.",
+                            "Garmin / Fitbit / Oura 无线设备持续沿您的 GPS 轨迹出现。" +
+                                "手表和戒指通常随佩戴者移动，往往是您自己的装备，或同行者的设备。" +
+                                "它们通常不是被放置的追踪器。请逐一核实每个 MAC。这不代表已确认的事实或身份。",
                             wearablesWithYou,
                             customNames,
                         ),
@@ -382,18 +382,18 @@ object DebriefReport {
                     ),
                 )
             }
-            add(DebriefSection(next(), "Environment", environment(wifi, ble, randomized, persistent, pathSpan, pathLen)))
-            add(DebriefSection(next(), "Networks (Wi-Fi access points)", networks.trimEnd()))
-            add(DebriefSection(next(), "Bluetooth LE", bleBody.trimEnd()))
-            add(DebriefSection(next(), "Signature hits", sigBody.trimEnd()))
-            add(DebriefSection(next(), "Persistence", persistBody.trimEnd()))
+            add(DebriefSection(next(), "环境", environment(wifi, ble, randomized, persistent, pathSpan, pathLen)))
+            add(DebriefSection(next(), "网络（Wi-Fi 接入点）", networks.trimEnd()))
+            add(DebriefSection(next(), "低功耗蓝牙", bleBody.trimEnd()))
+            add(DebriefSection(next(), "特征命中", sigBody.trimEnd()))
+            add(DebriefSection(next(), "持续出现情况", persistBody.trimEnd()))
             if (attentionHits.isNotEmpty()) {
                 add(
                     DebriefSection(
                         next(),
-                        "Extra attention",
+                        "重点关注",
                         buildString {
-                            appendLine("Pattern match, not identity, not a skimmer detector, not a safety finding.")
+                            appendLine("仅为模式匹配，不代表身份，不是盗刷器检测结果，也不是安全结论。")
                             attentionHits.forEach { (d, sig, note) ->
                                 appendLine("  · ${d.reportName(customNames)}  ${d.mac}  ${d.rssi} dBm  [$sig]")
                                 appendLine("    $note")
@@ -403,36 +403,36 @@ object DebriefReport {
                     ),
                 )
             }
-            add(DebriefSection(next(), "Anomalies", anomalyBody))
-            add(DebriefSection(next(), "Privacy", privacy(wifi, ble, randomized, hidden, settings, places, pictures.isNotEmpty())))
-            add(DebriefSection(next(), "Recommended actions", actionBody))
+            add(DebriefSection(next(), "异常", anomalyBody))
+            add(DebriefSection(next(), "隐私", privacy(wifi, ble, randomized, hidden, settings, places, pictures.isNotEmpty())))
+            add(DebriefSection(next(), "建议操作", actionBody))
         }
 
         val windowLine = if (win.sitName != null) {
-            "sit ${win.sitName} (${utc(windowStart)} → ${utc(windowEnd)} UTC)"
+            "观测 ${win.sitName}（${utc(windowStart)} → ${utc(windowEnd)} UTC）"
         } else {
-            "last 15 minutes (${utc(windowStart)} → ${utc(windowEnd)} UTC)"
+            "最近 15 分钟（${utc(windowStart)} → ${utc(windowEnd)} UTC）"
         }
         val heading = if (win.sitName != null) {
-            "FIELDWATCH SIT — ${win.sitName}"
+            "FIELDWATCH 观测 — ${win.sitName}"
         } else {
-            "FIELDWATCH FIELD DEBRIEF"
+            "FIELDWATCH 观测总结"
         }
         val meta = buildList {
-            add("Generated" to "${utc(now)} UTC")
-            if (win.sitName != null) add("Sit" to win.sitName)
-            add("Window" to windowLine)
-            add("Radios" to "${inWin.size}")
-            add("Tool" to "Fieldwatch (app.fieldwatch) · stock Android · receive-only Wi-Fi AP + BLE advertiser")
-            add("Scan" to "${settings.intensity.name.lowercase()} · stale ${settings.staleSec}s · brief hold ${settings.decaySec}s")
-            add("GPS tag" to if (settings.tagLocation) "on" else "off")
-            add("Distance" to distanceLine)
-            add("Places" to lookupLine)
+            add("生成时间" to "${utc(now)} UTC")
+            if (win.sitName != null) add("观测" to win.sitName)
+            add("时段" to windowLine)
+            add("无线设备数" to "${inWin.size}")
+            add("工具" to "Fieldwatch（app.fieldwatch）· 原生 Android · 仅接收 Wi-Fi AP + BLE 广播")
+            add("扫描" to "${DebriefPrompt.scanIntensityLabel(settings.intensity)} · ${settings.staleSec} 秒后过期 · 短暂保留 ${settings.decaySec} 秒")
+            add("GPS 标记" to if (settings.tagLocation) "开启" else "关闭")
+            add("距离" to distanceLine)
+            add("地点" to lookupLine)
             add(
-                "Classification" to if (pictures.isNotEmpty()) {
-                    "Operationally sensitive — neighbor SSIDs, MACs, operator GPS, advertised aircraft track"
+                "信息分类" to if (pictures.isNotEmpty()) {
+                    "敏感观测信息 — 附近 SSID、MAC、操作者 GPS、广播的航空器轨迹"
                 } else {
-                    "Operationally sensitive — neighbor SSIDs, MACs, operator GPS"
+                    "敏感观测信息 — 附近 SSID、MAC、操作者 GPS"
                 },
             )
         }
@@ -452,11 +452,11 @@ object DebriefReport {
                 )
             },
             heading = heading,
-            pdfKicker = if (win.sitName != null) "SIT" else "FIELD DEBRIEF",
-            pdfTitle = if (win.sitName != null) "Sit — ${win.sitName}" else "Field debrief",
+            pdfKicker = if (win.sitName != null) "观测" else "观测总结",
+            pdfTitle = if (win.sitName != null) "观测 — ${win.sitName}" else "观测总结",
             pathFigure = AircraftTrail.applyWalk(
                 pathFigure(
-                    win.sitName ?: "Last 15 minutes", path, inWin, fleets,
+                    win.sitName ?: "最近 15 分钟", path, inWin, fleets,
                     customNames, observerNotes, bookmarkedKeys, watchedFleetIds,
                 ),
                 pictures,
@@ -486,18 +486,18 @@ object DebriefReport {
             alertsOnly = true,
         )
         return SitPathPlot.Figure(
-            kicker = "OPERATOR PATH",
+            kicker = "操作者轨迹",
             tracks = listOf(SitPathPlot.FigureTrack(title, path)),
             dots = plot.points,
             lengthM = Geo.pathLengthM(path),
             spanM = Geo.spanM(path),
-            caption = "North-up. Line is this phone (${path.lengthM()}). A MAC alert or a signature alert is drawn once. A decoded latitude and longitude is the last advertised position. Anything else is the strongest hear. A number is that place (Path key).",
+            caption = "上北下南。线条表示本手机的轨迹（${path.lengthM()}）。每个 MAC 提醒或特征提醒只绘制一次。解码得到的经纬度表示最近一次广播位置，其余表示接收信号最强的位置。数字对应该地点（见轨迹图例）。",
         )
     }
 
     private fun List<GpsSample>.lengthM(): String {
         val m = Geo.pathLengthM(this)
-        return if (m >= 1000) "${"%.1f".format(java.util.Locale.US, m / 1000)} km" else "${m.toInt()} m"
+        return if (m >= 1000) "${"%.1f".format(java.util.Locale.US, m / 1000)} 千米" else "${m.toInt()} 米"
     }
 
     /**
@@ -538,38 +538,38 @@ object DebriefReport {
             ),
         )
 
-        appendLine("## Where you were (operator GPS)")
-        appendLine("- Tag detections with GPS: ${if (settings.tagLocation) "on" else "off"}.")
+        appendLine("## 所在地点（操作者 GPS）")
+        appendLine("- 为检测记录添加 GPS 标记：${if (settings.tagLocation) "开启" else "关闭"}。")
         appendLine(
-            "- Online place names: " +
+            "- 在线地名查询：" +
                 if (places.attempted) places.note
-                else "off (Settings → Online place names in Debrief). No reverse-geocode this export.",
+                else "关闭（设置 → 观测总结中的在线地名）。本次导出未进行反向地理编码。",
         )
         append(whereYouWere(settings, path, pathLen, pathSpan, inWin, names, places, windowEnd, customNames, bookmarkedKeys).trimEnd())
         appendLine()
         appendLine()
         if (path.size < 2 || pathSpan < MOVE_M) {
-            appendLine("- Following test: insufficient movement (need ~45 m span). Do not infer a tail.")
+            appendLine("- 跟随检测：移动不足（需要约 45 米跨度）。不要推断尾随。")
             appendLine()
         }
-        appendLine("## GPS co-travel")
+        appendLine("## GPS 同行分析")
         appendLine(
-            "Only radios that stayed with the operator path are listed. " +
-                "House tags and other radios the operator only passed are omitted — they are not tracking. " +
-                "Not identity. Find My MAC rotation will not stitch a tail that changes address. " +
-                "Possible tail extra gates (walks): trail covers ≥ half the operator path, " +
-                "≥ 2/3 of GPS stamps at −75 dBm or louder, last stamp not 12 dB below loudest. " +
-                "Fail any one → omit (pass-by), not a tail. " +
-                "Finder tags (AirTag / SmartTag / Tile / Chipolo / Pebblebee / Find My / loud pocket Apple) " +
-                "are the tracking test. Retail beacons and wearables that co-travel are listed separately — " +
-                "they do not typically move with you (beacons) or are usually own kit (wearables).",
+            "仅列出持续沿操作者轨迹出现的无线设备。" +
+                "经过的住宅标签及其他无线设备已省略，它们没有表现出随行。" +
+                "不能确认身份。Find My 的 MAC 轮换后，不会自动关联变更地址的尾随记录。" +
+                "步行场景中“可能尾随”的额外条件：接收轨迹覆盖操作者轨迹至少一半，" +
+                "至少 2/3 的 GPS 标记对应信号达到 −75 dBm 或更强，最后一个标记的信号相比最强值衰减不超过 12 dB。" +
+                "任一条件不满足则按经过处理并省略，不判为尾随。" +
+                "寻物标签（AirTag / SmartTag / Tile / Chipolo / Pebblebee / Find My / 口袋中强信号 Apple 设备）" +
+                "是追踪检测对象。同行的零售信标和可穿戴设备会单独列出，" +
+                "信标通常不会随您移动，可穿戴设备则通常是自有装备。",
         )
         val followingMd = follow.filter { it.verdict == Verdict.FOLLOWING }
         val wholeSitMd = follow.filter {
             it.verdict == Verdict.OWN_LIKELY || it.verdict == Verdict.MOVED_WITH_YOU
         }
         if (followingMd.isEmpty() && wholeSitMd.isEmpty() && beaconsMd.isEmpty() && wearablesMd.isEmpty()) {
-            appendLine("- None stayed with the path.")
+            appendLine("- 没有设备持续沿轨迹出现。")
         } else {
             fun dump(title: String, rows: List<FollowHit>) {
                 if (rows.isEmpty()) return
@@ -579,25 +579,25 @@ object DebriefReport {
                     val d = h.device
                     appendLine(
                         "- ${h.label}  ${d.reportName(customNames)}  ${d.mac}  RSSI ${d.rssi} dBm " +
-                            "(min ${d.rssiMin} / max ${d.rssiMax})  trail ${h.samples} fixes, span ${h.spanM.toInt()} m",
+                            "（最低 ${d.rssiMin} / 最高 ${d.rssiMax}）  轨迹 ${h.samples} 个定位点，跨度 ${h.spanM.toInt()} 米",
                     )
                     appendLine("  ${h.detail}")
                 }
             }
             dump(
-                "Possible trackers with you (finder tags, whole sit — yours or planted before you started)",
+                "可能随行的追踪器（全程出现的寻物标签，可能自有或出发前被放置）",
                 wholeSitMd,
             )
             dump(
-                "Possible tail (finder tags, first heard after this sit started, then stayed)",
+                "可能尾随（观测开始后首次接收到、随后持续出现的寻物标签）",
                 followingMd,
             )
             dump(
-                "Retail beacons with you (iBeacon / Minew / Estimote / Kontakt.io / Target Atrius basket — fixtures; a pushed cart will co-travel)",
+                "随行的零售信标（iBeacon / Minew / Estimote / Kontakt.io / Target Atrius 购物篮，通常为固定设施；推行的购物车会随行）",
                 beaconsMd,
             )
             dump(
-                "Wearables with you (Garmin / Fitbit / Oura — usually own kit or a companion)",
+                "随行的可穿戴设备（Garmin / Fitbit / Oura，通常为自有或同行者装备）",
                 wearablesMd,
             )
         }
@@ -643,37 +643,37 @@ object DebriefReport {
             val cover = opLen > 0.0 && trailLen >= COVER_FRAC * opLen
             val (verdict, detail) = when {
                 operatorPath.size < 2 || opSpan < MOVE_M ->
-                    Verdict.INSUFFICIENT to "Operator GPS path too short (${opSpan.toInt()} m) to test following."
+                    Verdict.INSUFFICIENT to "操作者 GPS 轨迹过短（${opSpan.toInt()} 米），无法检测跟随。"
                 trail.size < 2 ->
-                    Verdict.INSUFFICIENT to "Heard, but not at two GPS points. Cannot test co-travel."
+                    Verdict.INSUFFICIENT to "接收到了信号，但没有两个 GPS 定位点，无法检测同行。"
                 onBody && ownHere ->
                     Verdict.OWN_LIKELY to onBodyLine(kind, d, trail.size)
                 cover && ownHere && d.rssiMax >= ON_BODY_MAX ->
                     Verdict.OWN_LIKELY to
-                        "Heard along ${trailLen.toInt()} m of your ${opLen.toInt()} m path and still loud (${d.rssiMax} dBm). " +
+                        "在您 ${opLen.toInt()} 米轨迹中的 ${trailLen.toInt()} 米范围内接收到信号，且仍然较强（${d.rssiMax} dBm）。" +
                         withYouNote(kind, d)
                 span < MOVE_M * 0.6 ->
-                    Verdict.STATIONARY to "Heard near one place (${span.toInt()} m span) while you moved ${opSpan.toInt()} m. Looks stationary — you walked away from it."
+                    Verdict.STATIONARY to "您移动了 ${opSpan.toInt()} 米，信号仅在某地点附近接收到（跨度 ${span.toInt()} 米）。设备看起来固定不动，您正在远离它。"
                 presentAtStart && stillHere && d.rssiMax >= ON_BODY_MAX ->
                     Verdict.OWN_LIKELY to
-                        "Moved ${span.toInt()} m with you, already on the air when this 15-minute window opened, strong (${d.rssi} dBm). " +
+                        "随您移动了 ${span.toInt()} 米，在该 15 分钟时段开始时已广播，信号较强（${d.rssi} dBm）。" +
                         withYouNote(kind, d)
                 presentAtStart && stillHere ->
                     Verdict.MOVED_WITH_YOU to
-                        "GPS samples span ${span.toInt()} m along your path (${trail.size} fixes). Already on the air when this window opened and still here. " +
+                        "GPS 采样沿您的轨迹跨越 ${span.toInt()} 米（${trail.size} 个定位点）。时段开始时已广播，目前仍在。" +
                         withYouNote(kind, d)
                 !presentAtStart && span >= MOVE_M && trail.size >= 3 ->
                     possibleTail(trail, span, opLen, kind, d)
                 else ->
                     Verdict.STATIONARY to
-                        "Heard along ${span.toInt()} m (${trail.size} GPS stamps) but did not stay loud on you. Neighborhood arc / pass-by, not a tail."
+                        "在 ${span.toInt()} 米范围内接收到信号（${trail.size} 个 GPS 标记），但没有持续保持较强信号。更像经过附近区域，不是尾随。"
             }
             FollowHit(d, label, verdict, detail, span, trail.size)
         }.sortedBy { it.verdict.ordinal }
     }
 
     private fun onBodyLine(kind: TrackerMatch.Kind, d: Sighting, stamps: Int): String {
-        val loud = "Stayed loud with you the whole sit (${d.rssiMax} to ${d.rssiMin} dBm, $stamps GPS stamps). "
+        val loud = "本次观测全程随行且保持较强信号（${d.rssiMax} 至 ${d.rssiMin} dBm，$stamps 个 GPS 标记）。"
         return loud + withYouNote(kind, d)
     }
 
@@ -688,23 +688,23 @@ object DebriefReport {
         if (notes.isNotEmpty()) return notes.joinToString(" ")
         val labels = chips.reportLabels()
         if (labels.isEmpty()) return null
-        return "Decoded: ${labels.joinToString(", ")}."
+        return "解码：${labels.joinToString("、")}。"
     }
 
     private fun withYouNote(kind: TrackerMatch.Kind, device: Sighting): String {
         val decoded = liveDecodeSentence(device)
         val base = when (kind) {
             TrackerMatch.Kind.FINDER ->
-                "With you the whole sit — yours or planted before you started. Account for it."
+                "本次观测全程随行，可能是自有设备，也可能出发前已被放置。请核实来源。"
             TrackerMatch.Kind.BEACON ->
-                "Location beacons do not typically move with you. Account for it (own test tag, badge, or a short overlap with a fixture)."
+                "定位信标通常不会随您移动。请核实原因（自有测试标签、胸牌，或短距离内仍处于固定设备覆盖范围）。"
             TrackerMatch.Kind.WEARABLE ->
-                "Typical of a watch or ring you or a companion are wearing. Not typically a planted tracker."
+                "这符合您或同行者佩戴手表或戒指的情况，通常不是被放置的追踪器。"
         }
         return when {
             decoded != null -> "$base $decoded"
             kind == TrackerMatch.Kind.FINDER ->
-                "$base Find My / iPhone addresses rotate; this MAC is this session."
+                "$base Find My / iPhone 地址会轮换，此 MAC 只对应本次会话。"
             else -> base
         }
     }
@@ -732,25 +732,25 @@ object DebriefReport {
         return when {
             fade >= FADE_DB ->
                 Verdict.STATIONARY to
-                    "Appeared after the sit started, but last GPS stamp was $last dBm after a loudest of $peak dBm (−${fade} dB). Looks like you walked away from a fixture, not a tail."
+                    "观测开始后出现，但最后一个 GPS 标记的信号为 $last dBm，最强曾为 $peak dBm（衰减 ${fade} dB）。看起来是您远离了固定设备，不是尾随。"
             loudN < loudNeed ->
                 Verdict.STATIONARY to
-                    "Appeared after the sit started and GPS span was ${span.toInt()} m, but only $loudN/${trail.size} stamps were loud (−75 dBm+). Looks like a pass-by, not a tail."
+                    "观测开始后出现，GPS 跨度为 ${span.toInt()} 米，但只有 $loudN/${trail.size} 个标记的信号较强（≥ −75 dBm）。看起来只是经过，不是尾随。"
             trailLen < coverNeed ->
                 Verdict.STATIONARY to
-                    "Appeared after the sit started, but was only heard along ${trailLen.toInt()} m of your ${opLen.toInt()} m path ($coverPct%). Neighborhood arc / pass-by, not a tail."
+                    "观测开始后出现，但只在您 ${opLen.toInt()} 米轨迹中的 ${trailLen.toInt()} 米范围内接收到信号（$coverPct%）。更像经过附近区域，不是尾随。"
             else -> {
                 val stats =
-                    "Appeared after the sit started, then stayed loud with you across ${span.toInt()} m " +
-                        "(${trailLen.toInt()} m of your ${opLen.toInt()} m path, $coverPct%; " +
-                        "$loudN/${trail.size} GPS stamps ≥ −75 dBm). "
+                    "观测开始后出现，随后在 ${span.toInt()} 米跨度内持续随行并保持较强信号" +
+                        "（覆盖您 ${opLen.toInt()} 米轨迹中的 ${trailLen.toInt()} 米，即 $coverPct%；" +
+                        "$loudN/${trail.size} 个 GPS 标记达到 ≥ −75 dBm）。"
                 val note = when (kind) {
                     TrackerMatch.Kind.FINDER ->
-                        "Treat as a possible tail until you visually account for it."
+                        "在目视核实其来源前，按可能尾随处理。"
                     TrackerMatch.Kind.BEACON ->
-                        "Unusual for a retail/location beacon — they do not typically move with you. Account for it; not the same as a Find My tail."
+                        "对零售 / 定位信标而言不常见，它们通常不会随您移动。请核实来源；这不同于 Find My 尾随。"
                     TrackerMatch.Kind.WEARABLE ->
-                        "Typical of a watch that joined the sit (you put it on, or someone walking with you). Not typically a planted tracker."
+                        "这符合观测途中加入的手表（您戴上了手表，或有人同行）的情况，通常不是被放置的追踪器。"
                 }
                 Verdict.FOLLOWING to stats + note
             }
@@ -778,51 +778,51 @@ object DebriefReport {
         window: DebriefWindow,
     ): String = buildString {
         val whenPhrase = if (window.sitName != null) {
-            "In sit ${window.sitName}"
+            "在观测 ${window.sitName} 中，"
         } else {
-            "In the last 15 minutes"
+            "在最近 15 分钟内，"
         }
-        append("$whenPhrase Fieldwatch heard ${wifi.size} Wi-Fi access points and ${ble.size} BLE advertisers")
-        append(" (${named.size} signature-matched, ${hidden.size} hidden SSIDs, $randomized randomized BLE). ")
+        append("${whenPhrase}Fieldwatch 接收到 ${wifi.size} 个 Wi-Fi 接入点和 ${ble.size} 个 BLE 广播设备")
+        append("（${named.size} 个匹配特征、${hidden.size} 个隐藏 SSID、$randomized 个随机地址 BLE）。")
         if (settings.tagLocation && pathLen > 0) {
-            append("Overall distance traveled: ${fmtDist(pathLen)} along the GPS path (straight-line span ${fmtDist(pathSpan)}). ")
+            append("总移动距离：沿 GPS 轨迹 ${fmtDist(pathLen)}（直线跨度 ${fmtDist(pathSpan)}）。")
         }
         if (places.namesByCell.isNotEmpty()) {
-            append("Stops / area: ${places.areaLine()}. ")
+            append("停留点 / 区域：${places.areaLine()}。")
         } else if (places.attempted && settings.tagLocation) {
             append("${places.note} ")
         }
         val wholeSit = ownLikely + withYou
         when {
             following.isNotEmpty() || wholeSit.isNotEmpty() -> {
-                append("TRACKING NOTE. ")
+                append("追踪提示。")
                 if (wholeSit.isNotEmpty()) {
-                    append("${wholeSit.size} finder tag(s) with you the whole sit (your kit or planted before you started): ")
+                    append("${wholeSit.size} 个寻物标签全程随行（可能自有或出发前已被放置）：")
                     append(wholeSit.joinToString { trackId(it) })
                     append(". ")
                 }
                 if (following.isNotEmpty()) {
-                    append("${following.size} possible tail(s) first heard after this sit started: ")
+                    append("${following.size} 个可能尾随设备在本次观测开始后首次接收到：")
                     append(following.joinToString { trackId(it) })
                     append(". ")
                 }
-                append("Account for every MAC — Fieldwatch cannot tell yours from a plant. ")
+                append("请逐一核实每个 MAC；Fieldwatch 无法区分自有设备和他人放置的设备。")
             }
             !settings.tagLocation -> {
-                append("GPS tagging is off, so a following test was not performed. Enable “Tag detections with GPS” and walk to test. ")
+                append("GPS 位置标记已关闭，因此未进行跟随检测。请开启“为检测记录添加 GPS 标记”并移动后再检测。")
             }
             pathSpan < MOVE_M -> {
-                append("GPS displacement was only ${pathSpan.toInt()} m — too short to test whether a tracker is following. Walk farther with tagging on. ")
+                append("GPS 位移仅 ${pathSpan.toInt()} 米，过短，无法检测追踪器是否跟随。请保持位置标记开启并移动更远。")
             }
-            else -> append("No finder tag clearly stayed with the GPS path in this window. ")
+            else -> append("本时段内没有寻物标签明显持续沿 GPS 轨迹出现。")
         }
         if (beaconsWithYou.isNotEmpty()) {
-            append("Retail beacon(s) also stayed with the path (unusual — fixtures do not typically move with you): ")
+            append("另有零售信标持续沿轨迹出现（不常见，固定设施通常不会随您移动）：")
             append(beaconsWithYou.joinToString { "${it.label} ${it.device.mac}" })
             append(". ")
         }
         if (wearablesWithYou.isNotEmpty()) {
-            append("Wearable(s) stayed with the path (usually your watch/ring or a companion): ")
+            append("可穿戴设备持续沿轨迹出现（通常为您或同行者的手表 / 戒指）：")
             append(wearablesWithYou.joinToString { "${it.label} ${it.device.mac}" })
             append(".")
         }
@@ -839,20 +839,20 @@ object DebriefReport {
         wearablesWithYou: List<FollowHit>,
     ): String = buildString {
         if (!settings.tagLocation) {
-            appendLine("GPS tagging is OFF. Fieldwatch cannot test whether a radio moved with you.")
-            appendLine("Turn on Settings → Tag detections with GPS, walk or drive 50+ m, then run Debrief again.")
+            appendLine("GPS 位置标记已关闭。Fieldwatch 无法检测无线设备是否随您移动。")
+            appendLine("请开启“设置 → 为检测记录添加 GPS 标记”，步行或驾车移动至少 50 米，然后重新生成观测总结。")
             return@buildString
         }
-        appendLine("Overall distance traveled: ${fmtDist(pathLen)} along the GPS path (${path.size} samples). Straight-line span ${fmtDist(pathSpan)}.")
-        appendLine("Co-travel is split by class: finder tags (AirTag / Find My, SmartTag, Tile, Chipolo, Pebblebee, loud pocket Apple), retail beacons (iBeacon, Minew, Estimote, Kontakt.io, Target Atrius basket), and wearables (Garmin, Fitbit, Oura).")
+        appendLine("总移动距离：沿 GPS 轨迹 ${fmtDist(pathLen)}（${path.size} 个采样点）。直线跨度 ${fmtDist(pathSpan)}。")
+        appendLine("同行设备按类别分组：寻物标签（AirTag / Find My、SmartTag、Tile、Chipolo、Pebblebee、口袋中强信号 Apple 设备）、零售信标（iBeacon、Minew、Estimote、Kontakt.io、Target Atrius 购物篮）和可穿戴设备（Garmin、Fitbit、Oura）。")
         if (path.size < 2 || pathSpan < MOVE_M) {
-            appendLine("Insufficient movement to distinguish a radio that stayed with you from one you passed. Walk or drive farther and re-run.")
+            appendLine("移动距离不足，无法区分随行设备与经过的设备。请步行或驾车移动更远后重新运行。")
             return@buildString
         }
         if (following.isEmpty() && wholeSit.isEmpty() && beaconsWithYou.isEmpty() && wearablesWithYou.isEmpty()) {
-            appendLine("No finder tag, retail beacon, or wearable stayed with you. House tags and other radios you only passed are not listed.")
+            appendLine("没有寻物标签、零售信标或可穿戴设备持续随行。仅经过的住宅标签及其他无线设备未列出。")
         } else {
-            appendLine("Callouts below are only radios that stayed with the path. Radios you passed (store fixtures, house tags) are omitted.")
+            appendLine("下方提示仅包含持续沿轨迹出现的无线设备。您经过的设备（商店固定设施、住宅标签）已省略。")
         }
     }
 
@@ -867,7 +867,7 @@ object DebriefReport {
         }
         if (hits.isEmpty()) return null
         return buildString {
-            appendLine("Your captions on radios heard in this window. Same KIND+MAC as Named radios. Not catalog Notes.")
+            appendLine("您为本时段接收到的无线设备所写的备注。按类型 + MAC 对应命名设备，不属于特征库说明。")
             hits.sortedWith(
                 compareByDescending<Pair<Sighting, String>> { it.first.rssi }.thenBy { it.first.mac },
             ).forEach { (d, note) ->
@@ -888,7 +888,7 @@ object DebriefReport {
         rows.forEach { h ->
             val d = h.device
             appendLine("  • ${h.label}")
-            appendLine("    ${d.reportName(customNames)}  ${d.mac}  RSSI ${d.rssi} dBm (min ${d.rssiMin} / max ${d.rssiMax})")
+            appendLine("    ${d.reportName(customNames)}  ${d.mac}  RSSI ${d.rssi} dBm（最低 ${d.rssiMin} / 最高 ${d.rssiMax}）")
             appendLine("    ${h.detail}")
         }
     }.trimEnd()
@@ -905,52 +905,52 @@ object DebriefReport {
         customNames: Map<String, String> = emptyMap(),
         bookmarkedKeys: Set<String> = emptySet(),
     ): String = buildString {
-        appendLine("Phone GPS at hear-time, not the other radio’s location and not a camera pole. Stays are clusters within about 40 m; hops between them are transit. Coordinates are not repeated on every Wi-Fi/BLE line.")
+        appendLine("这是接收信号时手机的 GPS 位置，不是其他无线设备或摄像头杆的位置。停留点由约 40 米范围内的定位聚合而成，停留点之间的移动为途经路段。各 Wi-Fi / BLE 记录不重复列出坐标。")
         if (!settings.tagLocation) {
-            appendLine("GPS tagging is OFF. Turn on Settings → Tag detections with GPS to record where you were when radios were heard.")
+            appendLine("GPS 位置标记已关闭。请开启“设置 → 为检测记录添加 GPS 标记”，以记录接收无线信号时您所在的位置。")
             return@buildString
         }
         if (path.isEmpty()) {
-            appendLine("GPS tagging is on, but this window has no fixes yet.")
+            appendLine("GPS 位置标记已开启，但本时段尚无定位点。")
             return@buildString
         }
-        appendLine("Overall: ${fmtDist(pathLen)} along-track, span ${fmtDist(pathSpan)}, ${path.size} fixes.")
+        appendLine("总体：轨迹长度 ${fmtDist(pathLen)}，跨度 ${fmtDist(pathSpan)}，${path.size} 个定位点。")
         if (places.attempted) {
             appendLine(places.note)
-            appendLine("Street names are approximate. Do not treat a street as the location of a matched camera or tag.")
+            appendLine("街道名称仅为近似位置。不要将街道视为匹配到的摄像头或标签所在地。")
         }
         val legs = Geo.legs(path, now = now)
         if (legs.isEmpty()) {
-            appendLine("No path legs.")
+            appendLine("没有轨迹分段。")
             return@buildString
         }
         val stopNames = legs.filter { it.stay }.mapNotNull { places.nameNear(it.lat, it.lon) }
         if (stopNames.isNotEmpty()) {
-            appendLine("Stops: " + stopNames.joinToString(" → "))
+            appendLine("停留点：" + stopNames.joinToString(" → "))
         }
         var stayN = 0
         legs.forEachIndexed { i, leg ->
             if (leg.stay) {
                 stayN++
                 appendLine()
-                appendLine("${i + 1}. Stay  ${clock(leg.startAt)}–${clock(leg.endAt)} UTC  (${fmtDur(leg.durationMs)})")
+                appendLine("${i + 1}. 停留  ${clock(leg.startAt)}–${clock(leg.endAt)} UTC（${fmtDur(leg.durationMs)}）")
                 appendLine("   ${placeAndGps(leg.lat, leg.lon, places)}")
                 val here = devices.filter { heardAt(it, leg) }
                 val aps = here.count { it.kind == RadioKind.WIFI }
                 val ble = here.count { it.kind == RadioKind.BLE }
                 val sigs = here.flatMap { d -> d.fleetIds.map { names[it] ?: it } }.distinct()
-                append("   Heard here: $aps AP(s), $ble BLE")
+                append("   此处接收到：$aps 个 AP，$ble 个 BLE")
                 if (sigs.isNotEmpty()) append("  ·  ${sigs.take(6).joinToString(", ")}")
                 appendLine()
                 here.filter { inventoryKeep(it, settings, bookmarkedKeys) }.sortedByDescending { it.rssi }.take(4).forEach { d ->
                     appendLine("   · ${d.reportName(customNames)}  ${d.mac}  ${d.rssi} dBm")
                 }
-                if (here.isEmpty()) appendLine("   · No GPS-stamped radios tied to this stay (tagging may have started after they were first heard).")
+                if (here.isEmpty()) appendLine("   · 此停留点没有关联带 GPS 标记的无线设备（可能在首次接收后才开启位置标记）。")
             } else {
                 appendLine()
                 appendLine(
-                    "${i + 1}. Transit  ${clock(leg.startAt)}–${clock(leg.endAt)} UTC  " +
-                        "${fmtDist(leg.pathM)} along track",
+                    "${i + 1}. 途经  ${clock(leg.startAt)}–${clock(leg.endAt)} UTC  " +
+                        "轨迹长度 ${fmtDist(leg.pathM)}",
                 )
                 appendLine("   ${placeAndGps(leg.lat, leg.lon, places)}")
                 appendLine("   → ${placeAndGps(leg.endLat, leg.endLon, places)}")
@@ -959,7 +959,7 @@ object DebriefReport {
         val stays = legs.count { it.stay }
         if (stays == 1 && pathSpan < MOVE_M) {
             appendLine()
-            appendLine("One stay — you did not move far enough in this window to split locations.")
+            appendLine("仅有一个停留点，本时段移动距离不足以区分不同地点。")
         }
     }
 
@@ -986,13 +986,13 @@ object DebriefReport {
         val ap = wifi.size
         val persistAp = persistent.count { it.kind == RadioKind.WIFI }
         val guess = when {
-            pathSpan > 200 && ap in 1..25 -> "In motion (walk/vehicle) through mixed RF."
-            ap <= 4 && ble.size < 30 && persistAp >= 1 -> "Likely a dwelling or small office — few sitting APs, limited BLE."
-            ap >= 15 && randomized >= 40 -> "Dense public / retail / street: many APs and phone-like randomized BLE."
-            ap >= 8 && persistAp >= 4 -> "Likely a building with standing infrastructure APs plus patrons."
-            else -> "Mixed or under-sampled environment."
+            pathSpan > 200 && ap in 1..25 -> "正在移动（步行 / 车载），经过混合无线环境。"
+            ap <= 4 && ble.size < 30 && persistAp >= 1 -> "可能为住宅或小型办公室：固定 AP 较少，BLE 数量有限。"
+            ap >= 15 && randomized >= 40 -> "密集的公共 / 零售 / 街道环境：有较多 AP 和类似手机的随机地址 BLE。"
+            ap >= 8 && persistAp >= 4 -> "可能是部署了固定 AP 且有访客的建筑物。"
+            else -> "混合环境或采样不足。"
         }
-        return "$guess  (${ap} APs, ${ble.size} BLE, ${persistAp} persistent APs, traveled ${fmtDist(pathLen)}, span ${fmtDist(pathSpan)}.)"
+        return "$guess（${ap} 个 AP、${ble.size} 个 BLE、${persistAp} 个持续出现的 AP，移动 ${fmtDist(pathLen)}，跨度 ${fmtDist(pathSpan)}。）"
     }
 
     private fun wifiLine(
@@ -1005,10 +1005,10 @@ object DebriefReport {
         append(d.reportName(customNames)).append("  ").append(d.mac)
         d.vendor?.let { append("  ").append(it) }
         append("  ").append(d.rssi).append(" dBm")
-        if (d.channel != 0) append("  ch ").append(d.channel)
-        if (d.hiddenSsid) append("  hidden")
+        if (d.channel != 0) append("  信道 ").append(d.channel)
+        if (d.hiddenSsid) append("  隐藏")
         if (d.fleetIds.isNotEmpty()) append("  ").append(d.fleetIds.joinToString("+") { names[it] ?: it })
-        append("  dwell ").append(fmtDur(dwellMs(d, from, now)))
+        append("  停留 ").append(fmtDur(dwellMs(d, from, now)))
     }
 
     private fun bleLine(
@@ -1019,10 +1019,10 @@ object DebriefReport {
         customNames: Map<String, String> = emptyMap(),
     ): String = buildString {
         append(d.reportName(customNames)).append("  ").append(d.mac)
-        if (d.randomized) append("  RAND")
+        if (d.randomized) append("  随机地址")
         append("  ").append(d.rssi).append(" dBm")
         if (d.fleetIds.isNotEmpty()) append("  ").append(d.fleetIds.joinToString("+") { names[it] ?: it })
-        append("  dwell ").append(fmtDur(dwellMs(d, from, now)))
+        append("  停留 ").append(fmtDur(dwellMs(d, from, now)))
     }
 
     /** Unmatched rotating BLE stays in counts/export; inventories omit it unless Extra attention, named, bookmark, or payload. */
@@ -1051,7 +1051,7 @@ object DebriefReport {
             d.facts.serviceData.any { it.uuid.contains("FE2C", true) && it.dataHex.length == 6 }
         }
         if (pairing.isNotEmpty()) {
-            out += "Google Fast Pair in pairing mode: " +
+            out += "处于配对模式的 Google Fast Pair：" +
                 pairing.joinToString { "${it.reportName(customNames)} ${it.mac}" }
         }
         val loudUnknown = devices.filter {
@@ -1059,12 +1059,12 @@ object DebriefReport {
                 inventoryKeep(it, settings, bookmarkedKeys)
         }
         if (loudUnknown.isNotEmpty()) {
-            out += "Very strong unnamed radios (≥ −50 dBm): " +
+            out += "信号极强的未命名无线设备（≥ −50 dBm）：" +
                 loudUnknown.take(8).joinToString { "${it.mac} ${it.rssi} dBm" }
         }
         val rand = devices.count { it.kind == RadioKind.BLE && it.randomized }
         if (rand >= 20) {
-            out += "High randomized BLE ($rand) — typical of phones, not a tracking finding."
+            out += "随机地址 BLE 较多（$rand 个），这常见于手机，不能据此认定追踪。"
         }
         return out
     }
@@ -1078,17 +1078,17 @@ object DebriefReport {
         places: DebriefPlaces,
         includeAircraft: Boolean,
     ): String = buildString {
-        append("A passive observer with the same radios would see ${wifi.size} named/hidden APs ")
-        append("and ${ble.size} BLE advertisers ($randomized randomized). ")
-        if (hidden.isNotEmpty()) append("Hidden SSIDs still beacon and identify the AP by BSSID. ")
-        if (settings.tagLocation) append("This debrief includes operator GPS samples used for distance and the following test. ")
+        append("使用相同无线接口的被动观察者会看到 ${wifi.size} 个有名称或隐藏的 AP，")
+        append("以及 ${ble.size} 个 BLE 广播设备（$randomized 个随机地址）。")
+        if (hidden.isNotEmpty()) append("隐藏 SSID 仍会发送信标，并通过 BSSID 标识 AP。")
+        if (settings.tagLocation) append("本观测总结包含用于计算距离及检测跟随的操作者 GPS 采样。")
         if (includeAircraft) {
-            append("This debrief includes advertised aircraft positions from radios that broadcast a latitude and longitude. ")
+            append("本观测总结包含无线设备通过经纬度广播的航空器位置。")
         }
         if (places.attempted && places.available) {
-            append("Street names came from the phone’s system geocoder while online. ")
+            append("街道名称来自手机在线时的系统地理编码服务。")
         }
-        append("Do not share this file off-device without redaction.")
+        append("请先脱敏，再将此文件分享至设备之外。")
     }
 
     private fun actions(
@@ -1101,32 +1101,32 @@ object DebriefReport {
         pathSpan: Double,
     ): List<String> = buildList {
         if (following.isNotEmpty()) {
-            add("Possible tail (appeared after this sit started): ${following.joinToString { trackId(it) }}. Pause Live, open detail, note RSSI while you walk a dog-leg. Do not disable someone else’s tag.")
+            add("可能尾随（本次观测开始后出现）：${following.joinToString { trackId(it) }}。暂停实时列表，打开详情，在走折线路线时观察 RSSI。不要停用他人的标签。")
         }
         if (ownLikely.isNotEmpty() || withYou.isNotEmpty()) {
             add(
-                "Possible trackers with you: ${(ownLikely + withYou).joinToString { trackId(it) }}. " +
-                    "Could be yours or planted in the car/bag/on you before you started. Account for each MAC — do not dismiss as yours.",
+                "可能随行的追踪器：${(ownLikely + withYou).joinToString { trackId(it) }}。" +
+                    "可能是自有设备，也可能出发前已被放在车内、包中或身上。请逐一核实每个 MAC，不要直接认定为自己的设备而排除。",
             )
         }
         if (beaconsWithYou.isNotEmpty()) {
             add(
-                "Retail beacons with you (unusual — fixtures do not typically move with you): " +
+                "随行的零售信标（不常见，固定设施通常不会随您移动）：" +
                     beaconsWithYou.joinToString { it.label + " " + it.device.mac } +
-                    ". Account for a test tag or badge before treating it as a follower.",
+                    "。将其视为跟随设备前，请先核实是否为测试标签或胸牌。",
             )
         }
         if (wearablesWithYou.isNotEmpty()) {
             add(
-                "Wearables with you (usually own kit or a companion): " +
+                "随行的可穿戴设备（通常为自有或同行者装备）：" +
                     wearablesWithYou.joinToString { it.label + " " + it.device.mac } +
                     ".",
             )
         }
-        if (!settings.tagLocation) add("Enable Tag detections with GPS and walk 50+ m, then run Debrief again for a following test.")
-        else if (pathSpan < MOVE_M) add("Walk farther (50+ m) with GPS tagging on, then re-run Debrief.")
-        add("Use Live → Pause to inspect a busy list. Watch tracker signatures if this sit was noisy.")
-        add("Station-side Wi-Fi (probes/clients) still needs a dedicated sniffer — Fieldwatch cannot see them.")
+        if (!settings.tagLocation) add("开启“为检测记录添加 GPS 标记”并移动至少 50 米，再次生成观测总结以检测跟随。")
+        else if (pathSpan < MOVE_M) add("保持 GPS 位置标记开启，移动更远（至少 50 米），然后重新生成观测总结。")
+        add("使用“实时 → 暂停”检查繁忙列表。如果本次观测设备较多，可关注追踪器特征。")
+        add("Wi-Fi 终端侧数据（探测请求 / 客户端）仍需专用嗅探器，Fieldwatch 无法看到。")
     }
 
     private fun takeaway(
@@ -1141,34 +1141,34 @@ object DebriefReport {
     ): String {
         val extra = buildString {
             if (beaconsWithYou.isNotEmpty()) {
-                append(" Retail beacon(s) also with the path (unusual): ")
+                append(" 另有零售信标随行（不常见）：")
                 append(beaconsWithYou.joinToString { it.label + " (" + it.device.mac + ")" })
                 append(".")
             }
             if (wearablesWithYou.isNotEmpty()) {
-                append(" Wearable(s) with the path (usually own kit): ")
+                append(" 可穿戴设备随行（通常为自有装备）：")
                 append(wearablesWithYou.joinToString { it.label + " (" + it.device.mac + ")" })
                 append(".")
             }
         }
         val core = when {
             following.isNotEmpty() && (ownLikely.isNotEmpty() || withYou.isNotEmpty()) ->
-                "Possible tail (appeared after sit started): ${following.joinToString { trackId(it) }}. " +
-                    "Also finder tags with you (yours or planted before): ${(ownLikely + withYou).joinToString { trackId(it) }}. Account for every MAC."
+                "可能尾随（观测开始后出现）：${following.joinToString { trackId(it) }}。" +
+                    "另有随行寻物标签（自有或此前被放置）：${(ownLikely + withYou).joinToString { trackId(it) }}。请逐一核实每个 MAC。"
             following.isNotEmpty() ->
-                "Possible tail (appeared after this sit started): ${following.joinToString { trackId(it) }}. Account for it on the person/vehicle."
+                "可能尾随（本次观测开始后出现）：${following.joinToString { trackId(it) }}。请核实身上或车内对应的设备。"
             !settings.tagLocation ->
-                "Turn on GPS tagging and walk before you can test whether a tracker is following you."
+                "请开启 GPS 位置标记并移动，之后才能检测追踪器是否随行。"
             pathSpan < MOVE_M ->
-                "Not enough GPS movement (${pathSpan.toInt()} m) to test following; walk and re-run Debrief."
+                "GPS 移动不足（${pathSpan.toInt()} 米），无法检测跟随；请移动后重新生成观测总结。"
             ownLikely.isNotEmpty() || withYou.isNotEmpty() ->
-                "Finder tags with you (yours or planted before you started): ${(ownLikely + withYou).joinToString { trackId(it) }}. No new arrival this window. Account for each MAC — do not dismiss as yours."
+                "随行寻物标签（自有或出发前被放置）：${(ownLikely + withYou).joinToString { trackId(it) }}。本时段没有新加入的设备。请逐一核实每个 MAC，不要直接认定为自己的设备而排除。"
             beaconsWithYou.isNotEmpty() || wearablesWithYou.isNotEmpty() ->
-                "No finder tag stayed with the path."
+                "没有寻物标签持续沿轨迹出现。"
             named.isEmpty() ->
-                "No signature hits and no GPS co-travel of trackers in this 15-minute window."
+                "该 15 分钟时段没有特征命中，也没有追踪器沿 GPS 轨迹同行。"
             else ->
-                "No finder tag, retail beacon, or wearable clearly stayed with your GPS path in this window."
+                "本时段没有寻物标签、零售信标或可穿戴设备明显持续沿您的 GPS 轨迹出现。"
         }
         return (core + extra).trim()
     }
@@ -1185,8 +1185,8 @@ object DebriefReport {
         val bits = pictures.take(3).joinToString { pic ->
             if (pic.status.isBlank()) pic.title else "${pic.title} (${pic.status})"
         }
-        val more = if (pictures.size > 3) " and ${pictures.size - 3} more" else ""
-        return " Advertised position: $bits$more."
+        val more = if (pictures.size > 3) "，另有 ${pictures.size - 3} 个" else ""
+        return " 广播位置：$bits$more。"
     }
 
     private fun dwellMs(d: Sighting, from: Long, to: Long): Long {
@@ -1215,7 +1215,7 @@ object DebriefReport {
     }
 
     private fun fmtDist(m: Double): String =
-        if (m >= 1000.0) String.format(Locale.US, "%.2f km", m / 1000.0) else "${m.toInt()} m"
+        if (m >= 1000.0) String.format(Locale.US, "%.2f 千米", m / 1000.0) else "${m.toInt()} 米"
 
     private fun fmtCoord(s: GpsSample): String =
         String.format(Locale.US, "%.5f, %.5f", s.lat, s.lon)
@@ -1224,11 +1224,11 @@ object DebriefReport {
         val gps = fmtCoord(GpsSample(0L, lat, lon))
         val name = places.nameNear(lat, lon)
         return if (!name.isNullOrBlank()) {
-            "$name  ($gps, operator phone)"
+            "$name（$gps，操作者手机）"
         } else if (places.attempted) {
-            "$gps  (operator phone; no street name this export)"
+            "$gps（操作者手机，本次导出无街道名称）"
         } else {
-            "$gps  (operator phone)"
+            "$gps（操作者手机）"
         }
     }
 
@@ -1236,6 +1236,6 @@ object DebriefReport {
         val s = (ms / 1000).coerceAtLeast(0)
         val m = s / 60
         val r = s % 60
-        return if (m >= 60) "${m / 60}h${m % 60}m" else if (m > 0) "${m}m${r}s" else "${r}s"
+        return if (m >= 60) "${m / 60}小时${m % 60}分钟" else if (m > 0) "${m}分${r}秒" else "${r}秒"
     }
 }

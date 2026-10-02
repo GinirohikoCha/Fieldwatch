@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Render the Fieldwatch 'How it works' architecture diagram (print PNG)."""
+"""生成 Fieldwatch 中文工作原理图（可打印 PNG）。"""
 
 from __future__ import annotations
 
 import os
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "how-it-works.png")
 
@@ -24,16 +28,25 @@ BLE = (186, 154, 255, 255)
 W, H = 2400, 1180
 PAD = 52
 
-FONT = "/System/Library/Fonts/SFNS.ttf"
-MONO = "/System/Library/Fonts/SFNSMono.ttf"
+FONT = next((path for path in (
+    os.environ.get("FIELDWATCH_CJK_FONT", ""),
+    "C:/Windows/Fonts/msyh.ttc",
+    "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+    "/System/Library/Fonts/STHeiti Light.ttc",
+) if path and os.path.isfile(path)), None)
+if FONT is None:
+    raise RuntimeError("找不到中文字体，请将 FIELDWATCH_CJK_FONT 设为可用中文 TrueType 字体路径。")
+BOLD = os.environ.get("FIELDWATCH_CJK_BOLD_FONT") or (
+    "C:/Windows/Fonts/msyhbd.ttc" if os.path.isfile("C:/Windows/Fonts/msyhbd.ttc") else FONT
+)
 
 
 def F(size, bold=False):
-    return ImageFont.truetype(FONT, size)
+    return ImageFont.truetype(BOLD if bold else FONT, size)
 
 
 def M(size):
-    return ImageFont.truetype(MONO, size)
+    return ImageFont.truetype(FONT, size)
 
 
 def rr(d, box, r, fill=None, outline=None, width=1):
@@ -41,16 +54,17 @@ def rr(d, box, r, fill=None, outline=None, width=1):
 
 
 def wrap(d, s, f, max_w):
-    words = s.split()
+    # 中文不依赖空格分词，按字符测宽以避免整段越过卡片边界。
+    words = list(s)
     lines, cur = [], ""
     for w in words:
-        trial = (cur + " " + w).strip()
+        trial = cur + w
         if d.textlength(trial, font=f) <= max_w:
             cur = trial
         else:
             if cur:
-                lines.append(cur)
-            cur = w
+                lines.append(cur.rstrip())
+            cur = w.lstrip()
     if cur:
         lines.append(cur)
     return lines
@@ -97,21 +111,21 @@ def build():
     d = ImageDraw.Draw(img)
     d.rectangle((0, 0, 10, H), fill=PHOS)
 
-    d.text((PAD + 10, 40), "TECHNICAL SPECIFICATIONS  ·  HOW IT WORKS", font=F(20, True), fill=PHOS)
+    d.text((PAD + 10, 40), "技术规格 · 工作原理", font=F(20, True), fill=PHOS)
     d.text((PAD + 10, 78), "FIELDWATCH", font=F(52, True), fill=INK)
     body(
         d,
         PAD + 10,
         142,
-        "A hear on this phone is a Wi-Fi access-point beacon or a Bluetooth LE advertisement. "
-        "Fieldwatch matches it locally, draws Live, and can sit, debrief, or publish TAK — all on the handset.",
+        "手机接收 Wi-Fi 接入点信标与 Bluetooth LE 广播。Fieldwatch 在本机匹配特征、显示实时视图，"
+        "记录观测、生成总结，并可推送 TAK 标记。",
         F(24),
         MUTED,
         W - PAD * 2 - 20,
         32,
     )
 
-    # grid: 3 x 2
+    # 三列两行网格。
     grid_top = 218
     grid_bot = H - 88
     gap_x, gap_y = 40, 40
@@ -125,19 +139,17 @@ def build():
             y1 = grid_top + r * (ch + gap_y)
             cells.append((x1, y1, x1 + cw, y1 + ch))
 
-    # 0 air  1 scan  2 match
-    # 3 live 4 watch 5 share
-    # Air: two stacked inner tiles instead of one sparse block
+    # 上排：信号、扫描、匹配；下排：显示、关注、保存与分享。
     x1, y1, x2, y2 = cells[0]
     rr(d, cells[0], 18, fill=CARD2, outline=RULE, width=2)
     d.rectangle((x1, y1, x1 + 8, y2), fill=WIFI)
-    d.text((x1 + 28, y1 + 20), "01  ON THE AIR", font=F(16, True), fill=WIFI)
-    d.text((x1 + 28, y1 + 48), "Beacons and ads", font=F(28, True), fill=INK)
+    d.text((x1 + 28, y1 + 20), "01  空中信号", font=F(16, True), fill=WIFI)
+    d.text((x1 + 28, y1 + 48), "信标与广播", font=F(28, True), fill=INK)
     inner_h = (y2 - 60 - (y1 + 96) - 16) / 2
     iy = y1 + 96
     for accent, kick, title, blurb in (
-        (WIFI, "Wi-Fi", "Access-point beacons", "SSID, BSSID, channel, vendor IE. Not Wi-Fi clients."),
-        (BLE, "Bluetooth LE", "Advertisements", "Name, company ID, UUID, manufacturer data. No pairing."),
+        (WIFI, "Wi-Fi", "接入点信标", "SSID、BSSID、信道、厂商 IE；不包含 Wi-Fi 客户端。"),
+        (BLE, "Bluetooth LE", "低功耗蓝牙广播", "名称、公司 ID、UUID、厂商数据；无需配对。"),
     ):
         ib = (x1 + 24, iy, x2 - 24, iy + inner_h)
         rr(d, ib, 12, fill=CARD, outline=RULE, width=1)
@@ -150,11 +162,11 @@ def build():
     card(
         d,
         cells[1],
-        "02  This phone",
-        "ScanService",
+        "02  本手机",
+        "扫描服务 ScanService",
         [
-            "Foreground service with the “Fieldwatch scanning” notification. Home leaves it running; swipe-away or Stop ends it.",
-            "Wi-Fi is a batch radio (~30 s at High performance — the OS cap). BLE streams in between.",
+            "前台服务显示“Fieldwatch 正在扫描”通知。按 Home 保持运行，划掉最近任务或点停止结束采集。",
+            "Wi-Fi 分批接收，高性能约每 30 秒一批，受系统限频；BLE 在批次之间持续接收。",
         ],
         PHOS,
         files="radio/ScanService.kt  ·  Permissions.kt",
@@ -162,11 +174,11 @@ def build():
     card(
         d,
         cells[2],
-        "03  Identify",
-        "Catalog match",
+        "03  识别模式",
+        "特征库匹配",
         [
-            "SignatureEngine scores OUI, name glob, UUID, and manufacturer data against the stock pack plus rows you add.",
-            "Decode fields map cleartext BLE bytes after a match. Encrypted ads stay hex.",
+            "SignatureEngine 按内置和自定义规则匹配 OUI、名称通配符、UUID 与厂商数据。",
+            "匹配后，解码字段将明文 BLE 字节转换为有意义的值；加密内容仍显示十六进制。",
         ],
         BLE,
         files="domain/SignatureEngine.kt  ·  DefaultCatalog.kt",
@@ -174,11 +186,11 @@ def build():
     card(
         d,
         cells[3],
-        "04  Picture",
-        "Live + Tune",
+        "04  实时画面",
+        "实时与显示调整",
         [
-            "FilterEngine decides who appears. Tune (top right) is Display: Radar, Strength list, Timeline, Hybrid, By class — plus sort and fields.",
-            "Live cap is about 400 radios. Filters hide radios; Display hides fields.",
+            "FilterEngine 决定显示哪些设备。右上角“显示”可选雷达、强度列表、时间线、混合、按分类，以及排序与字段。",
+            "实时集合约 400 台设备。筛选隐藏设备；显示设置调整每行内容。",
         ],
         PHOS,
         files="ui/LiveScreens.kt  ·  domain/FilterEngine.kt",
@@ -186,11 +198,11 @@ def build():
     card(
         d,
         cells[4],
-        "05  Attention",
-        "Watchlist and Hunt",
+        "05  关注信号",
+        "关注列表与信号追踪",
         [
-            "Bookmark a signature to beep and/or speak. Extra attention families and drones ship watched. Hunt walks one BLE radio by RSSI.",
-            "Named radios are one-MAC aliases with an optional alert.",
+            "关注特征可触发提示音和 / 或语音。重点关注系列与无人机默认已关注。信号追踪依据 RSSI 引导接近一台 BLE 设备。",
+            "命名设备给单个 MAC 设置别名，可选择开启提醒。",
         ],
         AMBER,
         files="alert/Alerter.kt  ·  domain/Hunt.kt",
@@ -198,17 +210,17 @@ def build():
     card(
         d,
         cells[5],
-        "06  Keep / share",
-        "Log, sits, TAK",
+        "06  保存与分享",
+        "日志、观测与 TAK",
         [
-            "Rotating log on disk. A sit is a named window of everything heard. Debrief and AI Export use the open sit or last 15 minutes.",
-            "TAK / CoT is off by default. Privacy mode masks the screen and pauses the feed; the log still holds full MACs and GPS.",
+            "滚动日志写入磁盘。观测记录命名窗口内全部设备。观测总结与 AI 导出使用选中观测，或内存最近 15 分钟。",
+            "TAK / CoT 默认关闭。隐私模式遮蔽画面并暂停推送，日志仍保留完整 MAC 与 GPS。",
         ],
         PHOS,
         files="data/LogStore.kt  ·  data/SitStore.kt  ·  domain/TakPublish.kt",
     )
 
-    # arrows between cells
+    # 卡片间的流程箭头。
     def mid_right(box):
         return box[2], (box[1] + box[3]) / 2
 
@@ -226,11 +238,11 @@ def build():
         x2, _ = mid_left(cells[b])
         arrow_h(d, x1 + 6, x2 - 6, y)
 
-    # footer
+    # 页脚。
     d.line((PAD, H - 58, W - PAD, H - 58), fill=RULE, width=1)
     d.text(
         (PAD + 8, H - 30),
-        "Not in earshot: Wi-Fi clients  ·  Classic Bluetooth  ·  cellular / LTE / C-V2X     Offline-first. No Fieldwatch server. No account. No telemetry.",
+        "不支持：Wi-Fi 客户端 · 经典蓝牙 · 蜂窝 / LTE / C-V2X     优先离线，无 Fieldwatch 服务器、账号或遥测。",
         font=F(18),
         fill=MUTED,
         anchor="lm",
@@ -238,7 +250,7 @@ def build():
     d.text((W - PAD, H - 30), "app.fieldwatch", font=M(16), fill=PHOS, anchor="rm")
 
     img.save(OUT, "PNG")
-    print("wrote", OUT, img.size)
+    print("已生成", OUT, img.size)
 
 
 if __name__ == "__main__":

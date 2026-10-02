@@ -1,6 +1,14 @@
 Fieldwatch
 Copyright (c) 2026 Off Grid Pete LLC
 
+中文说明（仅供阅读，不替代下方法律原文）：
+本项目源代码采用 MIT 许可证。所用 AndroidX、Kotlin 等第三方库保留其
+Apache-2.0 许可；IEEE 与 Bluetooth SIG 编号分配表受各组织条款约束，
+不属于 Off Grid Pete LLC 的 MIT 授权。Fast Pair 型号资料来自公开列表，
+并非 Google 产品。Fieldwatch 延续 Spectre 1.2.14，但使用独立名称与
+应用包名 app.fieldwatch。本次简体中文本地化保留原作者版权和第三方署名。
+以下英文归属与许可说明保持原样。
+
 This product includes software developed by third parties, licensed
 under Apache License 2.0 (see LICENSE and the Apache license text
 those projects ship):

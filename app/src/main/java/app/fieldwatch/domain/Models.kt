@@ -19,11 +19,11 @@ enum class ViewMode {
     ;
 
     fun label(): String = when (this) {
-        RADAR -> "Classic radar"
-        LIST -> "Strength list"
-        TIMELINE -> "Timeline"
-        HYBRID -> "Hybrid + sparklines"
-        BY_CLASS -> "By class"
+        RADAR -> "经典雷达"
+        LIST -> "信号强度列表"
+        TIMELINE -> "时间线"
+        HYBRID -> "混合视图 + 趋势图"
+        BY_CLASS -> "按类别"
     }
 }
 
@@ -63,52 +63,52 @@ enum class SignatureClass {
     ;
 
     fun label(): String = when (this) {
-        FINDER -> "Finder tags"
-        BEACON -> "Retail beacons"
-        SIGNAGE -> "Signage"
-        WEARABLE -> "Wearables"
-        SURVEILLANCE -> "Surveillance"
-        DRONE -> "Drones"
-        HACKING -> "Pentest"
-        BODYWORN -> "Body-worn"
-        LAW_ENFORCEMENT -> "Public safety"
-        VEHICLE -> "Vehicle"
-        GLASSES -> "Glasses"
-        AUDIO -> "Audio"
-        CAMERA -> "Cameras"
-        THERMOSTAT -> "Thermostats"
-        LOCK -> "Access control"
-        HEALTH -> "Health"
-        HOME -> "Home IoT"
-        ISP -> "ISP / routers"
-        MESH -> "Mesh"
-        PHONE -> "Phones / PCs"
-        OTHER -> "Other"
+        FINDER -> "寻物标签"
+        BEACON -> "零售信标"
+        SIGNAGE -> "信息标牌"
+        WEARABLE -> "可穿戴设备"
+        SURVEILLANCE -> "监控设备"
+        DRONE -> "无人机"
+        HACKING -> "渗透测试"
+        BODYWORN -> "随身设备"
+        LAW_ENFORCEMENT -> "公共安全"
+        VEHICLE -> "车辆"
+        GLASSES -> "智能眼镜"
+        AUDIO -> "音频设备"
+        CAMERA -> "摄像头"
+        THERMOSTAT -> "恒温器"
+        LOCK -> "门禁设备"
+        HEALTH -> "健康设备"
+        HOME -> "智能家居"
+        ISP -> "运营商 / 路由器"
+        MESH -> "Mesh 网络"
+        PHONE -> "手机 / 电脑"
+        OTHER -> "其他"
     }
 
     /** Short spoken form for watchlist voice. */
     fun speechLabel(): String = when (this) {
-        FINDER -> "finder tags"
-        BEACON -> "retail beacons"
-        SIGNAGE -> "signage"
-        WEARABLE -> "wearables"
-        SURVEILLANCE -> "surveillance"
-        DRONE -> "drones"
-        HACKING -> "pentest"
-        BODYWORN -> "body worn"
-        LAW_ENFORCEMENT -> "public safety"
-        VEHICLE -> "vehicle"
-        GLASSES -> "glasses"
-        AUDIO -> "audio"
-        CAMERA -> "cameras"
-        THERMOSTAT -> "thermostats"
-        LOCK -> "access control"
-        HEALTH -> "health"
-        HOME -> "home I O T"
-        ISP -> "I S P routers"
-        MESH -> "mesh"
-        PHONE -> "phones"
-        OTHER -> "other"
+        FINDER -> "寻物标签"
+        BEACON -> "零售信标"
+        SIGNAGE -> "信息标牌"
+        WEARABLE -> "可穿戴设备"
+        SURVEILLANCE -> "监控设备"
+        DRONE -> "无人机"
+        HACKING -> "渗透测试"
+        BODYWORN -> "随身设备"
+        LAW_ENFORCEMENT -> "公共安全"
+        VEHICLE -> "车辆"
+        GLASSES -> "智能眼镜"
+        AUDIO -> "音频设备"
+        CAMERA -> "摄像头"
+        THERMOSTAT -> "恒温器"
+        LOCK -> "门禁设备"
+        HEALTH -> "健康设备"
+        HOME -> "智能家居"
+        ISP -> "运营商路由器"
+        MESH -> "网状网络"
+        PHONE -> "手机"
+        OTHER -> "其他"
     }
 
     /**
@@ -133,9 +133,9 @@ enum class AlertVoiceWhat {
     ;
 
     fun label(): String = when (this) {
-        CLASS -> "Class"
-        SIGNATURE -> "Signature"
-        BOTH -> "Class + signature"
+        CLASS -> "类别"
+        SIGNATURE -> "特征"
+        BOTH -> "类别 + 特征"
     }
 }
 
@@ -146,7 +146,7 @@ fun speakableWatchName(name: String): String =
         .replace('·', ' ')
         .replace(Regex("\\s+"), " ")
         .trim()
-        .ifBlank { "unmatched" }
+        .ifBlank { "未匹配" }
 
 fun spokenWatchClass(
     device: Sighting,
@@ -165,12 +165,12 @@ fun spokenWatchPhrase(
             it.isNotEmpty() && !it.equals(device.mac, ignoreCase = true)
         } ?: device.listTitle().takeIf {
             it.isNotBlank() && !it.equals(device.mac, ignoreCase = true)
-        } ?: "radio"
+        } ?: "无线设备"
         return speakableWatchName(named)
     }
     val preferred = target?.fleetId?.takeIf { it in device.fleetIds }
-    val id = preferred ?: device.fleetIds.firstOrNull() ?: return "unmatched"
-    val fleet = fleets.firstOrNull { it.id == id } ?: return "unmatched"
+    val id = preferred ?: device.fleetIds.firstOrNull() ?: return "未匹配"
+    val fleet = fleets.firstOrNull { it.id == id } ?: return "未匹配"
     val cls = fleet.kind.speechLabel()
     val sig = fleet.speechName()
     return when (what) {
@@ -193,8 +193,8 @@ enum class SignatureListSort {
     ;
 
     fun label(): String = when (this) {
-        NAME -> "Name A–Z"
-        CLASS -> "Class A–Z"
+        NAME -> "按名称"
+        CLASS -> "按类别"
     }
 }
 
@@ -518,18 +518,18 @@ private val BuiltInPresetIds = setOf(
     "hide-trackers",
     "hide-phones",
     "named",
-    "surveillance",
-    "drones",
+    "监控设备",
+    "无人机",
     "beacons",
-    "signage",
-    "wearables",
-    "pentest",
+    "信息标牌",
+    "可穿戴设备",
+    "渗透测试",
     "locks",
     "bodyworn",
-    "vehicle",
-    "glasses",
-    "audio",
-    "cameras",
+    "车辆",
+    "智能眼镜",
+    "音频设备",
+    "摄像头",
 )
 
 @Serializable
@@ -740,7 +740,7 @@ data class Sighting(
     val liveDecode: List<LiveDecodeChip> = emptyList(),
 ) {
     val displayName: String
-        get() = name.ifBlank { if (hiddenSsid) "<hidden>" else mac }
+        get() = name.ifBlank { if (hiddenSsid) "<隐藏>" else mac }
 
     /** Custom name from Named radios, else advertised / hidden / MAC. */
     fun reportName(customNames: Map<String, String>): String {
@@ -756,16 +756,16 @@ data class Sighting(
     fun listTitle(signatureNames: List<String> = emptyList()): String {
         val advertised = name.trim()
         if (advertised.isNotEmpty() && !advertised.equals(mac, ignoreCase = true)) return advertised
-        if (kind == RadioKind.WIFI) return if (hiddenSsid) "<hidden>" else mac
-        return DeviceExplain.listLabel(this, signatureNames) ?: "unnamed LE"
+        if (kind == RadioKind.WIFI) return if (hiddenSsid) "<隐藏>" else mac
+        return DeviceExplain.listLabel(this, signatureNames) ?: "未命名 BLE"
     }
 
     /** SSID or BLE local name; placeholders if blank. */
     fun advertisedName(): String {
         val advertised = name.trim()
         if (advertised.isNotEmpty() && !advertised.equals(mac, ignoreCase = true)) return advertised
-        if (kind == RadioKind.WIFI) return if (hiddenSsid) "<hidden>" else mac
-        return "unnamed LE"
+        if (kind == RadioKind.WIFI) return if (hiddenSsid) "<隐藏>" else mac
+        return "未命名 BLE"
     }
 
     fun listLineText(
@@ -785,14 +785,14 @@ data class Sighting(
     fun radioKindTag(): String = if (kind == RadioKind.WIFI) "AP" else "LE"
 
     fun statusCrumbs(): String = buildString {
-        if (randomized) append("rand")
+        if (randomized) append("随机")
         if (fastPairPairing) {
             if (isNotEmpty()) append("  ")
-            append("pair")
+            append("配对")
         }
         if (gone) {
             if (isNotEmpty()) append("  ")
-            append("gone")
+            append("已离开")
         }
     }
 

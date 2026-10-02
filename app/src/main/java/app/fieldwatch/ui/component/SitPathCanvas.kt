@@ -198,9 +198,9 @@ fun SitPathCanvas(
                 val start = lay.path.first()
                 val end = lay.path.last()
                 drawStartDot(start.x, start.y)
-                val startT = measurer.measure("Start", labelStyle)
+                val startT = measurer.measure("起点", labelStyle)
                 drawText(startT, topLeft = Offset((start.x + 8f).coerceAtMost(size.width - startT.size.width), start.y - 6f))
-                val endLabel = if (model.live) "Now" else "End"
+                val endLabel = if (model.live) "现在" else "终点"
                 val endT = measurer.measure(endLabel, labelStyle)
                 drawText(
                     endT,
@@ -250,7 +250,7 @@ fun SitPathCanvas(
             drawLine(muted, Offset(barX, barY - 5f), Offset(barX, barY + 5f), strokeWidth = 3f)
             drawLine(muted, Offset(barX + barW, barY - 5f), Offset(barX + barW, barY + 5f), strokeWidth = 3f)
             drawText(measured, topLeft = Offset(barX + barW + 8f, barY - measured.size.height / 2f))
-            val n = measurer.measure("N", labelStyle)
+            val n = measurer.measure("北", labelStyle)
             drawText(n, topLeft = Offset(size.width - n.size.width - 10f, 8f))
         }
         if (selected != null) {
@@ -265,7 +265,7 @@ fun SitPathCanvas(
                     .padding(8.dp),
             ) {
                 Text(
-                    if (selected.members.size == 1) "1 alert here" else "${selected.members.size} alerts here",
+                    if (selected.members.size == 1) "此处有 1 条警报" else "此处有 ${selected.members.size} 条警报",
                     style = MaterialTheme.typography.labelSmall,
                     color = muted,
                 )
@@ -341,8 +341,8 @@ private fun pathMarkers(
     if (lay.path.size < 2 || width < 8f) return emptyList()
     val start = lay.path.first()
     val end = lay.path.last()
-    val startText = measurer.measure("Start", labelStyle)
-    val endText = measurer.measure(if (live) "Now" else "End", labelStyle)
+    val startText = measurer.measure("起点", labelStyle)
+    val endText = measurer.measure(if (live) "现在" else "终点", labelStyle)
     return listOf(
         hitMarker(start, 12f, startText, width, dx = 8f, dy = -6f),
         hitMarker(end, 12f, endText, width, dx = 10f, dy = -(endText.size.height + 4f).toFloat()),
@@ -476,6 +476,6 @@ private fun DrawScope.drawPilotMark(center: Offset, painter: Painter) {
 }
 
 private fun scaleLabel(m: Double): String =
-    if (m >= 1000) "${(m / 1000).toInt()} km" else "${m.toInt()} m"
+    if (m >= 1000) "${(m / 1000).toInt()} 公里" else "${m.toInt()} 米"
 
 private val TIME_FMT = SimpleDateFormat("HH:mm", Locale.getDefault())

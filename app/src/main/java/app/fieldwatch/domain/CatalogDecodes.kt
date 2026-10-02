@@ -44,27 +44,27 @@ internal object CatalogDecodes {
      * codename is published; otherwise the Nest internal name.
      */
     private val NEST_WEAVE_PRODUCTS = mapOf(
-        "1" to "Nest Learning Thermostat (1st/2nd)",
-        "2" to "Nest Learning Thermostat (1st/2nd) backplate",
-        "3" to "Nest Learning Thermostat (3rd)",
-        "4" to "Nest Learning Thermostat (3rd) backplate",
-        "5" to "Nest Protect (1st gen)",
-        "6" to "Nest Heat Link backplate",
+        "1" to "Nest Learning Thermostat（第 1／2 代）",
+        "2" to "Nest Learning Thermostat（第 1／2 代）底板",
+        "3" to "Nest Learning Thermostat（第 3 代）",
+        "4" to "Nest Learning Thermostat（第 3 代）底板",
+        "5" to "Nest Protect（第 1 代）",
+        "6" to "Nest Heat Link 底板",
         "7" to "Nest Heat Link",
         "8" to "Nest Pinna",
-        "9" to "Nest Protect (2nd gen)",
-        "10" to "Nest Learning Thermostat (3rd, EU)",
-        "11" to "Nest Learning Thermostat (3rd, EU) backplate",
+        "9" to "Nest Protect（第 2 代）",
+        "10" to "Nest Learning Thermostat（第 3 代，欧洲版）",
+        "11" to "Nest Learning Thermostat（第 3 代，欧洲版）底板",
         "12" to "Nest Flintstone",
-        "13" to "Nest Cam IQ indoor",
+        "13" to "Nest Cam IQ 室内版",
         "14" to "Nest Hello",
-        "15" to "Nest Heat Link (2nd)",
-        "16" to "Nest Cam IQ outdoor",
+        "15" to "Nest Heat Link（第 2 代）",
+        "16" to "Nest Cam IQ 室外版",
         "17" to "Nest Quartz2",
         "18" to "Nest Black Quartz",
         "19" to "Nest Detect",
         "20" to "Nest Guard",
-        "21" to "Nest Guard backplate",
+        "21" to "Nest Guard 底板",
         "22" to "Nest Antigua",
         "23" to "Nest Rose Quartz",
         "24" to "Nest Moonstone",
@@ -81,26 +81,26 @@ internal object CatalogDecodes {
         source = DecodeSource.MANUFACTURER_DATA,
         companyId = 0x0499,
         fields = listOf(
-            u8("format", "Format", 0),
-            i16be("temperature", "Temperature", 1, scale = 0.005, unit = "°C", gate = eq(0, "05")),
-            u16be("humidity", "Humidity", 3, scale = 0.0025, unit = "%", gate = eq(0, "05")),
-            u16be("pressure", "Pressure", 5, scale = 0.01, offsetAdd = 500.0, unit = "hPa", gate = eq(0, "05")),
-            i16be("acc_x", "Accel X", 7, scale = 0.001, unit = "g", gate = eq(0, "05")),
-            i16be("acc_y", "Accel Y", 9, scale = 0.001, unit = "g", gate = eq(0, "05")),
-            i16be("acc_z", "Accel Z", 11, scale = 0.001, unit = "g", gate = eq(0, "05")),
+            u8("format", "格式", 0),
+            i16be("temperature", "温度", 1, scale = 0.005, unit = "°C", gate = eq(0, "05")),
+            u16be("humidity", "湿度", 3, scale = 0.0025, unit = "%", gate = eq(0, "05")),
+            u16be("pressure", "气压", 5, scale = 0.01, offsetAdd = 500.0, unit = "hPa", gate = eq(0, "05")),
+            i16be("acc_x", "X 轴加速度", 7, scale = 0.001, unit = "g", gate = eq(0, "05")),
+            i16be("acc_y", "Y 轴加速度", 9, scale = 0.001, unit = "g", gate = eq(0, "05")),
+            i16be("acc_z", "Z 轴加速度", 11, scale = 0.001, unit = "g", gate = eq(0, "05")),
             bits(
-                "battery", "Battery", 13, length = 2, bitOffset = 5, bitWidth = 11,
+                "battery", "电池", 13, length = 2, bitOffset = 5, bitWidth = 11,
                 endian = DecodeEndian.BE, scale = 1.0, offsetAdd = 1600.0, unit = "mV",
                 gate = eq(0, "05"),
             ),
             bits(
-                "tx_power", "TX power", 13, length = 2, bitOffset = 0, bitWidth = 5,
+                "tx_power", "发射功率", 13, length = 2, bitOffset = 0, bitWidth = 5,
                 endian = DecodeEndian.BE, scale = 2.0, offsetAdd = -40.0, unit = "dBm",
                 gate = eq(0, "05"),
             ),
-            u8("movement", "Movement", 15, gate = eq(0, "05")),
-            u16be("sequence", "Sequence", 16, gate = eq(0, "05")),
-            mac("mac", "MAC in payload", 18, gate = eq(0, "05")),
+            u8("movement", "运动计数", 15, gate = eq(0, "05")),
+            u16be("sequence", "序号", 16, gate = eq(0, "05")),
+            mac("mac", "载荷中的 MAC", 18, gate = eq(0, "05")),
         ) + ruuviRawV1(),
     )
 
@@ -114,23 +114,23 @@ internal object CatalogDecodes {
         source = DecodeSource.SERVICE_DATA,
         serviceUuid = "FFFA",
         fields = buildList {
-            add(u8("app", "App code", 0, enumLabels = mapOf("13" to "Open Drone ID")))
-            add(u8("counter", "Counter", 1))
+            add(u8("app", "应用代码", 0, enumLabels = mapOf("13" to "Open Drone ID")))
+            add(u8("counter", "计数器", 1))
             add(
                 bits(
-                    "msg_type", "Message", 2, bitOffset = 4, bitWidth = 4,
+                    "msg_type", "消息", 2, bitOffset = 4, bitWidth = 4,
                     enumLabels = mapOf(
-                        "0" to "Basic ID",
-                        "1" to "Location",
-                        "2" to "Auth",
-                        "3" to "Self ID",
-                        "4" to "System",
-                        "5" to "Operator ID",
-                        "15" to "Message pack",
+                        "0" to "基本 ID",
+                        "1" to "位置",
+                        "2" to "认证",
+                        "3" to "自述 ID",
+                        "4" to "系统",
+                        "5" to "操作员 ID",
+                        "15" to "消息包",
                     ),
                 ),
             )
-            add(bits("proto", "Protocol", 2, bitOffset = 0, bitWidth = 4))
+            add(bits("proto", "协议", 2, bitOffset = 0, bitWidth = 4))
             addAll(forMessageType(0, basicIdFields()))
             addAll(forMessageType(1, locationFields()))
             addAll(forMessageType(3, selfIdFields()))
@@ -144,12 +144,12 @@ internal object CatalogDecodes {
         source = DecodeSource.MANUFACTURER_DATA,
         companyId = 0x0133,
         fields = listOf(
-            u8("version", "Version", 0),
-            u8("battery", "Battery", 1, unit = "%"),
-            u16be("interval", "Log interval", 2, unit = "s"),
-            u16be("logs", "Stored logs", 4),
-            i16be("temperature", "Temperature", 6, scale = 0.1, unit = "°C"),
-            u16be("humidity", "Humidity", 8, scale = 0.1, unit = "%", gate = eq(0, "17")),
+            u8("version", "版本", 0),
+            u8("battery", "电池", 1, unit = "%"),
+            u16be("interval", "日志间隔", 2, unit = "s"),
+            u16be("logs", "已存日志", 4),
+            i16be("temperature", "温度", 6, scale = 0.1, unit = "°C"),
+            u16be("humidity", "湿度", 8, scale = 0.1, unit = "%", gate = eq(0, "17")),
         ),
     )
 
@@ -158,13 +158,13 @@ internal object CatalogDecodes {
         source = DecodeSource.MANUFACTURER_DATA,
         companyId = 0xF202,
         fields = listOf(
-            u8("schema", "Schema", 0),
-            bits("awake", "Processor", 1, bitOffset = 0, bitWidth = 1, enumLabels = onOff("asleep", "awake")),
-            bits("wifi_ap", "Wi-Fi AP", 1, bitOffset = 1, bitWidth = 1, enumLabels = onOff("off", "on")),
-            bits("pairing", "Pairing", 1, bitOffset = 2, bitWidth = 1, enumLabels = onOff("no", "yes")),
-            bits("new_media", "New media", 1, bitOffset = 4, bitWidth = 1, enumLabels = onOff("no", "yes")),
-            u8("model", "Model", 2, enumLabels = GOPRO_MODELS),
-            bits("offload", "Media offload", 11, bitOffset = 0, bitWidth = 1, enumLabels = onOff("no", "available")),
+            u8("schema", "结构版本", 0),
+            bits("awake", "处理器", 1, bitOffset = 0, bitWidth = 1, enumLabels = onOff("休眠", "唤醒")),
+            bits("wifi_ap", "Wi-Fi AP", 1, bitOffset = 1, bitWidth = 1, enumLabels = onOff("关闭", "开启")),
+            bits("pairing", "配对", 1, bitOffset = 2, bitWidth = 1, enumLabels = onOff("否", "是")),
+            bits("new_media", "新媒体", 1, bitOffset = 4, bitWidth = 1, enumLabels = onOff("否", "是")),
+            u8("model", "型号", 2, enumLabels = GOPRO_MODELS),
+            bits("offload", "媒体导出", 11, bitOffset = 0, bitWidth = 1, enumLabels = onOff("否", "可用")),
         ),
     )
 
@@ -190,12 +190,12 @@ internal object CatalogDecodes {
         source = DecodeSource.SERVICE_DATA,
         serviceUuid = "FE6A",
         fields = listOf(
-            u8("kind", "Packet", 0, enumLabels = mapOf("7" to "Location"), gate = eq(0, "07")),
-            u8("battery", "Battery", 1, unit = "%", gate = eq(0, "07")),
-            i8("tx_power", "TX power", 2, unit = "dBm", gate = eq(0, "07")),
-            u8("channel", "Channel", 3, gate = eq(0, "07")),
-            u8("model", "Model id", 4, gate = eq(0, "07")),
-            bits("moving", "Moving", 5, bitOffset = 0, bitWidth = 1, enumLabels = onOff("still", "moving"), gate = eq(0, "07")),
+            u8("kind", "数据包", 0, enumLabels = mapOf("7" to "位置"), gate = eq(0, "07")),
+            u8("battery", "电池", 1, unit = "%", gate = eq(0, "07")),
+            i8("tx_power", "发射功率", 2, unit = "dBm", gate = eq(0, "07")),
+            u8("channel", "信道", 3, gate = eq(0, "07")),
+            u8("model", "型号 ID", 4, gate = eq(0, "07")),
+            bits("moving", "移动状态", 5, bitOffset = 0, bitWidth = 1, enumLabels = onOff("静止", "移动中"), gate = eq(0, "07")),
         ),
     )
 
@@ -205,8 +205,8 @@ internal object CatalogDecodes {
         companyId = 0x015D,
         fields = listOf(
             u8(
-                "frame", "Frame", 0,
-                enumLabels = mapOf("1" to "Nearable", "2" to "Telemetry"),
+                "frame", "帧", 0,
+                enumLabels = mapOf("1" to "Nearable（近场）", "2" to "遥测"),
             ),
         ),
     )
@@ -225,18 +225,18 @@ internal object CatalogDecodes {
             val idBlock = lenEq(17, eq(1, "01"))
             add(
                 u16le(
-                    "product", "Product", 0,
+                    "product", "产品", 0,
                     enumLabels = NEST_WEAVE_PRODUCTS,
                     gate = lenEq(2),
                 ),
             )
-            add(u16le("vendor", "Vendor", 4, enumLabels = NEST_WEAVE_VENDORS, gate = idBlock))
-            add(u16le("product", "Product", 6, enumLabels = NEST_WEAVE_PRODUCTS, gate = idBlock))
-            add(hex("device_id", "Weave device id", 8, length = 8, gate = idBlock))
+            add(u16le("vendor", "厂商", 4, enumLabels = NEST_WEAVE_VENDORS, gate = idBlock))
+            add(u16le("product", "产品", 6, enumLabels = NEST_WEAVE_PRODUCTS, gate = idBlock))
+            add(hex("device_id", "Weave 设备 ID", 8, length = 8, gate = idBlock))
             add(
                 u8(
-                    "pairing", "Pairing", 16,
-                    enumLabels = onOff("unpaired", "paired"),
+                    "pairing", "配对", 16,
+                    enumLabels = onOff("未配对", "已配对"),
                     gate = idBlock,
                 ),
             )
@@ -248,8 +248,8 @@ internal object CatalogDecodes {
         source = DecodeSource.MANUFACTURER_DATA,
         companyId = 0x07D0,
         fields = listOf(
-            bits("bound", "Bound", 0, bitOffset = 7, bitWidth = 1, enumLabels = onOff("unbound", "bound")),
-            u8("protocol", "Protocol", 1),
+            bits("bound", "绑定状态", 0, bitOffset = 7, bitWidth = 1, enumLabels = onOff("未绑定", "已绑定")),
+            u8("protocol", "协议", 1),
         ),
     )
 
@@ -261,8 +261,8 @@ internal object CatalogDecodes {
         source = DecodeSource.MANUFACTURER_DATA,
         companyId = 0x09C8,
         fields = listOf(
-            mac("adv_mac", "MAC in payload", 0, gate = eq(10, "544E")),
-            utf8("serial", "Serial", 10, length = 16, gate = eq(10, "544E")),
+            mac("adv_mac", "载荷中的 MAC", 0, gate = eq(10, "544E")),
+            utf8("serial", "序列号", 10, length = 16, gate = eq(10, "544E")),
         ),
     )
 
@@ -271,7 +271,7 @@ internal object CatalogDecodes {
         source = DecodeSource.SERVICE_DATA,
         serviceUuid = "FEED",
         fields = listOf(
-            hex("private_id", "Private ID", 0, length = 8),
+            hex("private_id", "私有 ID", 0, length = 8),
         ),
     )
 
@@ -280,7 +280,7 @@ internal object CatalogDecodes {
         source = DecodeSource.MANUFACTURER_DATA,
         companyId = 0x08AA,
         fields = listOf(
-            u16le("model", "Model", 0, enumLabels = DJI_MODELS),
+            u16le("model", "型号", 0, enumLabels = DJI_MODELS),
         ),
     )
 
@@ -295,7 +295,7 @@ internal object CatalogDecodes {
         companyId = 0x0001,
         fields = listOf(
             u8(
-                "wheel", "Wheel", 0,
+                "wheel", "车轮", 0,
                 enumLabels = mapOf(
                     "128" to "1",
                     "129" to "2",
@@ -304,13 +304,13 @@ internal object CatalogDecodes {
                 ),
                 gate = lenEq(16),
             ),
-            hex("sensor_id", "Sensor id", 1, length = 5, gate = lenEq(16)),
-            u32le("pressure", "Pressure", 6, scale = 0.001, unit = "kPa", gate = lenEq(16)),
-            i32le("temperature", "Temperature", 10, scale = 0.01, unit = "°C", gate = lenEq(16)),
-            u8("battery", "Battery", 14, unit = "%", gate = lenEq(16)),
+            hex("sensor_id", "传感器 ID", 1, length = 5, gate = lenEq(16)),
+            u32le("pressure", "气压", 6, scale = 0.001, unit = "kPa", gate = lenEq(16)),
+            i32le("temperature", "温度", 10, scale = 0.01, unit = "°C", gate = lenEq(16)),
+            u8("battery", "电池", 14, unit = "%", gate = lenEq(16)),
             u8(
-                "alarm", "Alarm", 15,
-                enumLabels = mapOf("0" to "ok", "1" to "no pressure"),
+                "alarm", "警报", 15,
+                enumLabels = mapOf("0" to "正常", "1" to "无压力"),
                 gate = lenEq(16),
             ),
         ),
@@ -326,23 +326,23 @@ internal object CatalogDecodes {
         includeCompanyId = true,
         fields = listOf(
             bits(
-                "alarm", "Alarm", 0, bitOffset = 7, bitWidth = 1,
-                enumLabels = onOff("ok", "zero pressure"),
+                "alarm", "警报", 0, bitOffset = 7, bitWidth = 1,
+                enumLabels = onOff("正常", "零压力"),
                 gate = lenEq(7),
             ),
             bits(
-                "rotating", "Rotating", 0, bitOffset = 6, bitWidth = 1,
-                enumLabels = onOff("no", "yes"),
+                "rotating", "正在旋转", 0, bitOffset = 6, bitWidth = 1,
+                enumLabels = onOff("否", "是"),
                 gate = lenEq(7),
             ),
             bits(
-                "still", "Standing still", 0, bitOffset = 5, bitWidth = 1,
-                enumLabels = onOff("no", "yes"),
+                "still", "保持静止", 0, bitOffset = 5, bitWidth = 1,
+                enumLabels = onOff("否", "是"),
                 gate = lenEq(7),
             ),
-            u8("battery", "Battery", 1, scale = 0.1, unit = "V", gate = lenEq(7)),
-            u8("temperature", "Temperature", 2, unit = "°C", gate = lenEq(7)),
-            u16be("pressure", "Pressure", 3, scale = 0.1, offsetAdd = -14.5, unit = "psi", gate = lenEq(7)),
+            u8("battery", "电池", 1, scale = 0.1, unit = "V", gate = lenEq(7)),
+            u8("temperature", "温度", 2, unit = "°C", gate = lenEq(7)),
+            u16be("pressure", "气压", 3, scale = 0.1, offsetAdd = -14.5, unit = "psi", gate = lenEq(7)),
         ),
     )
 
@@ -355,19 +355,19 @@ internal object CatalogDecodes {
         serviceUuid = "FEAA",
         fields = listOf(
             u8(
-                "mode", "Mode", 0,
+                "mode", "模式", 0,
                 enumLabels = mapOf(
-                    "64" to "nearby",
-                    "65" to "separated",
+                    "64" to "靠近主人",
+                    "65" to "分离",
                 ),
                 live = true,
                 liveEmphasis = listOf("65"),
                 enumNotes = mapOf(
-                    "65" to "Separated from its owner. The address can hold still for about a day.",
-                    "64" to "Nearby its owner. With you the whole sit, this is often your own tag. First heard after the sit started, it is more often someone who joined with their own keys.",
+                    "65" to "已与主人分离。此地址可能保持约一天不变。",
+                    "64" to "靠近主人。若在整次观测中都与你一起出现，通常是你自己的标签；若在观测开始后才首次接收到，更可能是后来到场的人随身携带的钥匙标签。",
                 ),
             ),
-            hex("eid", "Ephemeral ID", 1, length = 20),
+            hex("eid", "临时 ID", 1, length = 20),
         ),
     )
 
@@ -379,19 +379,19 @@ internal object CatalogDecodes {
         source = DecodeSource.SERVICE_DATA,
         serviceUuid = "FCB2",
         fields = listOf(
-            u8("network_id", "Network ID", 0),
+            u8("network_id", "网络 ID", 0),
             bits(
-                "mode", "Mode", 1,
+                "mode", "模式", 1,
                 bitOffset = 0, bitWidth = 1,
                 enumLabels = mapOf(
-                    "0" to "separated",
-                    "1" to "near owner",
+                    "0" to "分离",
+                    "1" to "靠近主人",
                 ),
                 live = true,
                 liveEmphasis = listOf("0"),
                 enumNotes = mapOf(
-                    "0" to "Separated from its owner. The address can hold still for about a day.",
-                    "1" to "Near its owner. With you the whole sit, this is often your own tag. First heard after the sit started, it is more often someone who joined with their own keys.",
+                    "0" to "已与主人分离。此地址可能保持约一天不变。",
+                    "1" to "靠近主人。若在整次观测中都与你一起出现，通常是你自己的标签；若在观测开始后才首次接收到，更可能是后来到场的人随身携带的钥匙标签。",
                 ),
             ),
         ),
@@ -407,47 +407,47 @@ internal object CatalogDecodes {
         companyId = 0x022B,
         fields = listOf(
             u8(
-                "mode", "Mode", 2,
+                "mode", "模式", 2,
                 enumLabels = mapOf(
-                    "0" to "sleep",
-                    "1" to "sleep",
-                    "2" to "sleep",
-                    "3" to "sleep",
-                    "4" to "sleep",
+                    "0" to "休眠",
+                    "1" to "休眠",
+                    "2" to "休眠",
+                    "3" to "休眠",
+                    "4" to "休眠",
                 ),
             ),
             u16le(
-                "pressure", "Pressure", 3,
+                "pressure", "气压", 3,
                 scale = 1.0 / 7.0, offsetAdd = -100.0 / 7.0, unit = "psi",
                 gate = teslaAwake(),
             ),
-            u8("temperature", "Temperature", 5, offsetAdd = -1.0, unit = "°F", gate = teslaAwake()),
-            u16le("battery", "Battery", 6, unit = "mV", gate = teslaAwake()),
+            u8("temperature", "温度", 5, offsetAdd = -1.0, unit = "°F", gate = teslaAwake()),
+            u16le("battery", "电池", 6, unit = "mV", gate = teslaAwake()),
         ),
     )
 
     private fun basicIdFields(): List<DecodeField> = listOf(
         bits(
-            "id_type", "ID type", 3, bitOffset = 4, bitWidth = 4,
+            "id_type", "ID 类型", 3, bitOffset = 4, bitWidth = 4,
             enumLabels = mapOf(
-                "0" to "None",
-                "1" to "Serial (CTA-2063)",
-                "2" to "CAA registration",
+                "0" to "无",
+                "1" to "序列号（CTA-2063）",
+                "2" to "CAA 注册号",
                 "3" to "UTM UUID",
-                "4" to "Session ID",
+                "4" to "会话 ID",
             ),
         ),
         bits(
-            "ua_type", "UA type", 3, bitOffset = 0, bitWidth = 4,
+            "ua_type", "无人航空器类型", 3, bitOffset = 0, bitWidth = 4,
             enumLabels = mapOf(
-                "0" to "None",
-                "1" to "Aeroplane",
-                "2" to "Helicopter / multirotor",
-                "3" to "Gyroplane",
-                "4" to "Hybrid lift",
-                "6" to "Glider",
-                "10" to "Airship",
-                "15" to "Other",
+                "0" to "无",
+                "1" to "固定翼飞机",
+                "2" to "直升机／多旋翼",
+                "3" to "旋翼机",
+                "4" to "混合升力航空器",
+                "6" to "滑翔机",
+                "10" to "飞艇",
+                "15" to "其他",
             ),
         ),
         utf8("uas_id", "UAS ID", 4, length = 20),
@@ -461,52 +461,52 @@ internal object CatalogDecodes {
      */
     private fun locationFields(): List<DecodeField> = listOf(
         bits(
-            "status", "Status", 3, bitOffset = 4, bitWidth = 4,
+            "status", "状态", 3, bitOffset = 4, bitWidth = 4,
             enumLabels = mapOf(
-                "0" to "Undeclared",
-                "1" to "Ground",
-                "2" to "Airborne",
-                "3" to "Emergency",
-                "4" to "RID failure",
+                "0" to "未声明",
+                "1" to "地面",
+                "2" to "空中",
+                "3" to "紧急状态",
+                "4" to "RID 故障",
             ),
             live = true,
             liveEmphasis = listOf("3"),
         ),
         u8(
-            "heading", "Heading", 4, offsetAdd = 180.0, unit = "°",
+            "heading", "航向", 4, offsetAdd = 180.0, unit = "°",
             gate = mask(3, "02", neq(4, "FF")),
         ),
         u8(
-            "heading", "Heading", 4, unit = "°",
+            "heading", "航向", 4, unit = "°",
             gate = nmask(3, "02", neq(4, "FF")),
         ),
         u8(
-            "hspeed", "Horizontal speed", 5, scale = 0.75, offsetAdd = 63.75, unit = "m/s",
+            "hspeed", "水平速度", 5, scale = 0.75, offsetAdd = 63.75, unit = "m/s",
             gate = mask(3, "01", neq(5, "FF")),
         ),
         u8(
-            "hspeed", "Horizontal speed", 5, scale = 0.25, unit = "m/s",
+            "hspeed", "水平速度", 5, scale = 0.25, unit = "m/s",
             gate = nmask(3, "01", neq(5, "FF")),
         ),
-        i8("vspeed", "Vertical speed", 6, scale = 0.5, unit = "m/s"),
-        i32le("latitude", "Latitude", 7, scale = 1e-7, unit = "°"),
-        i32le("longitude", "Longitude", 11, scale = 1e-7, unit = "°"),
-        u16le("alt_baro", "Altitude (baro)", 15, scale = 0.5, offsetAdd = -1000.0, unit = "m"),
-        u16le("alt_geo", "Altitude (HAE)", 17, scale = 0.5, offsetAdd = -1000.0, unit = "m"),
-        u16le("height", "Height", 19, scale = 0.5, offsetAdd = -1000.0, unit = "m"),
+        i8("vspeed", "垂直速度", 6, scale = 0.5, unit = "m/s"),
+        i32le("latitude", "纬度", 7, scale = 1e-7, unit = "°"),
+        i32le("longitude", "经度", 11, scale = 1e-7, unit = "°"),
+        u16le("alt_baro", "气压高度", 15, scale = 0.5, offsetAdd = -1000.0, unit = "m"),
+        u16le("alt_geo", "椭球高度（HAE）", 17, scale = 0.5, offsetAdd = -1000.0, unit = "m"),
+        u16le("height", "高度", 19, scale = 0.5, offsetAdd = -1000.0, unit = "m"),
     )
 
     private fun selfIdFields(): List<DecodeField> = listOf(
-        utf8("self_id", "Self ID", 4, length = 23),
+        utf8("self_id", "自述 ID", 4, length = 23),
     )
 
     private fun systemFields(): List<DecodeField> = listOf(
-        i32le("op_lat", "Operator lat", 4, scale = 1e-7, unit = "°"),
-        i32le("op_lon", "Operator lon", 8, scale = 1e-7, unit = "°"),
+        i32le("op_lat", "操作员纬度", 4, scale = 1e-7, unit = "°"),
+        i32le("op_lon", "操作员经度", 8, scale = 1e-7, unit = "°"),
     )
 
     private fun operatorIdFields(): List<DecodeField> = listOf(
-        utf8("operator_id", "Operator ID", 4, length = 20),
+        utf8("operator_id", "操作员 ID", 4, length = 20),
     )
 
     /** Gate on message type for protocol versions 0–2 (header = type<<4 | version). */
@@ -520,33 +520,33 @@ internal object CatalogDecodes {
     }
 
     private fun ruuviRawV1(): List<DecodeField> = listOf(
-        u8("humidity", "Humidity", 1, scale = 0.5, unit = "%", gate = eq(0, "03")),
-        u16be("pressure", "Pressure", 4, scale = 0.01, offsetAdd = 500.0, unit = "hPa", gate = eq(0, "03")),
-        i16be("acc_x", "Accel X", 6, scale = 0.001, unit = "g", gate = eq(0, "03")),
-        i16be("acc_y", "Accel Y", 8, scale = 0.001, unit = "g", gate = eq(0, "03")),
-        i16be("acc_z", "Accel Z", 10, scale = 0.001, unit = "g", gate = eq(0, "03")),
-        u16be("battery", "Battery", 12, unit = "mV", gate = eq(0, "03")),
+        u8("humidity", "湿度", 1, scale = 0.5, unit = "%", gate = eq(0, "03")),
+        u16be("pressure", "气压", 4, scale = 0.01, offsetAdd = 500.0, unit = "hPa", gate = eq(0, "03")),
+        i16be("acc_x", "X 轴加速度", 6, scale = 0.001, unit = "g", gate = eq(0, "03")),
+        i16be("acc_y", "Y 轴加速度", 8, scale = 0.001, unit = "g", gate = eq(0, "03")),
+        i16be("acc_z", "Z 轴加速度", 10, scale = 0.001, unit = "g", gate = eq(0, "03")),
+        u16be("battery", "电池", 12, unit = "mV", gate = eq(0, "03")),
     )
 
     private fun goveeH5074(): List<DecodeField> {
         val gate = lenEq(7)
         return listOf(
-            i16le("temperature", "Temperature", 1, scale = 0.01, unit = "°C", gate = gate),
-            u16le("humidity", "Humidity", 3, scale = 0.01, unit = "%", gate = gate),
-            u8("battery", "Battery", 5, unit = "%", gate = gate),
+            i16le("temperature", "温度", 1, scale = 0.01, unit = "°C", gate = gate),
+            u16le("humidity", "湿度", 3, scale = 0.01, unit = "%", gate = gate),
+            u8("battery", "电池", 5, unit = "%", gate = gate),
         )
     }
 
     private fun goveeH5075(gate: DecodeWhen): List<DecodeField> = listOf(
-        u24be("temperature", "Temperature", 1, scale = 0.0001, unit = "°C", gate = gate),
-        u24be("humidity", "Humidity", 1, modulo = 1000.0, scale = 0.1, unit = "%", gate = gate),
-        u8("battery", "Battery", 4, unit = "%", gate = gate),
+        u24be("temperature", "温度", 1, scale = 0.0001, unit = "°C", gate = gate),
+        u24be("humidity", "湿度", 1, modulo = 1000.0, scale = 0.1, unit = "%", gate = gate),
+        u8("battery", "电池", 4, unit = "%", gate = gate),
     )
 
     private fun goveeH510x(gate: DecodeWhen): List<DecodeField> = listOf(
-        u24be("temperature", "Temperature", 2, scale = 0.0001, unit = "°C", gate = gate),
-        u24be("humidity", "Humidity", 2, modulo = 1000.0, scale = 0.1, unit = "%", gate = gate),
-        u8("battery", "Battery", 5, unit = "%", gate = gate),
+        u24be("temperature", "温度", 2, scale = 0.0001, unit = "°C", gate = gate),
+        u24be("humidity", "湿度", 2, modulo = 1000.0, scale = 0.1, unit = "%", gate = gate),
+        u8("battery", "电池", 5, unit = "%", gate = gate),
     )
 
     private fun onOff(off: String, on: String) = mapOf("0" to off, "1" to on)

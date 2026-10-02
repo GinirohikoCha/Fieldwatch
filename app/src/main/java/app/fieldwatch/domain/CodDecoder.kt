@@ -9,14 +9,14 @@ object CodDecoder {
         val raw: Int,
     ) {
         fun summary(): String = buildString {
-            append(major)
+            append(RadioLabels.label(major))
             if (minor.isNotBlank() && minor != "Uncategorized") {
                 append(" / ")
-                append(minor)
+                append(RadioLabels.label(minor))
             }
             if (services.isNotEmpty()) {
                 append(" · ")
-                append(services.joinToString(", "))
+                append(services.joinToString("、", transform = RadioLabels::label))
             }
         }
     }

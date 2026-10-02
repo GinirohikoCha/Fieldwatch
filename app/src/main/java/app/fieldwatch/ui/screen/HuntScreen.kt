@@ -112,11 +112,11 @@ fun HuntScreen(
             TopAppBar(
                 title = {
                     val shown = hunt.device?.let { MacUtil.redactMacIn(hunt.title, it.mac, demoMode) } ?: hunt.title
-                    Text(shown.ifBlank { "Hunt" }, maxLines = 1)
+                    Text(shown.ifBlank { "信号追踪" }, maxLines = 1)
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                     }
                 },
             )
@@ -134,13 +134,13 @@ fun HuntScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = hunt.active,
                 ) {
-                    Text("Reset this hunt")
+                    Text("重置本次追踪")
                 }
                 FieldwatchActionButton(
                     onClick = onBack,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Back to detail")
+                    Text("返回详情")
                 }
                 Row(
                     Modifier.fillMaxWidth(),
@@ -151,7 +151,7 @@ fun HuntScreen(
                         Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Beep", Modifier.weight(1f))
+                        Text("提示音", Modifier.weight(1f))
                         FieldwatchSwitch(
                             huntBeep,
                             { on ->
@@ -164,7 +164,7 @@ fun HuntScreen(
                         Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Vibrate", Modifier.weight(1f))
+                        Text("振动", Modifier.weight(1f))
                         FieldwatchSwitch(
                             huntVibrate,
                             { on ->
@@ -226,24 +226,24 @@ fun HuntScreen(
                 color = accent,
             )
             Text(
-                rssi?.let { DeviceExplain.rssiExplain(it) } ?: "no live RSSI",
+                rssi?.let { DeviceExplain.rssiExplain(it) } ?: "暂无实时 RSSI",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
                 if (hunt.peakRssi > -127) {
-                    "Loudest this hunt  ${hunt.peakRssi} dBm"
+                    "本次追踪最强信号  ${hunt.peakRssi} dBm"
                 } else {
-                    "Loudest this hunt  —"
+                    "本次追踪最强信号  —"
                 },
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.bodyMedium,
             )
             Text(
                 when {
-                    heardAgo == null -> "last heard  —"
-                    heardAgo < 60L -> "last heard ${heardAgo}s ago"
-                    else -> "last heard ${heardAgo / 60L}m ago"
+                    heardAgo == null -> "上次接收  —"
+                    heardAgo < 60L -> "上次接收于 ${heardAgo} 秒前"
+                    else -> "上次接收于 ${heardAgo / 60L} 分钟前"
                 },
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.labelMedium,
@@ -344,7 +344,7 @@ private fun HuntNeedle(
             HuntCue.GONE -> pulse(0.88f, 0.28f, 2.2f)
         }
         drawCircle(color.copy(alpha = 0.95f), radius = 5.5f, center = c)
-        val you = measurer.measure("YOU", youStyle)
+        val you = measurer.measure("你", youStyle)
         drawText(
             you,
             topLeft = Offset(c.x - you.size.width / 2f, c.y + 10f),

@@ -29,11 +29,8 @@ data class SettingsImportResult(
 ) {
     fun summary(): String {
         error?.let { return it }
-        val presetWord = if (presets == 1) "preset" else "presets"
-        val radioWord = if (namedRadios == 1) "named radio" else "named radios"
-        val watchWord = if (signatureWatches == 1) "signature watch" else "signature watches"
-        return "Restored Settings, the current filter, and $presets $presetWord. " +
-            "$namedRadios $radioWord, $signatureWatches $watchWord."
+        return "已恢复设置、当前筛选条件和 $presets 个预设。" +
+            "包含 $namedRadios 个命名设备、$signatureWatches 个已关注特征。"
     }
 }
 
@@ -69,24 +66,24 @@ object SettingsExchange {
     fun parse(text: String): SettingsPack {
         val trimmed = text.trim().trimStart('\uFEFF')
         if (trimmed.isEmpty()) {
-            throw IllegalArgumentException("This file is empty.")
+            throw IllegalArgumentException("文件为空。")
         }
         val pack = try {
             json.decodeFromString(SettingsPack.serializer(), trimmed)
         } catch (e: Exception) {
             throw IllegalArgumentException(
-                "Not a Fieldwatch settings pack. Export from Settings → Export settings.",
+                "这不是 Fieldwatch 设置备份。请在“设置 → 导出设置”中导出。",
                 e,
             )
         }
         if (pack.format == SignaturePack.FORMAT || pack.format == SignaturePack.LEGACY_FORMAT) {
             throw IllegalArgumentException(
-                "That is a signature pack. Use Import signatures.",
+                "这是特征包，请使用“导入特征库”。",
             )
         }
         if (pack.format != SettingsPack.FORMAT) {
             throw IllegalArgumentException(
-                "Not a Fieldwatch settings pack (open a fieldwatch-settings JSON file).",
+                "这不是 Fieldwatch 设置备份，请打开 fieldwatch-settings JSON 文件。",
             )
         }
         return pack

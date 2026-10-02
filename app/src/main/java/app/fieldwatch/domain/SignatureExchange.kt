@@ -45,15 +45,15 @@ data class SignatureImportResult(
     fun summary(): String {
         error?.let { return it }
         if (added == 0 && merged == 0) {
-            return if (skipped == 0) "Nothing to import."
-            else "Nothing new. $skipped already on this phone."
+            return if (skipped == 0) "没有可导入的内容。"
+            else "没有新增内容，本机已存在 $skipped 项。"
         }
         val parts = mutableListOf<String>()
         if (added > 0) {
-            parts += if (renamed > 0) "Added $added ($renamed renamed)" else "Added $added"
+            parts += if (renamed > 0) "已添加 $added 项（其中 $renamed 项已重命名）" else "已添加 $added 项"
         }
-        if (merged > 0) parts += "merged extra rules on $merged"
-        if (skipped > 0) parts += "skipped $skipped already present"
+        if (merged > 0) parts += "已为 $merged 项合并附加规则"
+        if (skipped > 0) parts += "已跳过 $skipped 项已有内容"
         return parts.joinToString(" · ").replaceFirstChar { it.uppercase() } + "."
     }
 }
@@ -90,23 +90,23 @@ object SignatureExchange {
     fun parsePack(text: String): ParsedSignaturePack {
         val trimmed = text.trim().trimStart('\uFEFF')
         if (trimmed.isEmpty()) {
-            throw IllegalArgumentException("This file is empty.")
+            throw IllegalArgumentException("文件为空。")
         }
         val pack = try {
             json.decodeFromString(SignaturePack.serializer(), trimmed)
         } catch (e: Exception) {
             throw IllegalArgumentException(
-                "Not a Fieldwatch signature pack. Export from Settings → Export signatures.",
+                "这不是 Fieldwatch 特征包。请在“设置 → 导出特征库”中导出。",
                 e,
             )
         }
         if (pack.format != SignaturePack.FORMAT && pack.format != SignaturePack.LEGACY_FORMAT) {
             throw IllegalArgumentException(
-                "Not a Fieldwatch signature pack (open a fieldwatch-signatures JSON file; spectre-signatures still imports).",
+                "这不是 Fieldwatch 特征包，请打开 fieldwatch-signatures JSON 文件；仍支持导入 spectre-signatures。",
             )
         }
         if (pack.fleets.isEmpty()) {
-            throw IllegalArgumentException("This pack has no signatures.")
+            throw IllegalArgumentException("此包不包含特征。")
         }
         var skipped = 0
         val fleets = pack.fleets.map { fleet ->
@@ -122,7 +122,7 @@ object SignatureExchange {
 
     fun merge(existing: List<Fleet>, incoming: List<Fleet>): Pair<List<Fleet>, SignatureImportResult> {
         if (incoming.isEmpty()) {
-            return existing to SignatureImportResult(error = "This pack has no signatures.")
+            return existing to SignatureImportResult(error = "此包不包含特征。")
         }
         val stockIds = DefaultCatalog.fleets().map { it.id }.toSet()
         val next = existing.toMutableList()
@@ -211,7 +211,7 @@ object SignatureExchange {
         ).joinToString("|")
 
     private fun uniqueName(desired: String, taken: Set<String>): Pair<String, Boolean> {
-        val base = desired.trim().ifBlank { "Imported signature" }
+        val base = desired.trim().ifBlank { "导入的特征" }
         if (base.lowercase() !in taken) return base to false
         val imported = "$base (imported)"
         if (imported.lowercase() !in taken) return imported to true
@@ -230,7 +230,7 @@ object SignatureExchange {
             .filter { it.rules.isNotEmpty() }
             .map { it.copy(kind = it.kind.folded(), builtIn = true) }
         if (stockIn.isEmpty()) {
-            return existing to StockCatalogUpdateResult(error = "This pack has no stock signatures.")
+            return existing to StockCatalogUpdateResult(error = "此包不包含内置特征。")
         }
         val byId = existing.mapIndexed { index, fleet -> fleet.id to index }.toMap().toMutableMap()
         val next = existing.toMutableList()

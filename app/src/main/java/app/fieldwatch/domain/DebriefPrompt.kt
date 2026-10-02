@@ -60,60 +60,60 @@ object DebriefPrompt {
         val body = buildString {
             append(experimentalDisclaimerMarkdown())
             appendLine()
-            appendLine("You are a field RF analyst for the operator who collected this sit. Fieldwatch is a stock-Android, receive-only Wi-Fi access-point + BLE-advertiser listener.")
+            appendLine("你是一名现场射频分析师，为采集本次观测的操作者提供分析。Fieldwatch 在原生 Android 上仅接收 Wi-Fi 接入点和 BLE 广播设备的信号。请全程使用简体中文，保留技术缩写、产品名称和原始标识符。")
             appendLine()
-            appendLine("The **onboard Debrief** (verbatim below) already tabulated the sit: counts, Where you were, tracking callouts, inventories, Extra attention, takeaway. **Do not rewrite that report. Do not reprint inventories or stay lists.** Your job is an addendum the phone cannot write: rates, competing hypotheses, and a stress-test of the onboard tracking callouts.")
+            appendLine("**设备内生成的观测总结**（原文见下方）已经汇总数量、所在地点、追踪提示、设备清单、重点关注及要点。**不要重写该报告，不要重复设备清单或停留列表。**你的任务是补充手机无法生成的分析：变化速率、其他可能解释，以及对设备内追踪提示的审慎核查。")
             appendLine()
-            appendLine("Constraints you must respect:")
-            appendLine("- Hear-only. Wi-Fi rows are access points only. BLE rows are advertisers. Kind + MAC. BLE rotation is a new row and will not stitch.")
-            appendLine("- Signature / OUI / company matches are hypotheses, not identity, not a person or vehicle.")
-            appendLine("- GPS stamps (if present) are this phone at hear-time, not the other radio. Do not place a camera or tag at the GPS pin.")
-            appendLine("- Place names (if present) are system reverse-geocode of those stamps.")
-            appendLine("- RSSI is loudness at the phone, not meters.")
-            appendLine("- Live RAM cap is about 400 radios; unnamed BLE evicts after ~3 min. A named sit keeps more. This is not a complete capture.")
-            appendLine("- Do not claim a tracker is following unless the onboard GPS co-travel section supports it. A radio with you the whole sit is not automatically yours — it may be planted. Do not dismiss it. Do not invent a tail the onboard test did not flag. Do not treat a retail beacon as a Find My tail.")
-            appendLine("- A decoded live value on a tracking row is catalog text for that advertisement. Quote the catalog sentence when the onboard report includes one. Do not stitch that value onto a different MAC.")
-            appendLine("- An aircraft block and an amber track are positions the radio advertised. Trails with the same UAS id are one aircraft. They are not this phone's GPS and they are not a finding that the aircraft followed the operator.")
-            appendLine("- Do not give safety advice. Do not tell the operator they are safe or in danger.")
-            appendLine("- Treat this paste as operationally sensitive.")
+            appendLine("必须遵守的约束：")
+            appendLine("- 仅接收信号。Wi-Fi 记录仅包含接入点，BLE 记录代表广播设备，以类型 + MAC 区分。BLE 地址轮换会产生新记录，不会自动关联。")
+            appendLine("- 特征、OUI 或公司匹配都是推测，不能确认身份，也不代表某个人或车辆。")
+            appendLine("- GPS 标记（如有）是接收信号时本手机的位置，不是其他无线设备的位置。不要将摄像头或标签定位到 GPS 标记处。")
+            appendLine("- 地名（如有）由系统根据这些位置标记反向地理编码得到。")
+            appendLine("- RSSI 表示手机接收到的信号强度，不是以米为单位的距离。")
+            appendLine("- 实时内存最多保留约 400 个无线设备；未命名 BLE 设备约 3 分钟后移除。命名观测会保留更多数据。这不是完整捕获。")
+            appendLine("- 只有设备内 GPS 同行分析支持时，才能提出追踪器可能跟随的判断。全程随行的无线设备不一定属于操作者，也可能被他人放置，不要直接排除。不要编造设备内检测未标记的尾随，不要将零售信标视为 Find My 尾随设备。")
+            appendLine("- 追踪记录中的实时解码值是对应广播的特征库文字。设备内报告包含该句时请引用原文。不要将该值关联到另一个 MAC。")
+            appendLine("- 航空器信息块和琥珀色轨迹表示无线设备广播的位置。具有相同 UAS ID 的轨迹属于同一航空器。这些不是本手机的 GPS，也不能据此认定航空器跟随了操作者。")
+            appendLine("- 不要提供安全建议，不要断言操作者安全或处于危险之中。")
+            appendLine("- 将粘贴内容视为敏感观测信息。")
             appendLine()
-            appendLine("## Your output (required — this is the addendum the operator reads)")
-            appendLine("Write complete sentences. Headings as below. Short bullets only for Extra attention and tracking rows from the working table. No markdown tables. No code fences. No dump of the onboard inventories.")
+            appendLine("## 输出要求（必须遵守，这是操作者阅读的补充分析）")
+            appendLine("使用完整句子和下列标题。只有工作数据中的重点关注与追踪记录可用简短项目符号。不要使用 Markdown 表格或代码块，不要重复设备内的设备清单。")
             appendLine()
-            appendLine("1. **Disclaimer** — Repeat the experimental-use disclaimer first.")
-            appendLine("2. **What the onboard Debrief already established** — 3–5 sentences. Counts, distance, tracking callouts, Extra attention hits, Observer notes if any. Do not reprint inventories.")
-            appendLine("3. **What the numbers add** — 5- vs 15-minute counts, RSSI bands, RAND BLE percent, arrivals per minute, persistent vs gone, signature-family mix. Say street vs dwelling vs retail vs vehicle, and 5-minute vs 15-minute change (denser, quieter, stable). Confidence. If GPS ran, path length/span from the working table — do not pin a radio to a stay.")
-            appendLine("4. **Extra attention and tracking callouts** — Full identifiers from the working table (complete MAC, name, RSSI min/max, signatures, dwell). Stress-test onboard Possible trackers with you / Possible tail / Retail beacons / Wearables. Agree, qualify, or say the data are too thin. Pattern match, not identity. If none, say none.")
-            appendLine("5. **What another sit or Hunt would shrink** — Concrete in-app next steps only (Hunt on one Extra attention row, a longer GPS path, Compare sits, Filters). No safety advice. No “call the police.”")
+            appendLine("1. **免责声明** — 首先重复实验性使用免责声明。")
+            appendLine("2. **设备内观测总结已说明的内容** — 用 3–5 句话概述数量、距离、追踪提示、重点关注命中及观测备注（如有）。不要重复设备清单。")
+            appendLine("3. **数字补充了什么** — 对比 5 分钟与 15 分钟的数量、RSSI 区间、随机地址 BLE 百分比、每分钟新增量、持续出现与离开情况、特征系列构成。分析环境更像街道、住宅、零售场所还是车辆，以及最近 5 分钟相对 15 分钟的变化（更密集、更安静或稳定），并说明置信度。若启用了 GPS，引用工作数据中的轨迹长度与跨度；不要把无线设备定位到某个停留点。")
+            appendLine("4. **重点关注与追踪提示** — 使用工作数据中的完整标识（完整 MAC、名称、RSSI 最小值 / 最大值、特征、停留时长）。审慎核查设备内的“可能随行的追踪器”“可能尾随”“零售信标”“可穿戴设备”结论，说明认同、限制条件或数据不足。这只是模式匹配，不能确认身份。没有则明确说明没有。")
+            appendLine("5. **另一次观测或信号追踪可减少哪些疑问** — 只给出具体的应用内后续操作（对某条重点关注记录进行信号追踪、记录更长的 GPS 轨迹、对比观测、使用筛选）。不要提供安全建议，不要建议“报警”。")
             appendLine()
-            appendLine("**Takeaway (required, last line).** One sentence starting with `Takeaway:` that adds *one number the onboard takeaway does not already say* (a rate, RAND percent, 5- vs 15-minute change, path span). Not a moral. Not a threat level.")
+            appendLine("**要点（必需，置于最后一行）。** 用以“要点：”开头的一句话，补充*设备内要点尚未提及的一个数字*（变化速率、随机地址百分比、5 分钟与 15 分钟的变化、轨迹跨度）。不要作价值评判，不要给出威胁等级。")
             appendLine()
-            appendLine("## Collection context")
-            appendLine("- Tool: Fieldwatch (app.fieldwatch), receive-only, no association / injection / cloud.")
+            appendLine("## 采集背景")
+            appendLine("- 工具：Fieldwatch（app.fieldwatch），仅接收，不连接、不注入、不使用云端。")
             appendLine(
                 if (win.sitName != null) {
-                    "- Window: sit **${win.sitName}** ($start → $iso UTC), with a 5-minute recent slice."
+                    "- 时段：观测 **${win.sitName}**（$start → $iso UTC），另取最近 5 分钟作为子时段。"
                 } else {
-                    "- Window: last **15 minutes** ($start → $iso UTC), with a **5-minute** recent slice."
+                    "- 时段：最近 **15 分钟**（$start → $iso UTC），另取最近 **5 分钟**作为子时段。"
                 },
             )
-            appendLine("- Scan intensity: ${settings.intensity.name.lowercase()}. Stale after ${settings.staleSec}s.")
-            appendLine("- Location tags: ${if (settings.tagLocation) "on" else "off"}. Online place names: ${if (settings.onlineLookup) "on" else "off"}.")
+            appendLine("- 扫描强度：${scanIntensityLabel(settings.intensity)}。${settings.staleSec} 秒后标记过期。")
+            appendLine("- 位置标记：${if (settings.tagLocation) "开启" else "关闭"}。在线地名查询：${if (settings.onlineLookup) "开启" else "关闭"}。")
             appendLine()
-            appendLine("## Onboard Debrief (verbatim — already shown to the operator; do not rewrite)")
+            appendLine("## 设备内观测总结（原文，操作者已看过，请勿重写）")
             appendLine()
             appendLine(onboard.trimEnd())
             appendLine()
-            appendLine("## Working data (for the addendum — do not copy rosters into the answer)")
+            appendLine("## 工作数据（用于补充分析，不要将清单复制到回答中）")
             appendLine()
             appendLine(
-                "15 min: Wi-Fi ${wifi.size}  BLE ${ble.size}  signed ${signed.size}  hidden SSIDs ${wifi.count { it.hiddenSsid }}  " +
-                    "RAND BLE $randomized/${ble.size} (${pct(randomized, ble.size)}%)  " +
-                    "first-seen ${arrived.size} (${perMin(arrived.size)}/min)  persistent ${persistent.size}  gone/quiet ${departed.size}",
+                "15 分钟：Wi-Fi ${wifi.size}  BLE ${ble.size}  特征匹配 ${signed.size}  隐藏 SSID ${wifi.count { it.hiddenSsid }}  " +
+                    "随机地址 BLE $randomized/${ble.size}（${pct(randomized, ble.size)}%）  " +
+                    "首次发现 ${arrived.size}（${perMin(arrived.size)}/分钟）  持续出现 ${persistent.size}  离开 / 静默 ${departed.size}",
             )
             appendLine(
-                "5 min: Wi-Fi ${in5.count { it.kind == RadioKind.WIFI }}  BLE ${in5.count { it.kind == RadioKind.BLE }}  " +
-                    "signed ${in5.count { it.fleetIds.isNotEmpty() }}  first-seen ${in5.count { it.firstSeen >= shortStart }}",
+                "5 分钟：Wi-Fi ${in5.count { it.kind == RadioKind.WIFI }}  BLE ${in5.count { it.kind == RadioKind.BLE }}  " +
+                    "特征匹配 ${in5.count { it.fleetIds.isNotEmpty() }}  首次发现 ${in5.count { it.firstSeen >= shortStart }}",
             )
             appendLine(
                 "BLE RSSI (n=${ble.size}): ≥−50 ${bandGe(bleRssi, -50)}  −51..−70 ${band(bleRssi, -70, -51)}  " +
@@ -124,19 +124,19 @@ object DebriefPrompt {
                     "−71..−85 ${band(wifiRssi, -85, -71)}  <−85 ${bandLt(wifiRssi, -85)}",
             )
             if (sigFamilies.isEmpty()) {
-                appendLine("Signature families: none.")
+                appendLine("特征系列：无。")
             } else {
-                appendLine("Signature families (count): " + sigFamilies.take(12).joinToString { "${it.first}=${it.second}" })
+                appendLine("特征系列（数量）：" + sigFamilies.take(12).joinToString { "${it.first}=${it.second}" })
             }
             appendLine(
-                "GPS path: tagging ${if (settings.tagLocation) "on" else "off"}  " +
-                    "fixes ${path.size}  length ${pathLen.toInt()} m  span ${pathSpan.toInt()} m  " +
-                    "places ${if (places.attempted) places.note else "off"}",
+                "GPS 轨迹：位置标记${if (settings.tagLocation) "开启" else "关闭"}  " +
+                    "定位点 ${path.size}  长度 ${pathLen.toInt()} 米  跨度 ${pathSpan.toInt()} 米  " +
+                    "地点 ${if (places.attempted) places.note else "关闭"}",
             )
             appendLine()
-            appendLine("Extra attention:")
+            appendLine("重点关注：")
             if (extraHits.isEmpty()) {
-                appendLine("- None.")
+                appendLine("- 无。")
             } else {
                 extraHits.forEach { (d, sig, note) ->
                     append("- ").append(row(d, names, now, windowStart, customNames, observerNotes))
@@ -145,13 +145,13 @@ object DebriefPrompt {
                 }
             }
             appendLine()
-            appendLine("Observer notes:")
+            appendLine("观测备注：")
             val observed = in15.mapNotNull { d ->
                 val note = observerNotes[d.key]?.trim()?.takeIf { it.isNotEmpty() } ?: return@mapNotNull null
                 d to note
             }
             if (observed.isEmpty()) {
-                appendLine("- None.")
+                appendLine("- 无。")
             } else {
                 observed.sortedByDescending { it.first.rssi }.forEach { (d, note) ->
                     append("- ").append(row(d, names, now, windowStart, customNames, emptyMap()))
@@ -160,9 +160,9 @@ object DebriefPrompt {
                 }
             }
             appendLine()
-            appendLine("Finder-tag-like radios (for stress-test of onboard tracking; not a tail list):")
+            appendLine("类似寻物标签的无线设备（用于核查设备内追踪分析，不代表尾随名单）：")
             if (finders.isEmpty()) {
-                appendLine("- None.")
+                appendLine("- 无。")
             } else {
                 finders.sortedByDescending { it.rssi }.take(20).forEach { d ->
                     append("- ").append(row(d, names, now, windowStart, customNames, observerNotes))
@@ -171,14 +171,20 @@ object DebriefPrompt {
                 }
             }
             appendLine()
-            appendLine("## End of working data")
-            appendLine("Write the addendum now, following **Your output** at the top. Do not rewrite the onboard Debrief.")
+            appendLine("## 工作数据结束")
+            appendLine("现在请遵循上方的**输出要求**，用简体中文撰写补充分析。不要重写设备内观测总结。")
         }
         return if (body.length <= MAX_CHARS) body
-        else body.take(MAX_CHARS) + "\n\n[truncated for share-sheet size]\n"
+        else body.take(MAX_CHARS) + "\n\n[因分享面板大小限制而截断]\n"
     }
 
     fun experimentalDisclaimerMarkdown(): String = FieldwatchDisclaimer.experimentalMarkdown()
+
+    internal fun scanIntensityLabel(intensity: ScanIntensity): String = when (intensity) {
+        ScanIntensity.SAVER -> "省电"
+        ScanIntensity.BALANCED -> "均衡"
+        ScanIntensity.PERFORMANCE -> "性能"
+    }
 
     private fun row(
         d: Sighting,
@@ -194,17 +200,17 @@ object DebriefPrompt {
         if (label.isNotEmpty() && !label.equals(d.mac, ignoreCase = true)) {
             append("  ").append(label.take(32))
         }
-        observerNotes[d.key]?.let { append("  Observer: ").append(it.take(80)) }
-        append(" rssi=").append(d.rssi).append("dBm")
-        if (d.randomized) append(" RAND")
+        observerNotes[d.key]?.let { append("  观测者备注：").append(it.take(80)) }
+        append(" RSSI=").append(d.rssi).append("dBm")
+        if (d.randomized) append(" 随机地址")
         if (d.fleetIds.isNotEmpty()) {
-            append(" sig=").append(d.fleetIds.joinToString("+") { names[it] ?: it })
+            append(" 特征=").append(d.fleetIds.joinToString("+") { names[it] ?: it })
         }
         val labels = d.liveDecode.reportLabels()
-        if (labels.isNotEmpty()) append(" decoded=").append(labels.joinToString(","))
+        if (labels.isNotEmpty()) append(" 解码=").append(labels.joinToString(","))
         val notes = d.liveDecode.map { it.note.trim() }.filter { it.isNotEmpty() }.distinct()
-        if (notes.isNotEmpty()) append(" decodeNote=").append(notes.joinToString(" "))
-        append(" dwell=").append(fmtDur(dwellMs(d, windowStart, now)))
+        if (notes.isNotEmpty()) append(" 解码说明=").append(notes.joinToString(" "))
+        append(" 停留=").append(fmtDur(dwellMs(d, windowStart, now)))
     }
 
     private fun dwellMs(d: Sighting, from: Long, to: Long): Long {
@@ -228,7 +234,7 @@ object DebriefPrompt {
         val s = (ms / 1000).coerceAtLeast(0)
         val m = s / 60
         val r = s % 60
-        return if (m >= 60) "${m / 60}h${m % 60}m" else if (m > 0) "${m}m${r}s" else "${r}s"
+        return if (m >= 60) "${m / 60}小时${m % 60}分钟" else if (m > 0) "${m}分${r}秒" else "${r}秒"
     }
 
     private fun pct(n: Int, d: Int): Int = if (d <= 0) 0 else (n * 100) / d

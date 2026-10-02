@@ -113,11 +113,11 @@ fun DeviceDetailScreen(
                     Text(MacUtil.redactMacIn(title, device.mac, demoMode), maxLines = 1)
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") }
                 },
                 actions = {
                     IconButton(onClick = { vm.toggleWatchDevice(device) }) {
-                        Icon(if (watched) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder, "Watch")
+                        Icon(if (watched) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder, "关注")
                     }
                 },
             )
@@ -134,7 +134,7 @@ fun DeviceDetailScreen(
             Text(MacUtil.screenMac(device.mac, demoMode), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.titleMedium)
             if (device.gone) {
                 Text(
-                    "Not on the air. This is the last detail we heard.",
+                    "当前未在广播。以下为上次接收的详情。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -153,37 +153,37 @@ fun DeviceDetailScreen(
                 Column(Modifier.weight(1f)) {
                     if (lastSaved.isNotBlank()) {
                         Text(
-                            "Custom name",
+                            "自定义名称",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(lastSaved, style = MaterialTheme.typography.titleLarge)
                         Text(
-                            "Advertised",
+                            "广播名称",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 6.dp),
                         )
                         Text(
-                            device.name.ifBlank { "No advertised name" },
+                            device.name.ifBlank { "无广播名称" },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else if (device.name.isNotBlank()) {
                         Text(
-                            "Advertised name",
+                            "广播名称",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(device.name, style = MaterialTheme.typography.bodyMedium)
                     } else {
                         Text(
-                            "Name",
+                            "名称",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            "No advertised name",
+                            "无广播名称",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -193,7 +193,7 @@ fun DeviceDetailScreen(
                     IconButton(onClick = { editingName = !editingName }) {
                         Icon(
                             Icons.Outlined.Edit,
-                            if (editingName) "Hide custom name" else "Custom name",
+                            if (editingName) "收起自定义名称" else "自定义名称",
                         )
                     }
                 }
@@ -202,7 +202,7 @@ fun DeviceDetailScreen(
                 FieldwatchOutlinedField(
                     value = nameDraft,
                     onValueChange = { nameDraft = it.take(RadioBookmarks.MAX_NAME) },
-                    label = "Custom name",
+                    label = "自定义名称",
                     supportingText = RadioBookmarks.customNameHint(device),
                 )
                 FieldwatchActionButton(
@@ -211,7 +211,7 @@ fun DeviceDetailScreen(
                         nameDraft = draftLabel
                         lastSaved = draftLabel
                         scope.launch {
-                            snackbarHostState.showSnackbar("Saved as $draftLabel")
+                            snackbarHostState.showSnackbar("已保存为 $draftLabel")
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -220,9 +220,9 @@ fun DeviceDetailScreen(
                     if (nameIsSaved) {
                         Icon(Icons.Outlined.Check, null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.padding(4.dp))
-                        Text("Saved")
+                        Text("已保存")
                     } else {
-                        Text("Save name")
+                        Text("保存名称")
                     }
                 }
             }
@@ -259,7 +259,7 @@ fun DeviceDetailScreen(
                         editingNotes = false
                         scope.launch {
                             snackbarHostState.showSnackbar(
-                                if (draftNotes.isBlank()) "Observer notes cleared" else "Observer notes saved",
+                                if (draftNotes.isBlank()) "观测备注已清除" else "观测备注已保存",
                             )
                         }
                     },
@@ -280,68 +280,68 @@ fun DeviceDetailScreen(
             }
 
             StickyHeight(device.key to "identity") {
-                Section("Identity")
+                Section("标识")
                 Meta(
-                    "Radio",
+                    "无线类型",
                     if (device.kind == RadioKind.WIFI) {
-                        "Wi-Fi access point (beaconing a network)"
+                        "Wi-Fi 接入点（正在广播网络信标）"
                     } else {
-                        "Bluetooth Low Energy advertiser"
+                        "低功耗蓝牙广播设备"
                     },
                 )
-                Meta("Address", DeviceExplain.addressExplain(device))
-                vendorLine(device)?.let { Meta("Who made it", it) }
-                    ?: Meta("OUI (vendor prefix)", "${device.oui} — no IEEE match; randomized addresses usually have none")
+                Meta("地址", DeviceExplain.addressExplain(device))
+                vendorLine(device)?.let { Meta("制造商", it) }
+                    ?: Meta("OUI（厂商前缀）", "${device.oui} — 无 IEEE 匹配；随机地址通常没有匹配")
                 if (device.hiddenSsid) {
-                    Meta("Network name (SSID)", "Hidden — the AP is beaconing but not publishing a name")
+                    Meta("网络名称（SSID）", "已隐藏 — AP 正在广播信标，但未公开名称")
                 }
             }
 
             StickyHeight(device.key to "signal") {
-                Section("Signal")
+                Section("信号")
                 if (device.gone) {
-                    Meta("How loud here (RSSI)", "Not available")
+                    Meta("此处信号强度（RSSI）", "不可用")
                     Meta(
-                        "Last heard",
+                        "上次接收",
                         buildString {
                             append(fmt.format(Date(device.lastSeen)))
                             Rssi.lastMeasured(device.rssi, device.rssiHistory)?.let {
-                                append(" at $it dBm")
+                                append("，强度 $it dBm")
                             }
                         },
                     )
                 } else {
-                    Meta("How loud here (RSSI)", DeviceExplain.rssiExplain(device.rssi))
+                    Meta("此处信号强度（RSSI）", DeviceExplain.rssiExplain(device.rssi))
                     Text(
-                        "Closer to 0 dBm is louder here, not a distance.",
+                        "越接近 0 dBm，表示此处信号越强，不代表距离。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Meta(
-                    "Heard range this session",
+                    "本次会话接收强度范围",
                     Rssi.sessionRange(device.rssiMin, device.rssiMax, device.rssiHistory),
                 )
                 facts.txPowerDbm?.let {
-                    Meta("Claimed transmit power", "$it dBm — how loud it says it transmits, not a distance")
+                    Meta("声明的发射功率", "$it dBm — 设备声明的发射强度，不代表距离")
                 }
                 if (device.channel != 0 || device.frequencyMhz != 0) {
                     Meta(
-                        "Channel / frequency",
+                        "信道／频率",
                         buildString {
-                            if (device.channel != 0) append("channel ${device.channel}")
+                            if (device.channel != 0) append("信道 ${device.channel}")
                             if (device.frequencyMhz != 0) {
                                 if (isNotEmpty()) append("  ·  ")
                                 append("${device.frequencyMhz} MHz")
                             }
-                            facts.channelWidth?.let { append("  ·  $it wide") }
+                            facts.channelWidth?.let { append("  ·  带宽 $it") }
                         },
                     )
                 }
-                facts.wifiStandard?.let { Meta("Wi-Fi generation", it) }
+                facts.wifiStandard?.let { Meta("Wi-Fi 代际", it) }
                 if (facts.centerFreq0 != null || facts.centerFreq1 != null) {
                     Meta(
-                        "Center frequencies",
+                        "中心频率",
                         listOfNotNull(
                             facts.centerFreq0?.let { "$it MHz" },
                             facts.centerFreq1?.let { "$it MHz" },
@@ -352,50 +352,50 @@ fun DeviceDetailScreen(
 
             if (device.kind == RadioKind.BLE) {
                 StickyHeight(device.key to "ble") {
-                Section("Bluetooth advertisement")
+                Section("蓝牙广播")
                 facts.primaryPhy?.let {
                     val phys = listOfNotNull(it, facts.secondaryPhy).distinct()
-                    Meta("Radio PHY", phys.joinToString(" / ") { phy -> DeviceExplain.phyExplain(phy) })
+                    Meta("无线 PHY", phys.joinToString(" / ") { phy -> DeviceExplain.phyExplain(phy) })
                 }
                 facts.connectable?.let {
                     Meta(
-                        "Connectable",
-                        if (it) "Yes — a phone could open a BLE connection"
-                        else "No — broadcast-only (you can hear it, not join it from this scan)",
+                        "可连接",
+                        if (it) "是 — 手机可以建立 BLE 连接"
+                        else "否 — 仅广播（可接收，但无法通过此扫描连接）",
                     )
                 }
                 facts.advertisingIntervalMs?.let {
                     Meta(
-                        "How often it advertises",
-                        "%.0f ms between bursts (smaller = chattier on the air)".format(it),
+                        "广播频率",
+                        "广播间隔 %.0f 毫秒（越小表示广播越频繁）".format(it),
                     )
                 }
                 facts.periodicIntervalMs?.let {
-                    Meta("Periodic advertising", "%.0f ms".format(it))
+                    Meta("周期性广播", "%.0f ms".format(it))
                 }
                 facts.advFlags?.let { flags ->
-                    Meta("Discoverability", DeviceExplain.flagsExplain(flags))
-                    Meta("Flags (raw)", "0x%02X".format(flags), mono = true)
+                    Meta("可发现性", DeviceExplain.flagsExplain(flags))
+                    Meta("标志位（原始值）", "0x%02X".format(flags), mono = true)
                 }
                 facts.appearance?.let { value ->
-                    val name = RadioDb.appearance(value)
+                    val name = RadioDb.appearance(value)?.let(app.fieldwatch.domain.RadioLabels::label)
                     Meta(
-                        "What it says it is (Appearance)",
-                        name?.let { "$it\nThe device publishes this GAP Appearance code to describe itself." }
-                            ?: "Unlisted Appearance 0x%04X".format(value),
+                        "设备自述类型（Appearance）",
+                        name?.let { "$it\n设备通过此 GAP Appearance 代码描述自身类型。" }
+                            ?: "未收录的 Appearance 0x%04X".format(value),
                     )
-                    Meta("Appearance code", "0x%04X".format(value), mono = true)
+                    Meta("Appearance 代码", "0x%04X".format(value), mono = true)
                 }
                 CodDecoder.decodeOrNull(facts.deviceClass)?.let { cod ->
                     Meta(
-                        "Classic Bluetooth class",
+                        "经典蓝牙类别",
                         buildString {
-                            append(cod.major)
-                            if (cod.minor.isNotBlank()) append(" / ").append(cod.minor)
-                            append("\nThis is the Class of Device bitfield used by classic Bluetooth.")
+                            append(app.fieldwatch.domain.RadioLabels.label(cod.major))
+                            if (cod.minor.isNotBlank()) append(" / ").append(app.fieldwatch.domain.RadioLabels.label(cod.minor))
+                            append("\n这是经典蓝牙使用的设备类别（Class of Device）位字段。")
                             if (cod.services.isNotEmpty()) {
-                                append("\nAlso offers: ")
-                                append(cod.services.joinToString(", "))
+                                append("\n还提供：")
+                                append(cod.services.joinToString("、", transform = app.fieldwatch.domain.RadioLabels::label))
                             }
                         },
                     )
@@ -405,16 +405,16 @@ fun DeviceDetailScreen(
 
             if (device.kind == RadioKind.WIFI) {
                 StickyHeight(device.key to "wifi") {
-                    Section("Wi-Fi access point")
+                    Section("Wi-Fi 接入点")
                     facts.security?.let {
-                        Meta("Encryption / login", DeviceExplain.wifiSecurityExplain(it))
-                        if (it.isNotBlank()) Meta("Security string", it, mono = true)
+                        Meta("加密／登录", DeviceExplain.wifiSecurityExplain(it))
+                        if (it.isNotBlank()) Meta("安全字符串", it, mono = true)
                     }
                     facts.supportedRates?.let {
-                        Meta("Supported rates", "$it Mbps  (* = required basic rate)")
+                        Meta("支持速率", "$it Mbps（* = 必需的基本速率）")
                     }
                     facts.capabilities?.takeIf { it.isNotBlank() && it != facts.security }?.let {
-                        Meta("Capability string", it, mono = true)
+                        Meta("能力字符串", it, mono = true)
                     }
                 }
             }
@@ -422,9 +422,9 @@ fun DeviceDetailScreen(
             if (device.serviceUuids.isNotEmpty() || facts.serviceData.isNotEmpty()) {
                 StickyHeight(device.key to "services") {
                     if (device.serviceUuids.isNotEmpty()) {
-                        Section("Services it offers")
+                        Section("提供的服务")
                         Meta(
-                            "Service IDs",
+                            "服务 ID",
                             device.serviceUuids.joinToString("\n") { uuid ->
                                 DeviceExplain.uuidGloss(uuid)?.let { "$uuid  ·  $it" } ?: uuid
                             },
@@ -436,7 +436,7 @@ fun DeviceDetailScreen(
                         decoded.forEach { field -> Meta(field.label, field.value) }
                         Meta(
                             serviceDataHeading(sd),
-                            sd.dataHex.hexSpaced().ifBlank { "(empty)" },
+                            sd.dataHex.hexSpaced().ifBlank { "（空）" },
                             mono = true,
                         )
                     }
@@ -463,7 +463,7 @@ fun DeviceDetailScreen(
                             size = 16.dp,
                         )
                         Text(
-                            "Decoded fields",
+                            "已解码字段",
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.primary,
                         )
@@ -484,13 +484,13 @@ fun DeviceDetailScreen(
                     Text(
                         when {
                             hasPayload && govee ->
-                                "Decode fields did not apply to this advertisement (short payload, a different company ID, or a different layout). Govee lights usually only send a name; hygrometers are H5074/H5075/H510x. Raw bytes are below."
+                                "解码字段不适用于此广播（载荷太短、公司 ID 不同或布局不同）。Govee 灯具通常只发送名称；湿度计型号为 H5074／H5075／H510x。原始字节见下方。"
                             hasPayload ->
-                                "Decode fields did not apply to this advertisement (short payload, a different company ID, or a different layout). Raw bytes are below."
+                                "解码字段不适用于此广播（载荷太短、公司 ID 不同或布局不同）。原始字节见下方。"
                             govee ->
-                                "This signature has a decode map, but this advertisement has no manufacturer or service payload to parse. Many Govee lights only broadcast a name."
+                                "此特征有解码映射，但此广播没有可解析的制造商或服务载荷。许多 Govee 灯具只广播名称。"
                             else ->
-                                "This signature has a decode map, but this advertisement has no manufacturer or service payload to parse."
+                                "此特征有解码映射，但此广播没有可解析的制造商或服务载荷。"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -505,17 +505,17 @@ fun DeviceDetailScreen(
             }
             if (mfg.isNotEmpty()) {
                 StickyHeight(device.key to "mfg") {
-                    Section("Maker data inside the ad")
+                    Section("广播中的制造商数据")
                     mfg.forEach { rec ->
-                        val company = RadioDb.company(rec.companyId) ?: "Not in the Bluetooth company list"
+                        val company = RadioDb.company(rec.companyId) ?: "未收录于蓝牙公司列表"
                         Meta(
-                            "Bluetooth company 0x%04X".format(rec.companyId),
-                            "$company\nThis ID is assigned by the Bluetooth SIG and is carried in manufacturer-specific data.",
+                            "蓝牙公司 0x%04X".format(rec.companyId),
+                            "$company\n此 ID 由 Bluetooth SIG 分配，包含在制造商专用数据中。",
                         )
                         val decoded = BleAdParser.mfgDecodedFields(rec)
                         decoded.forEach { (k, v) -> Meta(k, v) }
                         if (rec.dataHex.isNotBlank()) {
-                            Meta("Raw payload (${rec.dataHex.length / 2} bytes)", rec.dataHex.hexSpaced(), mono = true)
+                            Meta("原始载荷（${rec.dataHex.length / 2} 字节）", rec.dataHex.hexSpaced(), mono = true)
                         }
                     }
                 }
@@ -523,18 +523,18 @@ fun DeviceDetailScreen(
 
             if (facts.vendorIes.isNotEmpty() || device.vendorIeOuis.isNotEmpty()) {
                 StickyHeight(device.key to "ies") {
-                    Section("Wi-Fi vendor tags")
+                    Section("Wi-Fi 厂商标签")
                     val rows = facts.vendorIes.ifEmpty {
                         device.vendorIeOuis.map { app.fieldwatch.domain.VendorIeRecord(it, -1, "") }
                     }
                     rows.forEach { ie ->
                         val org = RadioDb.vendorForOui24(ie.oui)
-                        val type = if (ie.type >= 0) " type %d".format(ie.type) else ""
+                        val type = if (ie.type >= 0) " 类型 %d".format(ie.type) else ""
                         Meta(
-                            "Vendor OUI ${ie.oui}$type",
+                            "厂商 OUI ${ie.oui}$type",
                             buildString {
-                                append(org ?: "Unknown IEEE OUI")
-                                append(" — extra AP information element, not the SSID.")
+                                append(org ?: "未知 IEEE OUI")
+                                append(" — AP 的附加信息元素，不是 SSID。")
                                 if (ie.dataHex.isNotBlank()) {
                                     append("\n")
                                     append(ie.dataHex.hexSpaced())
@@ -546,14 +546,14 @@ fun DeviceDetailScreen(
             }
 
             StickyHeight(device.key to "session") {
-                Section("Session")
-                Meta("First seen", fmt.format(Date(device.firstSeen)))
-                Meta("Last seen", fmt.format(Date(device.lastSeen)))
-                Meta("Hits", device.hitCount.toString())
-                Geo.screenCoord(device.latitude, device.longitude, demoMode)?.let { Meta("Last fix", it) }
+                Section("会话")
+                Meta("首次发现", fmt.format(Date(device.firstSeen)))
+                Meta("末次发现", fmt.format(Date(device.lastSeen)))
+                Meta("接收次数", device.hitCount.toString())
+                Geo.screenCoord(device.latitude, device.longitude, demoMode)?.let { Meta("最近定位", it) }
                 if (device.fleetIds.isNotEmpty()) {
                     Meta(
-                        "Matched signatures",
+                        "匹配特征",
                         device.fleetIds.joinToString("\n") { id ->
                             val name = vm.fleetName(id)
                             if (vm.fleetHasDecode(id)) "$name  ⬡" else name
@@ -561,13 +561,13 @@ fun DeviceDetailScreen(
                     )
                 }
                 if (device.rawHex.isNotBlank() && device.kind == RadioKind.BLE) {
-                    Meta("Raw advertisement", device.rawHex.hexSpaced())
+                    Meta("原始广播", device.rawHex.hexSpaced())
                 }
             }
 
-            Text("Signal trend", style = MaterialTheme.typography.titleSmall)
+            Text("信号趋势", style = MaterialTheme.typography.titleSmall)
             Sparkline(device.rssiHistory, accent, modifier = Modifier.fillMaxWidth().height(56.dp))
-            Text("Presence (15 min)", style = MaterialTheme.typography.titleSmall)
+            Text("出现记录（15 分钟）", style = MaterialTheme.typography.titleSmall)
             PresenceTrack(device, System.currentTimeMillis(), 15 * 60 * 1000L, accent)
             if (device.kind == RadioKind.BLE) {
                 FieldwatchActionButton(
@@ -576,11 +576,11 @@ fun DeviceDetailScreen(
                 ) {
                     Icon(Icons.Outlined.NearMe, null)
                     Spacer(Modifier.padding(4.dp))
-                    Text("Hunt")
+                    Text("信号追踪")
                 }
             } else {
                 Text(
-                    "Hunt is BLE only. Wi-Fi access points update too slowly on stock Android to walk toward.",
+                    "信号追踪仅适用于 BLE。原生 Android 的 Wi-Fi 接入点更新太慢，无法用于步行接近追踪。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -594,7 +594,7 @@ fun DeviceDetailScreen(
             ) {
                 Icon(Icons.Outlined.GroupAdd, null)
                 Spacer(Modifier.padding(4.dp))
-                Text("Create signature from device")
+                Text("从设备创建特征")
             }
             FieldwatchActionButton(
                 onClick = { vm.startDeviceDetailShare(device) },
@@ -602,7 +602,7 @@ fun DeviceDetailScreen(
             ) {
                 Icon(Icons.Outlined.Share, null)
                 Spacer(Modifier.padding(4.dp))
-                Text("Share as text")
+                Text("以文本分享")
             }
             FieldwatchActionButton(
                 onClick = { vm.startDeviceDetailAiExport(device) },
@@ -610,10 +610,10 @@ fun DeviceDetailScreen(
             ) {
                 Icon(Icons.Outlined.AutoAwesome, null)
                 Spacer(Modifier.padding(4.dp))
-                Text("AI Export")
+                Text("AI 导出")
             }
             Text(
-                "Opens a paste-ready prompt for a chat: decode this radio, look up OUI/company/UUIDs, and say what it most likely is. Same experimental disclaimer as Settings → AI Export. One device only — not identity.",
+                "打开可直接粘贴到聊天中的提示词：解码此无线设备，查询 OUI／公司／UUID，并说明最可能的设备类型。适用“设置 → AI 导出”中的同一实验性免责声明。仅分析单个设备，不识别身份。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -643,7 +643,7 @@ private fun FamilyCard(hint: SignatureFamilyHint) {
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
                     Text(
-                        "Signature family",
+                        "特征系列",
                         style = MaterialTheme.typography.labelSmall,
                         color = muted,
                     )
@@ -686,7 +686,7 @@ private fun SignatureNotesCard(notes: List<Pair<String, String>>) {
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
-                "Notes",
+                "备注",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -723,7 +723,7 @@ private fun ObserverNotesCard(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "Observer notes",
+                    "观测备注",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = ink,
@@ -733,7 +733,7 @@ private fun ObserverNotesCard(
                     IconButton(onClick = onToggleEdit) {
                         Icon(
                             Icons.Outlined.Edit,
-                            if (editing) "Hide observer notes" else "Observer notes",
+                            if (editing) "收起观测备注" else "观测备注",
                         )
                     }
                 }
@@ -743,7 +743,7 @@ private fun ObserverNotesCard(
                     Text(notes, style = MaterialTheme.typography.bodyMedium)
                 } else {
                     Text(
-                        "No observer notes",
+                        "无观测备注",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -752,7 +752,7 @@ private fun ObserverNotesCard(
                 FieldwatchOutlinedField(
                     value = draft,
                     onValueChange = onDraftChange,
-                    label = "Observer notes",
+                    label = "观测备注",
                     singleLine = false,
                     minLines = 3,
                     supportingText = "${draft.trim().length}/${RadioBookmarks.MAX_NOTES}. ${RadioBookmarks.observerNotesHint()}",
@@ -765,9 +765,9 @@ private fun ObserverNotesCard(
                     if (saved) {
                         Icon(Icons.Outlined.Check, null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.padding(4.dp))
-                        Text("Saved")
+                        Text("已保存")
                     } else {
-                        Text("Save notes")
+                        Text("保存备注")
                     }
                 }
             }
@@ -794,7 +794,7 @@ private fun ExtraAttentionCard(notes: List<Pair<String, String>>) {
                     modifier = Modifier.padding(end = 8.dp),
                 )
                 Text(
-                    "Extra attention",
+                    "重点关注",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = warn,
@@ -805,7 +805,7 @@ private fun ExtraAttentionCard(notes: List<Pair<String, String>>) {
                 Text(note, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
             }
             Text(
-                "Pattern match, not identity. Not a safety finding.",
+                "特征匹配不代表身份确认，也不是安全性结论。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -822,7 +822,7 @@ private fun GuessCard(guess: DeviceExplain.Guess) {
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                "What this looks like",
+                "可能的设备类型",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -857,12 +857,12 @@ private fun Meta(label: String, value: String, mono: Boolean = false) {
 private fun vendorLine(device: Sighting): String? {
     val parts = ArrayList<String>(3)
     device.vendor?.let {
-        parts += "IEEE board/chip vendor: $it (${device.oui}). This is who owns the MAC prefix, not always the product brand."
+        parts += "IEEE 主板／芯片厂商：$it（${device.oui}）。这是 MAC 前缀的所有者，不一定是产品品牌。"
     }
     val mfgId = device.facts.mfgRecords.firstOrNull()?.companyId ?: device.manufacturerId
     if (mfgId != null) {
         val company = RadioDb.company(mfgId)
-        parts += "Bluetooth company in the ad: ${company ?: "unlisted"} (0x%04X).".format(mfgId)
+        parts += "广播中的蓝牙公司：${company ?: "未收录"}（0x%04X）。".format(mfgId)
     }
     return parts.joinToString("\n").ifBlank { null }
 }
@@ -873,9 +873,9 @@ private fun uuidShort(uuid: String): String {
 }
 
 private fun serviceDataHeading(sd: ServiceDataRecord): String {
-    val named = RadioDb.serviceUuid(sd.uuid)?.let { " ($it)" } ?: ""
+    val named = RadioDb.serviceUuid(sd.uuid)?.let { " (${app.fieldwatch.domain.RadioLabels.label(it)})" } ?: ""
     val frame = eddystoneFrameTag(sd)?.let { " · $it" } ?: ""
-    return "Service data ${uuidShort(sd.uuid)}$named$frame"
+    return "服务数据 ${uuidShort(sd.uuid)}$named$frame"
 }
 
 private fun eddystoneFrameTag(sd: ServiceDataRecord): String? {

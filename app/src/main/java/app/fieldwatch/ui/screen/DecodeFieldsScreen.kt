@@ -106,9 +106,9 @@ fun DecodeFieldsScreen(
         contentWindowInsets = NestedTabInsets,
         topBar = {
             NestedTopBar(
-                title = "Decode fields",
-                navigationIcon = { TextButton(onClick = onBack) { Text("Back") } },
-                actions = { TextButton(onClick = { onSave(currentDecode()) }) { Text("Save") } },
+                title = "解码字段",
+                navigationIcon = { TextButton(onClick = onBack) { Text("返回") } },
+                actions = { TextButton(onClick = { onSave(currentDecode()) }) { Text("保存") } },
             )
         },
     ) { pad ->
@@ -120,9 +120,9 @@ fun DecodeFieldsScreen(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SectionCard("Source") {
+            SectionCard("来源") {
             Text(
-                "Map cleartext BLE bytes after this signature matches. Encrypted ads stay hex.",
+                "特征匹配后映射明文 BLE 字节。加密广播仍显示为十六进制。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -130,23 +130,23 @@ fun DecodeFieldsScreen(
                 FieldwatchFilterChip(
                     selected = source == DecodeSource.MANUFACTURER_DATA,
                     onClick = { source = DecodeSource.MANUFACTURER_DATA },
-                    label = { Text("Manufacturer") },
+                    label = { Text("制造商") },
                 )
                 FieldwatchFilterChip(
                     selected = source == DecodeSource.SERVICE_DATA,
                     onClick = { source = DecodeSource.SERVICE_DATA },
-                    label = { Text("Service data") },
+                    label = { Text("服务数据") },
                 )
             }
             if (source == DecodeSource.MANUFACTURER_DATA) {
                 CompactField(
                     companyText,
                     { companyText = it },
-                    "Company ID",
+                    "公司 ID",
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    "Optional. Byte 0 is the first byte after the company ID. Empty = any record.",
+                    "选填。字节 0 是公司 ID 后的第一个字节。留空 = 任意记录。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -154,18 +154,18 @@ fun DecodeFieldsScreen(
                 CompactField(
                     serviceUuid,
                     { serviceUuid = it },
-                    "Service UUID",
+                    "服务 UUID",
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    "Required. 16-bit (FEAA) or full UUID.",
+                    "必填。16 位 UUID（如 FEAA）或完整 UUID。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             }
 
-            SectionCard("Fields") {
+            SectionCard("字段") {
             fields.forEachIndexed { index, field ->
                 FieldCard(
                     field = field,
@@ -183,27 +183,27 @@ fun DecodeFieldsScreen(
                     val n = fields.size + 1
                     fields = fields + DecodeField(
                         id = "field_$n",
-                        label = "Field $n",
+                        label = "字段 $n",
                         offset = nextOffset,
                         type = DecodeType.U8,
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Add field") }
+            ) { Text("添加字段") }
             if (initial != null || fields.isNotEmpty()) {
                 FieldwatchActionButton(
                     onClick = { confirmRemove = true },
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("Remove decode map") }
+                ) { Text("移除解码映射") }
                 Text(
-                    "Removes every field and the Live code mark. Save after adding fields still keeps the map.",
+                    "移除所有字段和实时页面的解码标记。添加字段后保存仍会保留映射。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             }
 
-            SectionCard("Preview") {
+            SectionCard("预览") {
             PreviewBlock(
                 previewDevice = previewDevice,
                 previewHex = previewHex,
@@ -215,9 +215,9 @@ fun DecodeFieldsScreen(
     if (confirmRemove) {
         AlertDialog(
             onDismissRequest = { confirmRemove = false },
-            title = { Text("Remove decode map?") },
+            title = { Text("移除解码映射？") },
             text = {
-                Text("Clears all fields on this signature. Live no longer shows the code mark. Raw advertisements stay. This cannot be undone except by adding fields again.")
+                Text("清除此特征的所有字段。实时页面将不再显示解码标记，原始广播保持不变。此操作无法撤销，只能重新添加字段。")
             },
             confirmButton = {
                 TextButton(
@@ -225,10 +225,10 @@ fun DecodeFieldsScreen(
                         confirmRemove = false
                         onSave(null)
                     },
-                ) { Text("Remove") }
+                ) { Text("移除") }
             },
             dismissButton = {
-                TextButton(onClick = { confirmRemove = false }) { Text("Cancel") }
+                TextButton(onClick = { confirmRemove = false }) { Text("取消") }
             },
         )
     }
@@ -243,14 +243,14 @@ private fun PreviewBlock(
     when {
         previewDevice == null -> {
             Text(
-                "No matching radio on the air. Save anyway; detail will fill in when one is heard.",
+                "当前没有正在广播的匹配设备。仍可保存，接收到设备时会自动填充详情。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         previewHex.isNullOrBlank() -> {
             Text(
-                "A matching radio is on the air, but this advertisement has no bytes for the source above.",
+                "有匹配设备正在广播，但此广播没有上述来源的字节数据。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -264,7 +264,7 @@ private fun PreviewBlock(
             )
             if (previewRows.isEmpty()) {
                 Text(
-                    "Nothing parsed. Check offset, length, and that byte 0 is after the company ID.",
+                    "未解析出数据。请检查偏移量、长度，并确认字节 0 位于公司 ID 之后。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -322,31 +322,31 @@ private fun FieldCard(
                         val id = if (looksGeneratedId(field.id, field.label)) slugId(next) else field.id
                         onChange(field.copy(label = next, id = id))
                     },
-                    "Label",
+                    "标签",
                     modifier = Modifier.weight(1f),
                 )
                 TypeMenu(field.type, Modifier.width(112.dp)) { onChange(field.copy(type = it)) }
-                IconButton(onClick = onDelete) { Icon(Icons.Outlined.Delete, "Delete field") }
+                IconButton(onClick = onDelete) { Icon(Icons.Outlined.Delete, "删除字段") }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 CompactField(
                     field.offset.toString(),
                     { onChange(field.copy(offset = it.toIntOrNull() ?: 0)) },
-                    "Offset",
+                    "偏移量",
                     keyboard = KeyboardType.Number,
                     modifier = Modifier.weight(1f),
                 )
                 CompactField(
                     (field.length ?: field.type.defaultLength()).toString(),
                     { onChange(field.copy(length = it.toIntOrNull()?.coerceAtLeast(1))) },
-                    "Length",
+                    "长度",
                     keyboard = KeyboardType.Number,
                     modifier = Modifier.weight(1f),
                 )
                 CompactField(
                     field.unit.orEmpty(),
                     { onChange(field.copy(unit = it.ifBlank { null })) },
-                    "Unit",
+                    "单位",
                     modifier = Modifier.width(72.dp),
                 )
                 if (needsEndian) {
@@ -358,14 +358,14 @@ private fun FieldCard(
                     CompactField(
                         (field.bitOffset ?: 0).toString(),
                         { onChange(field.copy(bitOffset = it.toIntOrNull() ?: 0)) },
-                        "Bit offset",
+                        "位偏移",
                         keyboard = KeyboardType.Number,
                         modifier = Modifier.weight(1f),
                     )
                     CompactField(
                         (field.bitWidth ?: 1).toString(),
                         { onChange(field.copy(bitWidth = it.toIntOrNull()?.coerceAtLeast(1) ?: 1)) },
-                        "Bit width",
+                        "位宽",
                         keyboard = KeyboardType.Number,
                         modifier = Modifier.weight(1f),
                     )
@@ -376,14 +376,14 @@ private fun FieldCard(
                     CompactField(
                         field.scale?.toString().orEmpty(),
                         { onChange(field.copy(scale = it.toDoubleOrNull())) },
-                        "Scale",
+                        "倍率",
                         keyboard = KeyboardType.Decimal,
                         modifier = Modifier.weight(1f),
                     )
                     CompactField(
                         field.offsetAdd?.toString().orEmpty(),
                         { onChange(field.copy(offsetAdd = it.toDoubleOrNull())) },
-                        "Add",
+                        "加值",
                         keyboard = KeyboardType.Decimal,
                         modifier = Modifier.weight(1f),
                     )
@@ -395,9 +395,9 @@ private fun FieldCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("Live row", style = MaterialTheme.typography.titleSmall)
+                    Text("实时条目", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "Show this value next to the signature name. Strong values use a heavier chip.",
+                        "在特征名称旁显示此值。重要值会使用更醒目的标签。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -409,7 +409,7 @@ private fun FieldCard(
             }
             NamedValuesBlock(field, onChange)
             if (!more) {
-                TextButton(onClick = { more = true }) { Text("More") }
+                TextButton(onClick = { more = true }) { Text("更多") }
             } else {
                 CompactField(
                     field.id,
@@ -421,12 +421,12 @@ private fun FieldCard(
                     CompactField(
                         field.modulo?.toString().orEmpty(),
                         { onChange(field.copy(modulo = it.toDoubleOrNull())) },
-                        "Modulo",
+                        "取模",
                         keyboard = KeyboardType.Decimal,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                TextButton(onClick = { more = false }) { Text("Hide extra") }
+                TextButton(onClick = { more = false }) { Text("收起更多") }
             }
         }
     }
@@ -438,10 +438,10 @@ private fun OnlyIfBlock(gate: DecodeWhen?, onChange: (DecodeWhen?) -> Unit) {
     if (gate == null) {
         TextButton(onClick = {
             onChange(DecodeWhen(offset = 0, length = 1, op = DecodeWhenOp.EQ, valueHex = ""))
-        }) { Text("Only if…") }
+        }) { Text("仅当…") }
         return
     }
-    Text("Only if", style = MaterialTheme.typography.titleSmall)
+    Text("仅当", style = MaterialTheme.typography.titleSmall)
     if (gate.op == DecodeWhenOp.LEN) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -451,7 +451,7 @@ private fun OnlyIfBlock(gate: DecodeWhen?, onChange: (DecodeWhen?) -> Unit) {
             CompactField(
                 gate.length.toString(),
                 { onChange(gate.copy(length = it.toIntOrNull()?.coerceAtLeast(1) ?: 1)) },
-                "Bytes",
+                "字节",
                 keyboard = KeyboardType.Number,
                 modifier = Modifier.weight(1f),
             )
@@ -461,14 +461,14 @@ private fun OnlyIfBlock(gate: DecodeWhen?, onChange: (DecodeWhen?) -> Unit) {
             CompactField(
                 gate.offset.toString(),
                 { onChange(gate.copy(offset = it.toIntOrNull() ?: 0)) },
-                "Offset",
+                "偏移量",
                 keyboard = KeyboardType.Number,
                 modifier = Modifier.weight(1f),
             )
             CompactField(
                 gate.length.toString(),
                 { onChange(gate.copy(length = it.toIntOrNull()?.coerceAtLeast(1) ?: 1)) },
-                "Length",
+                "长度",
                 keyboard = KeyboardType.Number,
                 modifier = Modifier.weight(1f),
             )
@@ -481,12 +481,12 @@ private fun OnlyIfBlock(gate: DecodeWhen?, onChange: (DecodeWhen?) -> Unit) {
             CompactField(
                 gate.valueHex,
                 { onChange(gate.copy(valueHex = it)) },
-                "Hex",
+                "十六进制",
                 modifier = Modifier.width(96.dp),
             )
         }
     }
-    TextButton(onClick = { onChange(null) }) { Text("Remove") }
+    TextButton(onClick = { onChange(null) }) { Text("移除") }
 }
 
 @Composable
@@ -517,10 +517,10 @@ private fun NamedValuesBlock(
         TextButton(onClick = {
             open = true
             rows = listOf("" to "")
-        }) { Text("Named values…") }
+        }) { Text("命名值…") }
         return
     }
-    Text("Named values", style = MaterialTheme.typography.titleSmall)
+    Text("命名值", style = MaterialTheme.typography.titleSmall)
     rows.forEachIndexed { index, (raw, shown) ->
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(
@@ -536,7 +536,7 @@ private fun NamedValuesBlock(
                         val notes = field.enumNotes?.mapKeys { (key, _) -> if (key == raw) next else key }
                         publish(nextRows, emphasis, notes)
                     },
-                    "Raw",
+                    "原始值",
                     modifier = Modifier.width(88.dp),
                 )
                 CompactField(
@@ -546,7 +546,7 @@ private fun NamedValuesBlock(
                         rows = nextRows
                         publish(nextRows)
                     },
-                    "Show as",
+                    "显示为",
                     modifier = Modifier.weight(1f),
                 )
                 IconButton(
@@ -562,7 +562,7 @@ private fun NamedValuesBlock(
                             publish(nextRows, emphasis, notes)
                         }
                     },
-                ) { Icon(Icons.Outlined.Delete, "Delete value") }
+                ) { Icon(Icons.Outlined.Delete, "删除值") }
             }
             if (field.live && raw.isNotBlank()) {
                 Row(
@@ -580,7 +580,7 @@ private fun NamedValuesBlock(
                             }
                             publish(rows, emphasis)
                         },
-                        label = { Text("Strong") },
+                        label = { Text("醒目") },
                     )
                     CompactField(
                         field.enumNotes?.get(raw).orEmpty(),
@@ -589,7 +589,7 @@ private fun NamedValuesBlock(
                             if (note.isBlank()) notes.remove(raw) else notes[raw] = note
                             publish(rows, notes = notes)
                         },
-                        "Note",
+                        "备注",
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -597,14 +597,14 @@ private fun NamedValuesBlock(
         }
     }
     Row {
-        TextButton(onClick = { rows = rows + ("" to "") }) { Text("Add value") }
+        TextButton(onClick = { rows = rows + ("" to "") }) { Text("添加值") }
         TextButton(
             onClick = {
                 open = false
                 rows = emptyList()
                 onChange(field.copy(enumLabels = null, liveEmphasis = emptyList(), enumNotes = null))
             },
-        ) { Text("Remove") }
+        ) { Text("移除") }
     }
 }
 
@@ -630,20 +630,20 @@ private fun CompactField(
 private fun WhenOpMenu(op: DecodeWhenOp, modifier: Modifier, onChange: (DecodeWhenOp) -> Unit) {
     var open by remember { mutableStateOf(false) }
     val label = when (op) {
-        DecodeWhenOp.EQ -> "equals"
-        DecodeWhenOp.NEQ -> "not equals"
-        DecodeWhenOp.MASK -> "mask"
-        DecodeWhenOp.NMASK -> "none of bits"
-        DecodeWhenOp.LEN -> "length"
+        DecodeWhenOp.EQ -> "等于"
+        DecodeWhenOp.NEQ -> "不等于"
+        DecodeWhenOp.MASK -> "位掩码"
+        DecodeWhenOp.NMASK -> "各位均不匹配"
+        DecodeWhenOp.LEN -> "长度"
     }
     ExposedDropdownMenuBox(open, { open = it }, modifier) {
-        FieldwatchDropdownField("When", label, open)
+        FieldwatchDropdownField("条件", label, open)
         ExposedDropdownMenu(open, { open = false }) {
-            DropdownMenuItem(text = { Text("equals") }, onClick = { onChange(DecodeWhenOp.EQ); open = false })
-            DropdownMenuItem(text = { Text("not equals") }, onClick = { onChange(DecodeWhenOp.NEQ); open = false })
-            DropdownMenuItem(text = { Text("mask") }, onClick = { onChange(DecodeWhenOp.MASK); open = false })
-            DropdownMenuItem(text = { Text("none of bits") }, onClick = { onChange(DecodeWhenOp.NMASK); open = false })
-            DropdownMenuItem(text = { Text("payload length") }, onClick = { onChange(DecodeWhenOp.LEN); open = false })
+            DropdownMenuItem(text = { Text("等于") }, onClick = { onChange(DecodeWhenOp.EQ); open = false })
+            DropdownMenuItem(text = { Text("不等于") }, onClick = { onChange(DecodeWhenOp.NEQ); open = false })
+            DropdownMenuItem(text = { Text("位掩码") }, onClick = { onChange(DecodeWhenOp.MASK); open = false })
+            DropdownMenuItem(text = { Text("各位均不匹配") }, onClick = { onChange(DecodeWhenOp.NMASK); open = false })
+            DropdownMenuItem(text = { Text("载荷长度") }, onClick = { onChange(DecodeWhenOp.LEN); open = false })
         }
     }
 }
@@ -664,7 +664,7 @@ private fun List<Pair<String, String>>.toEnumMap(): Map<String, String>? {
 private fun TypeMenu(type: DecodeType, modifier: Modifier, onChange: (DecodeType) -> Unit) {
     var open by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(open, { open = it }, modifier) {
-        FieldwatchDropdownField("Type", type.name.lowercase(), open)
+        FieldwatchDropdownField("类型", type.name.lowercase(), open)
         ExposedDropdownMenu(open, { open = false }) {
             DecodeType.entries.forEach { t ->
                 DropdownMenuItem(
@@ -681,10 +681,10 @@ private fun TypeMenu(type: DecodeType, modifier: Modifier, onChange: (DecodeType
 private fun EndianMenu(endian: DecodeEndian, modifier: Modifier, onChange: (DecodeEndian) -> Unit) {
     var open by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(open, { open = it }, modifier) {
-        FieldwatchDropdownField("Endian", if (endian == DecodeEndian.BE) "BE" else "LE", open)
+        FieldwatchDropdownField("字节序", if (endian == DecodeEndian.BE) "BE" else "LE", open)
         ExposedDropdownMenu(open, { open = false }) {
-            DropdownMenuItem(text = { Text("little") }, onClick = { onChange(DecodeEndian.LE); open = false })
-            DropdownMenuItem(text = { Text("big") }, onClick = { onChange(DecodeEndian.BE); open = false })
+            DropdownMenuItem(text = { Text("小端") }, onClick = { onChange(DecodeEndian.LE); open = false })
+            DropdownMenuItem(text = { Text("大端") }, onClick = { onChange(DecodeEndian.BE); open = false })
         }
     }
 }

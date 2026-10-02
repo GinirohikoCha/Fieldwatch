@@ -20,7 +20,7 @@ object FastPair {
     }
 
     fun liveLabel(pairing: Boolean): String =
-        if (pairing) "Fast Pair pairing" else "Fast Pair"
+        if (pairing) "Fast Pair 配对中" else "Fast Pair"
 
     fun isFastPairUuid(uuid: String): Boolean {
         val hex = uuid.filter { it.isLetterOrDigit() }.uppercase()

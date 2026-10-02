@@ -71,10 +71,10 @@ fun RadioBookmarksScreen(
         contentWindowInsets = NestedTabInsets,
         topBar = {
             NestedTopBar(
-                title = "Named radios (${radios.size})",
+                title = "命名设备（${radios.size}）",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                     }
                 },
             )
@@ -87,7 +87,7 @@ fun RadioBookmarksScreen(
         ) {
             item {
                 Text(
-                    "One MAC each. Custom name shows on Live. Observer notes show on detail and reports. Alert is optional (pip / voice / flash). Filters → Named radios only hides everything else. Signature watches stay on Signatures.",
+                    "每个条目对应一个 MAC。自定义名称显示在实时页面，观测备注显示在详情和报告中。可选择开启警报（提示音／语音／闪烁）。“筛选 → 仅命名设备”会隐藏其他设备。已关注的特征仍在“特征库”中。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -95,7 +95,7 @@ fun RadioBookmarksScreen(
             if (radios.isEmpty()) {
                 item {
                     Text(
-                        "No named radios. Set a custom name on detail, or bookmark a radio (top-right) to watch it.",
+                        "暂无命名设备。可在详情中设置自定义名称，或点按右上角关注无线设备。",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 12.dp),
@@ -127,7 +127,7 @@ fun RadioBookmarksScreen(
                         onClick = { clearAll = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Clear all ${radios.size} named radios")
+                        Text("清除全部 ${radios.size} 个命名设备")
                     }
                 }
             }
@@ -137,9 +137,9 @@ fun RadioBookmarksScreen(
     if (clearAll) {
         AlertDialog(
             onDismissRequest = { clearAll = false },
-            title = { Text("Clear named radios?") },
+            title = { Text("清除命名设备？") },
             text = {
-                Text("Remove ${radios.size} named radios. Signature watches stay.")
+                Text("移除 ${radios.size} 个命名设备。保留已关注的特征。")
             },
             confirmButton = {
                 TextButton(
@@ -147,10 +147,10 @@ fun RadioBookmarksScreen(
                         vm.clearRadioBookmarks()
                         clearAll = false
                     },
-                ) { Text("Clear") }
+                ) { Text("清除") }
             },
             dismissButton = {
-                TextButton(onClick = { clearAll = false }) { Text("Cancel") }
+                TextButton(onClick = { clearAll = false }) { Text("取消") }
             },
         )
     }
@@ -159,18 +159,18 @@ fun RadioBookmarksScreen(
         var notesDraft by remember(renameTarget.id) { mutableStateOf(renameTarget.observerNotes) }
         AlertDialog(
             onDismissRequest = { renameId = null },
-            title = { Text("Named radio") },
+            title = { Text("命名设备") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     FieldwatchOutlinedField(
                         value = draft,
                         onValueChange = { draft = it.take(RadioBookmarks.MAX_NAME) },
-                        label = "Custom name",
+                        label = "自定义名称",
                     )
                     FieldwatchOutlinedField(
                         value = notesDraft,
                         onValueChange = { notesDraft = it.take(RadioBookmarks.MAX_NOTES) },
-                        label = "Observer notes",
+                        label = "观测备注",
                         singleLine = false,
                         minLines = 3,
                         supportingText = "${notesDraft.trim().length}/${RadioBookmarks.MAX_NOTES}",
@@ -183,10 +183,10 @@ fun RadioBookmarksScreen(
                         vm.updateNamedRadio(renameTarget.id, draft, notesDraft)
                         renameId = null
                     },
-                ) { Text("Save") }
+                ) { Text("保存") }
             },
             dismissButton = {
-                TextButton(onClick = { renameId = null }) { Text("Cancel") }
+                TextButton(onClick = { renameId = null }) { Text("取消") }
             },
         )
     }
@@ -231,7 +231,7 @@ private fun BookmarkCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    if (onAir) "On the air — tap to open detail" else "Not this session",
+                    if (onAir) "正在广播 — 点按查看详情" else "本次会话未发现",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -251,17 +251,17 @@ private fun BookmarkCard(
                 modifier = Modifier.padding(start = 8.dp),
             ) {
                 Text(
-                    "Alert",
+                    "警报",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 FieldwatchSwitch(checked = row.alert, onCheckedChange = onAlert)
             }
             IconButton(onClick = onRename) {
-                Icon(Icons.Outlined.Edit, "Edit", modifier = Modifier.size(20.dp))
+                Icon(Icons.Outlined.Edit, "编辑", modifier = Modifier.size(20.dp))
             }
             IconButton(onClick = onRemove) {
-                Icon(Icons.Outlined.Delete, "Remove", modifier = Modifier.size(20.dp))
+                Icon(Icons.Outlined.Delete, "移除", modifier = Modifier.size(20.dp))
             }
         }
     }

@@ -246,7 +246,7 @@ object SignatureFieldDecoder {
                 val on = slice.any { it.toInt() != 0 }
                 rawNum = if (on) 1.0 else 0.0
                 rawKey = if (on) "1" else "0"
-                if (on) "yes" else "no"
+                if (on) "是" else "否"
             }
             DecodeType.BITS -> {
                 val width = (field.bitWidth ?: 1).coerceIn(1, 32)

@@ -60,6 +60,7 @@ private data class Spot(
     val body: String,
     val box: Rect,
     val from: Offset,
+    val fromTop: Boolean = false,
 )
 
 @Composable
@@ -81,7 +82,7 @@ fun LiveChromeTour(
         val fitted = spots.map { spot ->
             val h = measuredH[spot.title] ?: return@map spot
             val box = Rect(spot.box.left, spot.box.top, spot.box.right, spot.box.top + h)
-            val fromY = if (spot.title == "Tune") box.top else box.bottom
+            val fromY = if (spot.fromTop) box.top else box.bottom
             spot.copy(box = box, from = Offset(spot.from.x, fromY))
         }
         val placed = separateBubbles(fitted, pad, with(density) { 8.dp.toPx() })
@@ -128,7 +129,7 @@ fun LiveChromeTour(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .offset { IntOffset(0, gotItY.roundToInt()) },
-        ) { Text("Got it") }
+        ) { Text("知道了") }
     }
 }
 
@@ -179,11 +180,11 @@ private fun layoutSpots(
 
     val tune = targets.tune!!
     val tabs = listOf(
-        Triple(targets.pause!!, "Pause", "Freeze the picture. Tap Live again to run."),
-        Triple(targets.filters!!, "Filters", "Who is shown."),
-        Triple(targets.signatures!!, "Signatures", "Pattern catalog."),
-        Triple(targets.reports!!, "Reports", "Debrief, sits, log."),
-        Triple(targets.settings!!, "Settings", "Scan, GPS, TAK."),
+        Triple(targets.pause!!, "暂停", "暂停显示。再次点按“实时”继续。"),
+        Triple(targets.filters!!, "筛选", "选择显示哪些设备。"),
+        Triple(targets.signatures!!, "特征库", "无线设备特征目录。"),
+        Triple(targets.reports!!, "报告", "观测总结、观测和日志。"),
+        Triple(targets.settings!!, "设置", "扫描、GPS、TAK。"),
     )
     val heights = floatArrayOf(topH, bodyH, bodyH, bodyH, topH)
     val tabTop = tabs.minOf { it.first.top }
@@ -279,7 +280,7 @@ private fun layoutSpots(
     }
     val tuneFromX = tune.center.x.coerceIn(tuneBox.left + inset, tuneBox.right - inset)
     return listOf(
-        Spot(tune, "Tune", "Display — Radar, list, timeline, hybrid, By class.", tuneBox, Offset(tuneFromX, tuneBox.top)),
+        Spot(tune, "调整", "显示：雷达、列表、时间线、混合、按类别。", tuneBox, Offset(tuneFromX, tuneBox.top), fromTop = true),
     ) + tabs.mapIndexed { i, t ->
         Spot(t.first, t.second, t.third, boxes[i], fromOn(boxes[i], t.first, i))
     }
@@ -306,7 +307,7 @@ private fun separateBubbles(spots: List<Spot>, pad: Float, edge: Float): List<Sp
     }
     return spots.mapIndexed { i, s ->
         val b = boxes[i]
-        val fromY = if (s.title == "Tune") b.top else b.bottom
+        val fromY = if (s.fromTop) b.top else b.bottom
         s.copy(box = b, from = Offset(s.from.x, fromY))
     }
 }

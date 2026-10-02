@@ -323,8 +323,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Flock-style roadside ALPR / camera pole. IEEE B4:1E:52 or a Flock-* / FLCK / Condor / Falcon / Sparrow name. Current poles are often quiet on Wi-Fi and BLE. LiteOn module prefixes are a separate row, not Extra attention.",
-        attentionNote = "Flock-style roadside ALPR / camera pole — reads plates and can be used to locate a vehicle. IEEE B4:1E:52 or a Flock-* SSID is the strong hit. Current poles are often quiet on Wi-Fi and BLE. Pattern match, not that camera. Look with your eyes.",
+        notes = "Flock 系列路边车牌自动识别（ALPR）设备或摄像杆。依据 IEEE B4:1E:52 或 Flock-* / FLCK / Condor / Falcon / Sparrow 名称匹配。当前型号通常不发出 Wi-Fi 或 BLE 广播。LiteOn 模块前缀单独列出，不属于重点关注。",
+        attentionNote = "Flock 系列路边车牌自动识别（ALPR）设备或摄像杆，可读取车牌并用于定位车辆。IEEE B4:1E:52 或 Flock-* SSID 是较强的匹配依据。当前型号通常不发出 Wi-Fi 或 BLE 广播。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             oui("B4:1E:52"),
@@ -345,7 +345,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "Wi-Fi module prefixes commonly seen on camera boards (LiteOn and similar). Not Flock's IEEE block. Doorbells and other OEM radios use these chips. A Flock name or B4:1E:52 is Flock Safety Cameras.",
+        notes = "摄像头主板常见的 Wi-Fi 模块前缀（LiteOn 等），并非 Flock 的 IEEE 地址段。门铃及其他厂商设备也使用这些芯片。Flock 名称或 B4:1E:52 归入 Flock Safety Cameras。",
         builtIn = true,
         rules = buildList {
             listOf(
@@ -367,7 +367,7 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Flock Raven or ShotSpotter-style acoustic gunshot sensor, usually on a pole with cameras. BLE UUIDs 3100–3500 are the Raven radio. The XUNTONG battery manufacturer ID is Penguin, not this row. Current Flock-family poles are often quiet on Wi-Fi and BLE.",
+        notes = "Flock Raven 或 ShotSpotter 系列枪声声学传感器，通常与摄像头安装在同一根杆上。BLE UUID 3100–3500 对应 Raven 无线模块。XUNTONG 电池厂商 ID 归入 Penguin，不属于此项。当前 Flock 系列杆装设备通常不发出 Wi-Fi 或 BLE 广播。",
         builtIn = true,
         rules = listOf(
             name("RAVEN"),
@@ -389,7 +389,7 @@ object DefaultCatalog {
         colorIndex = Hue.FIND_MY,
         kind = SignatureClass.FINDER,
         matchAny = true,
-        notes = "Apple AirTag or Find My accessory. iPhones also send Find My so they can be located — that stays on Apple Device unless the name is AirTag. Addresses rotate.",
+        notes = "Apple AirTag 或“查找”配件。iPhone 也会发送“查找”广播以定位自身；除非名称为 AirTag，否则归入 Apple Device。地址会轮换。",
         builtIn = true,
         rules = listOf(
             name("AirTag"),
@@ -405,7 +405,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.FINDER,
         matchAny = true,
-        notes = "Samsung SmartTag / SmartTag+ item finder. Addresses often rotate.",
+        notes = "Samsung SmartTag / SmartTag+ 寻物标签。地址通常会轮换。",
         builtIn = true,
         rules = listOf(
             name("SmartTag"),
@@ -423,7 +423,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.BEACON,
         matchAny = true,
-        notes = "Generic proximity beacon. Stores, baskets, TVs, and cars can all send this Apple layout. Mute in a dense mall.",
+        notes = "通用近距离信标。商店、购物篮、电视和汽车都可能发送这种 Apple 格式的广播。在密集商场中可关闭其提醒。",
         builtIn = true,
         rules = listOf(
             mfgData(0x004C, "0215"),
@@ -439,7 +439,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.BEACON,
         matchAny = true,
-        notes = "Target shopping-basket tag. Dual-labels with generic iBeacon; this row is the store basket.",
+        notes = "Target 购物篮标签。可能同时匹配通用 iBeacon；此项专指商店购物篮。",
         builtIn = true,
         rules = listOf(
             mfgData(0x004C, TARGET_ATRIUS_IBEACON_MFG_PREFIX),
@@ -454,7 +454,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.BEACON,
         matchAny = true,
-        notes = "Minew location or asset beacon. Often also sends iBeacon or Eddystone on the same radio.",
+        notes = "Minew 定位或资产信标。同一无线设备往往还发送 iBeacon 或 Eddystone 广播。",
         builtIn = true,
         rules = listOf(
             oui("AC:23:3F"),
@@ -470,7 +470,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.BEACON,
         matchAny = true,
-        notes = "Store or venue location beacon / sticker. Decoded fields can show Nearable vs telemetry.",
+        notes = "商店或场馆使用的定位信标或贴片。解码字段可区分 Nearable 和遥测帧。",
         builtIn = true,
         decode = CatalogDecodes.estimote,
         rules = listOf(
@@ -487,7 +487,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.BEACON,
         matchAny = true,
-        notes = "Store or venue location beacon. Decoded fields can show battery, TX, and whether it is moving.",
+        notes = "商店或场馆使用的定位信标。解码字段可显示电量、发射功率和移动状态。",
         builtIn = true,
         decode = CatalogDecodes.kontakt,
         rules = listOf(
@@ -503,7 +503,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.FINDER,
         matchAny = true,
-        notes = "Tile item finder. Decoded fields can show a rotating private id — not a serial.",
+        notes = "Tile 寻物标签。解码字段可能显示轮换的私有 ID，该 ID 不是序列号。",
         builtIn = true,
         decode = CatalogDecodes.tile,
         rules = listOf(
@@ -520,8 +520,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Penguin Flock-family external battery. The XUNTONG BLE manufacturer ID is the usual fingerprint; Penguin* names are older firmware. Newer packs often advertise a 10-digit name. Decode fields show the TN serial from manufacturer data when present.",
-        attentionNote = "Penguin is a Flock-family external battery (XUNTONG manufacturer ID). Name hits are older firmware and low uniqueness. Pattern match, not that camera. Look with your eyes.",
+        notes = "Penguin 是 Flock 系列外置电池。通常依据 XUNTONG BLE 厂商 ID 识别；Penguin* 名称来自旧版固件。较新电池组常广播 10 位数字名称。如果厂商数据包含 TN 序列号，解码字段会显示它。",
+        attentionNote = "Penguin 是 Flock 系列外置电池（XUNTONG 厂商 ID）。名称匹配对应旧固件，独特性较低。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         decode = CatalogDecodes.penguin,
         rules = listOf(
@@ -538,8 +538,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Pigvision Flock-family / roadside camera name.",
-        attentionNote = "Pigvision is a Flock-family / roadside camera name. Name-only. Pattern match, not that camera. Look with your eyes.",
+        notes = "Pigvision 是 Flock 系列或路边摄像头使用的名称。",
+        attentionNote = "Pigvision 是 Flock 系列或路边摄像头使用的名称。仅按名称匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Pigvision"),
@@ -555,8 +555,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "External battery pack usually associated with a Flock-style camera pole. Name hits are stronger. Current poles are often quiet on Wi-Fi and BLE.",
-        attentionNote = "Usually associated with a Flock-style camera — an external battery pack on the pole. Name hits are stronger. Current poles are often quiet on Wi-Fi and BLE. Pattern match, not that camera. Look with your eyes.",
+        notes = "通常与 Flock 系列摄像杆配套的外置电池组。名称匹配的依据较强。当前杆装设备通常不发出 Wi-Fi 或 BLE 广播。",
+        attentionNote = "通常与 Flock 系列摄像头配套，作为杆上的外置电池组。名称匹配的依据较强。当前杆装设备通常不发出 Wi-Fi 或 BLE 广播。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = buildList {
             add(name("FS Ext Battery"))
@@ -576,7 +576,7 @@ object DefaultCatalog {
         colorIndex = Hue.FIND_MY,
         kind = SignatureClass.PHONE,
         matchAny = true,
-        notes = "iPhone, iPad, or Mac advertising Continuity (Nearby, Handoff, AirDrop, Instant Hotspot). Find My on this radio is the phone locating itself, not a second AirTag. Not AirPods.",
+        notes = "发送连续互通广播（Nearby、接力、隔空投送、即时热点）的 iPhone、iPad 或 Mac。此设备上的“查找”广播用于定位手机自身，不代表另一个 AirTag。此项不包括 AirPods。",
         builtIn = true,
         rules = listOf(
             mfgData(0x004C, "10"),
@@ -601,7 +601,7 @@ object DefaultCatalog {
         colorIndex = Hue.AUDIO,
         kind = SignatureClass.AUDIO,
         matchAny = true,
-        notes = "AirPods, Beats, or an Apple TV/speaker advertising AirPlay. Not an AirTag and not the iPhone itself.",
+        notes = "AirPods、Beats，或发送 AirPlay 广播的 Apple TV / 音箱。并非 AirTag，也不是 iPhone 本身。",
         builtIn = true,
         rules = listOf(
             mfgData(0x004C, "07"),
@@ -618,7 +618,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.PHONE,
         matchAny = true,
-        notes = "Windows PC, Surface, or Xbox advertising Swift Pair / Nearby Sharing.",
+        notes = "发送快速配对或附近共享广播的 Windows 电脑、Surface 或 Xbox。",
         builtIn = true,
         rules = listOf(
             mfg(0x0006),
@@ -634,7 +634,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Tesla phone-as-key, vehicle, Wall Connector, or TeslaGW Wi-Fi. iOS also sees an iBeacon layout from the car — that is still Tesla, not a mall beacon. Tire sensors are the tsTPMS row.",
+        notes = "Tesla 手机钥匙、车辆、Wall Connector 或 TeslaGW Wi-Fi。iOS 还会收到车辆发送的 iBeacon 格式广播，仍归入 Tesla，而非商场信标。轮胎传感器单独归入 tsTPMS。",
         builtIn = true,
         rules = listOf(
             mfg(0x022B),
@@ -657,7 +657,7 @@ object DefaultCatalog {
     private fun ford() = oemVehicle(
         id = "fleet-ford",
         name = "Ford",
-        notes = "Ford or Lincoln phone-as-key / infotainment. Not a dealer Wi-Fi name.",
+        notes = "Ford 或 Lincoln 手机钥匙 / 车载信息娱乐系统。不匹配经销商的 Wi-Fi 名称。",
         rules = listOf(
             mfg(0x0723),
             bleName("Ford"),
@@ -668,7 +668,7 @@ object DefaultCatalog {
     private fun hondaMotor() = oemVehicle(
         id = "fleet-honda",
         name = "Honda",
-        notes = "Honda or Acura phone-as-key / infotainment.",
+        notes = "Honda 或 Acura 手机钥匙 / 车载信息娱乐系统。",
         rules = listOf(
             mfg(0x0915),
             bleName("Honda"),
@@ -679,7 +679,7 @@ object DefaultCatalog {
     private fun hyundaiMotor() = oemVehicle(
         id = "fleet-hyundai",
         name = "Hyundai",
-        notes = "Hyundai or Genesis phone-as-key / infotainment. Not a dealer Wi-Fi name.",
+        notes = "Hyundai 或 Genesis 手机钥匙 / 车载信息娱乐系统。不匹配经销商的 Wi-Fi 名称。",
         rules = listOf(
             mfg(0x0826),
             bleName("Hyundai"),
@@ -690,7 +690,7 @@ object DefaultCatalog {
     private fun toyota() = oemVehicle(
         id = "fleet-toyota",
         name = "Toyota",
-        notes = "Toyota or Lexus phone-as-key, or a factory TOYOTA / LEXUS hotspot.",
+        notes = "Toyota 或 Lexus 手机钥匙，或使用出厂 TOYOTA / LEXUS 名称的热点。",
         rules = listOf(
             mfg(0x0977),
             bleName("Toyota"),
@@ -703,7 +703,7 @@ object DefaultCatalog {
     private fun nissanMotor() = oemVehicle(
         id = "fleet-nissan",
         name = "Nissan",
-        notes = "Nissan or Infiniti phone-as-key / infotainment.",
+        notes = "Nissan 或 Infiniti 手机钥匙 / 车载信息娱乐系统。",
         rules = listOf(
             mfg(0x0BA6),
             bleName("Nissan"),
@@ -714,7 +714,7 @@ object DefaultCatalog {
     private fun subaru() = oemVehicle(
         id = "fleet-subaru",
         name = "Subaru",
-        notes = "Subaru phone-as-key / infotainment. Not Starlink satellite internet.",
+        notes = "Subaru 手机钥匙 / 车载信息娱乐系统。与 Starlink 卫星互联网无关。",
         rules = listOf(
             mfg(0x0A10),
             bleName("Subaru"),
@@ -724,7 +724,7 @@ object DefaultCatalog {
     private fun bmw() = oemVehicle(
         id = "fleet-bmw",
         name = "BMW",
-        notes = "BMW phone-as-key or in-car hotspot. Factory BMW_ Wi-Fi is the car, not a dealer showroom.",
+        notes = "BMW 手机钥匙或车载热点。出厂 BMW_ Wi-Fi 名称来自车辆，而非经销商展厅。",
         rules = listOf(
             mfg(0x05EB),
             bleName("BMW"),
@@ -735,7 +735,7 @@ object DefaultCatalog {
     private fun volkswagen() = oemVehicle(
         id = "fleet-volkswagen",
         name = "Volkswagen",
-        notes = "Volkswagen phone-as-key or My VW hotspot. Skoda, SEAT, and Porsche have their own rows.",
+        notes = "Volkswagen 手机钥匙或 My VW 热点。Skoda、SEAT 和 Porsche 分别列出。",
         rules = listOf(
             mfg(0x011F),
             uuid("FE30"),
@@ -749,7 +749,7 @@ object DefaultCatalog {
     private fun porsche() = oemVehicle(
         id = "fleet-porsche",
         name = "Porsche",
-        notes = "Porsche phone-as-key or factory Porsche_WLAN hotspot. Separate from Volkswagen.",
+        notes = "Porsche 手机钥匙或使用出厂 Porsche_WLAN 名称的热点。与 Volkswagen 分开列出。",
         rules = listOf(
             mfg(0x0120),
             bleName("Porsche"),
@@ -760,7 +760,7 @@ object DefaultCatalog {
     private fun jaguarLandRover() = oemVehicle(
         id = "fleet-jlr",
         name = "Jaguar Land Rover",
-        notes = "Jaguar, Land Rover, or Range Rover phone-as-key / infotainment.",
+        notes = "Jaguar、Land Rover 或 Range Rover 手机钥匙 / 车载信息娱乐系统。",
         rules = listOf(
             mfg(0x020B),
             bleName("Jaguar"),
@@ -772,7 +772,7 @@ object DefaultCatalog {
     private fun bydAuto() = oemVehicle(
         id = "fleet-byd",
         name = "BYD",
-        notes = "BYD phone-as-key or vehicle BLE. Pattern match, not a specific model.",
+        notes = "BYD 手机钥匙或车辆 BLE。这里只是模式匹配，无法确定具体车型。",
         rules = listOf(
             mfg(0x0C34),
             bleName("BYD"),
@@ -803,7 +803,7 @@ object DefaultCatalog {
         colorIndex = Hue.FIND_MY,
         kind = SignatureClass.PHONE,
         matchAny = true,
-        notes = "Pixel phone or Chromecast. Fast Pair accessories are the Fast Pair row.",
+        notes = "Pixel 手机或 Chromecast。Fast Pair 配件归入 Fast Pair。",
         builtIn = true,
         rules = listOf(
             mfg(0x00E0),
@@ -820,7 +820,7 @@ object DefaultCatalog {
         colorIndex = Hue.FIND_MY,
         kind = SignatureClass.PHONE,
         matchAny = true,
-        notes = "Android accessory (buds, watch, phone) advertising Fast Pair. Pairing-mode is tap-to-pair; longer ads are already-paired plaza noise. Not a person. Filters can hide the plaza chips.",
+        notes = "发送 Fast Pair 广播的 Android 配件（耳机、手表、手机）。配对模式用于点按配对；较长广播通常是周围已配对设备的背景信号，不能代表某个人。可在筛选中隐藏这些背景标签。",
         builtIn = true,
         rules = listOf(
             uuid("FE2C"),
@@ -834,7 +834,7 @@ object DefaultCatalog {
         colorIndex = Hue.AUDIO,
         kind = SignatureClass.AUDIO,
         matchAny = true,
-        notes = "Sony headphones, TV, or camera. Bravia TVs also send a generic iBeacon for Cast — Fieldwatch keeps Sony.",
+        notes = "Sony 耳机、电视或相机。Bravia 电视还会为投屏发送通用 iBeacon 广播，Fieldwatch 仍将其归入 Sony。",
         builtIn = true,
         rules = listOf(
             mfg(0x012D),
@@ -851,7 +851,7 @@ object DefaultCatalog {
         colorIndex = Hue.AUDIO,
         kind = SignatureClass.AUDIO,
         matchAny = true,
-        notes = "Bose headphones or speaker. Quiet Charge / QC buds advertise even when in the case.",
+        notes = "Bose 耳机或音箱。Quiet Charge / QC 耳机即使放在盒内也会广播。",
         builtIn = true,
         rules = listOf(
             mfg(0x009E),
@@ -868,7 +868,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Garmin watch, bike computer, or inReach messenger.",
+        notes = "Garmin 手表、自行车码表或 inReach 卫星通信器。",
         builtIn = true,
         rules = listOf(
             mfg(0x0087),
@@ -884,7 +884,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Amazon Echo, Fire, or Kindle when it advertises. Not every AmazonBasics gadget.",
+        notes = "发送广播的 Amazon Echo、Fire 或 Kindle，并不涵盖所有 AmazonBasics 设备。",
         builtIn = true,
         rules = listOf(
             mfg(0x0171),
@@ -901,7 +901,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Fitbit watch or tracker. Advertisements are identity-only; step counts are not in the broadcast.",
+        notes = "Fitbit 手表或健身追踪器。广播仅用于身份识别，不包含步数。",
         builtIn = true,
         rules = listOf(
             mfg(0x018E),
@@ -918,7 +918,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Oura wellness ring. Always-on BLE while worn. Pattern match, not that person.",
+        notes = "Oura 健康戒指。佩戴时持续发送 BLE 广播。这里只是模式匹配，不能确定佩戴者。",
         builtIn = true,
         rules = listOf(
             mfg(0x02B2),
@@ -933,7 +933,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Logitech mouse, keyboard, or webcam. Office noise.",
+        notes = "Logitech 鼠标、键盘或网络摄像头，常见的办公背景信号。",
         builtIn = true,
         rules = listOf(
             mfg(0x01DA),
@@ -950,7 +950,7 @@ object DefaultCatalog {
         colorIndex = Hue.AUDIO,
         kind = SignatureClass.AUDIO,
         matchAny = true,
-        notes = "JBL, Harman Kardon, or some car-audio BLE. Headphones, speakers, or a head unit.",
+        notes = "JBL、Harman Kardon 或部分车载音响的 BLE，可能是耳机、音箱或车机。",
         builtIn = true,
         rules = listOf(
             mfg(0x0057),
@@ -966,7 +966,7 @@ object DefaultCatalog {
         colorIndex = Hue.AUDIO,
         kind = SignatureClass.AUDIO,
         matchAny = true,
-        notes = "Sonos home/office speaker. Setup or idle ads. Not a tracker.",
+        notes = "Sonos 家用或办公音箱，发送设置或空闲广播，并非追踪器。",
         builtIn = true,
         rules = listOf(
             mfg(0x05A7),
@@ -982,7 +982,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "GoPro action camera. Decoded fields can show whether it is awake, in Wi-Fi AP mode, or pairing.",
+        notes = "GoPro 运动相机。解码字段可显示是否唤醒、是否处于 Wi-Fi 热点模式或正在配对。",
         builtIn = true,
         decode = CatalogDecodes.gopro,
         rules = listOf(
@@ -1000,7 +1000,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "DJI Osmo handheld / action camera (Action, Pocket, 360, Nano). Not a flying DJI aircraft.",
+        notes = "DJI Osmo 手持或运动相机（Action、Pocket、360、Nano），并非飞行中的 DJI 无人机。",
         builtIn = true,
         decode = CatalogDecodes.djiModel,
         rules = OSMO_CAMERA_MFG_PREFIXES.map { mfgData(0x08AA, it) } + listOf(
@@ -1024,7 +1024,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "Insta360 action / 360 camera. The advertised name is often the model plus serial. Consumer camera, not a pole.",
+        notes = "Insta360 运动或全景相机。广播名称通常为型号加序列号。属于消费级相机，而非杆装摄像头。",
         builtIn = true,
         rules = listOf(
             mfg(0x10D7),
@@ -1050,7 +1050,7 @@ object DefaultCatalog {
         colorIndex = Hue.DRONE,
         kind = SignatureClass.DRONE,
         matchAny = true,
-        notes = "DJI aircraft, controller, or setup Wi-Fi. Handheld Osmo cameras are the Osmo row. In-flight digital license plate is the Remote ID row.",
+        notes = "DJI 飞行器、遥控器或设置用 Wi-Fi。手持 Osmo 相机单独归入 Osmo；飞行中的数字标识归入 Remote ID。",
         builtIn = true,
         decode = CatalogDecodes.djiModel,
         rules = listOf(
@@ -1069,7 +1069,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "NETGEAR or Orbi home router / mesh. Renamed SSIDs still hit on the board vendor.",
+        notes = "NETGEAR 或 Orbi 家用路由器 / Mesh。即使 SSID 已改名，仍可依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1089,7 +1089,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "TP-Link or Deco home router / mesh. A Tapo camera on a TP-Link board can also hit this row.",
+        notes = "TP-Link 或 Deco 家用路由器 / Mesh。使用 TP-Link 主板的 Tapo 摄像头也可能匹配此项。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1110,7 +1110,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "ASUS home router or mesh. An ASUS laptop hotspot can also hit.",
+        notes = "ASUS 家用路由器或 Mesh。ASUS 笔记本电脑的热点也可能匹配。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1129,7 +1129,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Linksys or Velop home mesh. Some Velop units use Belkin boards.",
+        notes = "Linksys 或 Velop 家用 Mesh。部分 Velop 设备使用 Belkin 主板。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1149,7 +1149,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Amazon Eero mesh. Not an Echo speaker.",
+        notes = "Amazon Eero Mesh，并非 Echo 音箱。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1168,7 +1168,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Google Wifi / Nest Wifi mesh. Not a Pixel phone and not a Nest camera.",
+        notes = "Google Wifi / Nest Wifi Mesh，并非 Pixel 手机或 Nest 摄像头。",
         builtIn = true,
         rules = listOf(
             wifiName("Google Wifi"),
@@ -1186,7 +1186,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Huawei home router, or a phone hotspot on a public Huawei address. Randomized hotspots need the factory SSID. Not Honor.",
+        notes = "Huawei 家用路由器，或使用 Huawei 公共地址的手机热点。随机地址热点需要保留出厂 SSID 才能匹配。不包括 Honor。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1206,7 +1206,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Plume SuperPod / HomePass mesh. ISP-branded pods (xFi and similar) often use the carrier OEM board instead.",
+        notes = "Plume SuperPod / HomePass Mesh。运营商品牌的节点（如 xFi）往往使用运营商的代工主板。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1226,7 +1226,7 @@ object DefaultCatalog {
         colorIndex = Hue.FIND_MY,
         kind = SignatureClass.PHONE,
         matchAny = true,
-        notes = "Phone personal hotspot on a factory name (AndroidAP, Galaxy, Pixel). Custom hotspot names miss. iPhone hotspots stay on Apple Device.",
+        notes = "使用出厂名称（AndroidAP、Galaxy、Pixel）的手机个人热点。自定义名称的热点不会匹配。iPhone 热点归入 Apple Device。",
         builtIn = true,
         rules = listOf(
             wifiGlob("AndroidAP*"),
@@ -1246,7 +1246,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "D-Link home router. Renamed SSIDs still hit on the board vendor.",
+        notes = "D-Link 家用路由器。即使 SSID 已改名，仍可依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1266,7 +1266,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "DWnet consumer / SMB access point. Cloud SSIDs are house names, so the board vendor is the hit.",
+        notes = "DWnet 消费级或中小企业接入点。云管理 SSID 通常由用户命名，因此依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.DWNET),
     )
@@ -1278,7 +1278,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Belkin home router. Some Linksys Velop units land here too.",
+        notes = "Belkin 家用路由器。部分 Linksys Velop 设备也会匹配此项。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1297,7 +1297,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Comcast xfinitywifi hotspot or Xfinity / XFSETUP gateway name. Most boxes are Arris / Hitron / Technicolor OEM — those hit the OEM row.",
+        notes = "Comcast xfinitywifi 热点，或使用 Xfinity / XFSETUP 名称的网关。多数设备由 Arris / Hitron / Technicolor 代工，也会匹配相应厂商条目。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1318,7 +1318,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Charter Spectrum setup or hotspot Wi-Fi. Boxes are usually Arris / Hitron / Technicolor OEM.",
+        notes = "Charter Spectrum 设置网络或 Wi-Fi 热点。设备通常由 Arris / Hitron / Technicolor 代工。",
         builtIn = true,
         rules = listOf(
             wifiGlob("SpectrumSetup*"),
@@ -1339,7 +1339,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "AT&T hotspot or gateway (attwifi, ATT-GUEST, Pace-style factory names). Many boxes are Pace / Arris OEM.",
+        notes = "AT&T 热点或网关（attwifi、ATT-GUEST、Pace 风格出厂名称）。许多设备由 Pace / Arris 代工。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1368,7 +1368,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Verizon or Fios hotspot / gateway name. Many FiOS boxes are Actiontec OEM.",
+        notes = "Verizon 或 Fios 热点 / 网关名称。许多 FiOS 设备由 Actiontec 代工。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1389,7 +1389,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Starlink router. The BSSID is often randomized now — the STARLINK name is the usual hit.",
+        notes = "Starlink 路由器。目前 BSSID 经常随机化，通常依据 STARLINK 名称匹配。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1409,7 +1409,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Cisco Meraki campus / cloud access point. Renamed site SSIDs still hit on the board vendor. Not a camera pole.",
+        notes = "Cisco Meraki 园区或云管理接入点。即使场所 SSID 已改名，仍可依据主板厂商匹配。并非摄像杆。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1427,7 +1427,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "GL.iNet travel router. Chip-module boards without a GL name miss.",
+        notes = "GL.iNet 便携路由器。没有 GL 名称的芯片模块主板不会匹配。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -1449,7 +1449,7 @@ object DefaultCatalog {
         colorIndex = Hue.FIND_MY,
         kind = SignatureClass.FINDER,
         matchAny = true,
-        notes = "Chipolo item finder (Find Hub / Find My). A tag you clip to keys or a bag.",
+        notes = "Chipolo 寻物标签（Find Hub /“查找”），可挂在钥匙或包上。",
         builtIn = true,
         rules = listOf(
             name("Chipolo"),
@@ -1464,7 +1464,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.FINDER,
         matchAny = true,
-        notes = "Pebblebee or Motorola moto tag item finder. A tag you clip to keys or a bag.",
+        notes = "Pebblebee 或 Motorola moto tag 寻物标签，可挂在钥匙或包上。",
         builtIn = true,
         rules = listOf(
             name("Pebblebee"),
@@ -1481,7 +1481,7 @@ object DefaultCatalog {
         colorIndex = Hue.FIND_MY,
         kind = SignatureClass.FINDER,
         matchAny = true,
-        notes = "Google Find Hub / Find My Device network tag (Chipolo, Pebblebee, moto tag, and other partners). Nearby vs separated frames. Separated mode can hold a MAC about a day. Addresses otherwise rotate. Pattern match, not that bag.",
+        notes = "Google Find Hub / Find My Device 网络标签（Chipolo、Pebblebee、moto tag 等合作品牌），包含附近和分离两类帧。分离模式可能维持同一 MAC 约一天，其他情况下地址会轮换。这里只是模式匹配，不能确定具体包袋。",
         builtIn = true,
         decode = CatalogDecodes.findHub,
         rules = listOf(
@@ -1497,7 +1497,7 @@ object DefaultCatalog {
         colorIndex = Hue.FIND_MY,
         kind = SignatureClass.FINDER,
         matchAny = true,
-        notes = "IETF DULT location-enabled advertisement (Detecting Unwanted Location Trackers). Chipolo, Pebblebee, moto tag, and other partner tags may dual-label. Near-owner vs separated is a bit in the payload. Separated mode can hold a MAC about a day. Pattern match, not that bag.",
+        notes = "IETF DULT 定位广播（检测不受欢迎的位置追踪器）。Chipolo、Pebblebee、moto tag 等合作品牌标签可能同时匹配其他特征。载荷中的一个标志位区分靠近主人和分离状态。分离模式可能维持同一 MAC 约一天。这里只是模式匹配，不能确定具体包袋。",
         builtIn = true,
         decode = CatalogDecodes.dult,
         rules = listOf(
@@ -1512,8 +1512,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Verkada cloud camera, including LPR-capable bullets, on buildings and some public sites.",
-        attentionNote = "Verkada cloud cameras, including LPR-capable bullets. Used on buildings and some public sites — video and sometimes plates. Name-only. Pattern match, not that camera. Look with your eyes.",
+        notes = "Verkada 云摄像头，包括支持车牌识别（LPR）的枪式摄像头，常用于建筑物及部分公共场所。",
+        attentionNote = "Verkada 云摄像头，包括支持车牌识别的枪式摄像头，用于建筑物及部分公共场所，可拍摄视频，部分可识别车牌。仅按名称匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Verkada"),
@@ -1528,8 +1528,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Motorola Vigilant plate reader used by agencies and parking.",
-        attentionNote = "Motorola Vigilant is LPR — plate readers used by agencies and parking. Name-only when advertised. Pattern match, not that camera. Look with your eyes.",
+        notes = "机构和停车场使用的 Motorola Vigilant 车牌识别设备。",
+        attentionNote = "Motorola Vigilant 车牌识别（LPR）设备，用于机构和停车场。仅在广播名称时按名称匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Vigilant Solutions"),
@@ -1545,7 +1545,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "eufy home camera or tag. Common in houses. Consumer camera, not a roadside pole.",
+        notes = "eufy 家用摄像头或标签，常见于住宅，属于消费级设备，并非路边摄像杆。",
         builtIn = true,
         rules = listOf(
             name("eufy"),
@@ -1562,7 +1562,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "Wyze home camera. Very common consumer gear, not a roadside pole.",
+        notes = "Wyze 家用摄像头，常见的消费级设备，并非路边摄像杆。",
         builtIn = true,
         rules = listOf(
             name("WyzeCam"),
@@ -1578,7 +1578,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "Amazon Ring doorbell or camera. Common on houses. Consumer camera, not a roadside pole.",
+        notes = "Amazon Ring 门铃或摄像头，常见于住宅，属于消费级设备，并非路边摄像杆。",
         builtIn = true,
         rules = listOf(
             glob("Ring-*"),
@@ -1595,7 +1595,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "Arlo home camera or its base-station Wi-Fi. Consumer camera, not a roadside pole. Renamed SSIDs still hit on the board vendor.",
+        notes = "Arlo 家用摄像头或其基站 Wi-Fi，属于消费级设备，并非路边摄像杆。即使 SSID 已改名，仍可依据主板厂商匹配。",
         builtIn = true,
         rules = listOf(
             name("Arlo"),
@@ -1611,7 +1611,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "Google Nest home camera. Consumer camera, not the Nest thermostat row.",
+        notes = "Google Nest 家用摄像头。消费级摄像头，与 Nest 恒温器条目分开。",
         builtIn = true,
         rules = listOf(
             name("Nestcam"),
@@ -1628,7 +1628,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.THERMOSTAT,
         matchAny = true,
-        notes = "Nest thermostat. Temperature sensors on some generations can hit this too. Not a Nest camera.",
+        notes = "Nest 恒温器，部分代际的温度传感器也可能匹配此项。并非 Nest 摄像头。",
         builtIn = true,
         rules = listOf(
             mfg(0x01B5),
@@ -1644,7 +1644,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Nest Protect, thermostat, or other Weave-over-BLE home device. Randomized address. Decoded fields can show product and pairing.",
+        notes = "Nest Protect、恒温器或其他通过 BLE 使用 Weave 的家居设备。使用随机地址。解码字段可显示产品和配对状态。",
         builtIn = true,
         decode = CatalogDecodes.nestWeave,
         rules = listOf(
@@ -1660,7 +1660,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.THERMOSTAT,
         matchAny = true,
-        notes = "ecobee thermostat. Room sensors can hit the same row. Premium uses BLE for setup / Spotify.",
+        notes = "ecobee 恒温器，房间传感器也可能匹配。Premium 通过 BLE 进行设置或连接 Spotify。",
         builtIn = true,
         rules = listOf(
             mfg(0x07D6),
@@ -1677,7 +1677,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.THERMOSTAT,
         matchAny = true,
-        notes = "Sensi thermostat in BLE setup.",
+        notes = "处于 BLE 设置模式的 Sensi 恒温器。",
         builtIn = true,
         rules = listOf(
             bleName("Sensi"),
@@ -1692,7 +1692,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.THERMOSTAT,
         matchAny = true,
-        notes = "Honeywell Home / Lyric / Resideo thermostat (including Amazon Smart Thermostat). Not Honeywell industrial or smoke gear. T9/T10 room sensors are 900 MHz, not BLE.",
+        notes = "Honeywell Home / Lyric / Resideo 恒温器（包括 Amazon Smart Thermostat）。不包括 Honeywell 工业或烟雾报警设备。T9/T10 房间传感器使用 900 MHz，而非 BLE。",
         builtIn = true,
         rules = listOf(
             bleName("Honeywell Home"),
@@ -1711,7 +1711,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Big Ass Fans Haiku or Mammoth ceiling fan.",
+        notes = "Big Ass Fans Haiku 或 Mammoth 吊扇。",
         builtIn = true,
         rules = listOf(
             uuid("E0FC1000-1FB1-4168-96DF-B3F057A86E01"),
@@ -1729,7 +1729,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Tuya plug, light, camera, or sensor. Dense in some apartments. Decoded fields can show whether it is bound.",
+        notes = "Tuya 插座、灯具、摄像头或传感器，在部分公寓中较密集。解码字段可显示绑定状态。",
         builtIn = true,
         decode = CatalogDecodes.tuya,
         rules = listOf(
@@ -1748,7 +1748,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "ASSA ABLOY / HID Seos or Yale access credential. Phones on HID Mobile Access can advertise a Seos name.",
+        notes = "ASSA ABLOY / HID Seos 或 Yale 门禁凭证。使用 HID Mobile Access 的手机可能广播 Seos 名称。",
         builtIn = true,
         rules = listOf(
             mfg(0x012E),
@@ -1769,7 +1769,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "August smart lock (now ASSA-owned). Door lock, not a camera.",
+        notes = "August 智能门锁（现属于 ASSA），并非摄像头。",
         builtIn = true,
         rules = listOf(
             mfg(0x01D1),
@@ -1786,7 +1786,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "Schlage / Allegion smart lock (Encode and similar).",
+        notes = "Schlage / Allegion 智能门锁（Encode 等系列）。",
         builtIn = true,
         rules = listOf(
             mfg(0x013B),
@@ -1804,7 +1804,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "Nuki smart lock or opener (retrofit on a European cylinder).",
+        notes = "Nuki 智能门锁或开门器（可改装于欧式锁芯）。",
         builtIn = true,
         rules = listOf(
             uuid("A92EE000-5501-11E4-916C-0800200C9A66"),
@@ -1824,7 +1824,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "SALTO commercial access lock or reader.",
+        notes = "SALTO 商用门禁锁或读卡器。",
         builtIn = true,
         rules = listOf(
             mfg(0x0199),
@@ -1841,7 +1841,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "dormakaba, Saflok, or Oracode hotel / commercial lock.",
+        notes = "dormakaba、Saflok 或 Oracode 酒店 / 商用门锁。",
         builtIn = true,
         rules = listOf(
             mfg(0x0C64),
@@ -1861,7 +1861,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "Lockly smart lock, usually while in BLE setup.",
+        notes = "Lockly 智能门锁，通常在 BLE 设置时出现。",
         builtIn = true,
         rules = listOf(
             bleName("LOCKLY"),
@@ -1877,7 +1877,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "Kwikset Kevo smart lock.",
+        notes = "Kwikset Kevo 智能门锁。",
         builtIn = true,
         rules = listOf(
             mfg(0x015E),
@@ -1895,7 +1895,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "Master Lock Bluetooth padlock.",
+        notes = "Master Lock 蓝牙挂锁。",
         builtIn = true,
         rules = listOf(
             mfg(0x014B),
@@ -1911,7 +1911,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "igloohome keybox or smart lock.",
+        notes = "igloohome 钥匙盒或智能门锁。",
         builtIn = true,
         rules = listOf(
             mfg(0x05BA),
@@ -1928,7 +1928,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "Tedee retrofit smart lock.",
+        notes = "Tedee 改装式智能门锁。",
         builtIn = true,
         rules = listOf(
             mfg(0x0725),
@@ -1944,7 +1944,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "Paxton / Net2 door reader or access panel.",
+        notes = "Paxton / Net2 门禁读卡器或控制面板。",
         builtIn = true,
         rules = listOf(
             mfg(0x0196),
@@ -1962,7 +1962,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.LOCK,
         matchAny = true,
-        notes = "Kwikset smart lock. Kevo has its own row.",
+        notes = "Kwikset 智能门锁。Kevo 单独列出。",
         builtIn = true,
         rules = listOf(
             bleName("Kwikset"),
@@ -1977,7 +1977,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Chamberlain myQ garage-door hub.",
+        notes = "Chamberlain myQ 车库门中枢。",
         builtIn = true,
         rules = listOf(
             mfg(0x0878),
@@ -1994,7 +1994,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Chevrolet in-car hotspot (myChevrolet). Cadillac / GMC / Buick are the GM hotspot row. Not a dealer.",
+        notes = "Chevrolet 车载热点（myChevrolet）。Cadillac / GMC / Buick 归入 GM hotspot，并非经销商网络。",
         builtIn = true,
         rules = listOf(
             wifiName("myChevrolet"),
@@ -2009,7 +2009,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Stellantis Uconnect in-car hotspot (Chrysler, Jeep, Ram, Dodge, Fiat). BSSID often randomized.",
+        notes = "Stellantis Uconnect 车载热点（Chrysler、Jeep、Ram、Dodge、Fiat）。BSSID 经常随机化。",
         builtIn = true,
         rules = listOf(
             wifiGlob("Uconnect*"),
@@ -2024,7 +2024,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "In-car CarPlay / Alpine head-unit hotspot. Factory name from the dash, not an ISP.",
+        notes = "车载 CarPlay / Alpine 车机热点，名称来自仪表台出厂设置，并非运营商网络。",
         builtIn = true,
         rules = listOf(
             wifiGlob("CarPlay*"),
@@ -2039,7 +2039,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Aftermarket CarPlay / Android Auto adapter hotspot (CARLINK-). Head-unit dongle, not the car’s own modem.",
+        notes = "后装 CarPlay / Android Auto 适配器热点（CARLINK-），属于车机适配器，而非汽车原装调制解调器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -2056,7 +2056,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Rivian phone-as-key, camp speaker, or sensor. Phones can advertise Rivian Sensor.",
+        notes = "Rivian 手机钥匙、露营音箱或传感器。手机也可能广播 Rivian Sensor。",
         builtIn = true,
         rules = listOf(
             mfg(0x0941),
@@ -2072,7 +2072,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Govee light or hygrometer. Lights usually only send a name; hygrometers can decode temp / humidity / battery below.",
+        notes = "Govee 灯具或温湿度计。灯具通常只发送名称；温湿度计可在下方解码温度、湿度和电量。",
         builtIn = true,
         decode = CatalogDecodes.govee,
         rules = listOf(
@@ -2093,7 +2093,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "HP home/office printer (ENVY, HP-Print). Office noise. Not HPE Aruba campus Wi-Fi.",
+        notes = "HP 家用或办公打印机（ENVY、HP-Print），常见的办公背景信号。并非 HPE Aruba 园区 Wi-Fi。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -2114,7 +2114,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Mercedes MBUX in-car hotspot. Factory name from the car.",
+        notes = "Mercedes MBUX 车载热点，使用车辆出厂名称。",
         builtIn = true,
         rules = listOf(
             mfg(0x017C),
@@ -2131,7 +2131,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Motive (KeepTruckin) electronic logging device / fleet Wi-Fi in a truck.",
+        notes = "卡车中的 Motive（KeepTruckin）电子行车记录设备或车队 Wi-Fi。",
         builtIn = true,
         rules = listOf(
             wifiGlob("Motive *"),
@@ -2148,7 +2148,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "PeopleNet truck ELD / fleet Wi-Fi. Separate from Motive.",
+        notes = "PeopleNet 卡车电子行车记录设备或车队 Wi-Fi。与 Motive 分开列出。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -2165,7 +2165,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Goodyear intelligent-tire BLE, not the 315/433 MHz valve-stem TPMS in most cars. Pattern match, not that car.",
+        notes = "Goodyear 智能轮胎 BLE，并非大多数汽车使用的 315/433 MHz 气门嘴胎压监测。这里只是模式匹配，不能确定具体车辆。",
         builtIn = true,
         rules = listOf(
             mfg(0x0B99),
@@ -2179,7 +2179,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Schrader aftermarket BLE TPMS (AirCheck, trailer, RV). Not the 315/433 MHz factory stems.",
+        notes = "Schrader 后装 BLE 胎压监测（AirCheck、拖车、房车），并非 315/433 MHz 原装气门嘴传感器。",
         builtIn = true,
         rules = listOf(
             mfg(0x0601),
@@ -2193,7 +2193,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Pacific Industrial OEM tire electronics. BLE TPMS on some newer vehicles.",
+        notes = "Pacific Industrial 原装轮胎电子设备。部分新车型采用 BLE 胎压监测。",
         builtIn = true,
         rules = listOf(
             mfg(0x0E32),
@@ -2207,7 +2207,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Huf tire sensor or vehicle access (door handle / PEPS). Not only a valve stem.",
+        notes = "Huf 轮胎传感器或车辆门禁设备（门把手 / 无钥匙进入与启动），不一定是气门嘴。",
         builtIn = true,
         rules = listOf(
             mfg(0x070A),
@@ -2221,7 +2221,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "FOBO aftermarket BLE tire-pressure sensor. Motorcycle or car. Pattern match, not that vehicle.",
+        notes = "FOBO 后装 BLE 胎压传感器，用于摩托车或汽车。这里只是模式匹配，不能确定具体车辆。",
         builtIn = true,
         rules = listOf(
             mfg(0x0127),
@@ -2238,7 +2238,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Aftermarket BLE valve-cap tire sensor (TPMS1 / FBB0 family). Decoded fields can show wheel, pressure, temperature, battery, and alarm. Pattern match, not that vehicle.",
+        notes = "后装 BLE 气门帽胎压传感器（TPMS1 / FBB0 系列）。解码字段可显示轮位、压力、温度、电量和报警。这里只是模式匹配，不能确定具体车辆。",
         builtIn = true,
         decode = CatalogDecodes.tpmsAftermarket,
         rules = listOf(
@@ -2258,7 +2258,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "SYTPMS / BR bicycle or scooter BLE tire sensor. Decoded fields can show gauge pressure, temperature, battery, and motion. Pattern match, not that vehicle.",
+        notes = "SYTPMS / BR 自行车或滑板车 BLE 胎压传感器。解码字段可显示表压、温度、电量和移动状态。这里只是模式匹配，不能确定具体车辆。",
         builtIn = true,
         decode = CatalogDecodes.sytpms,
         rules = listOf(
@@ -2274,7 +2274,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "TireCheck BLE tire-pressure sensor. Pattern match, not that vehicle.",
+        notes = "TireCheck BLE 胎压传感器。这里只是模式匹配，不能确定具体车辆。",
         builtIn = true,
         rules = listOf(
             mfg(0x0BA2),
@@ -2290,7 +2290,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Bluetooth SIG Tire Pressure Monitoring System service. Any sensor that advertises that standard service.",
+        notes = "Bluetooth SIG 胎压监测系统服务。任何广播该标准服务的传感器均可匹配。",
         builtIn = true,
         rules = listOf(
             uuid("1860"),
@@ -2304,7 +2304,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Ruuvi broadcast sensor tag (temp / humidity / pressure / motion). Decoded fields on this page parse the sensor payload.",
+        notes = "Ruuvi 广播式传感标签（温度、湿度、气压、运动）。本页解码字段可解析传感器载荷。",
         builtIn = true,
         decode = CatalogDecodes.ruuvi,
         rules = listOf(
@@ -2321,7 +2321,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Blue Maestro Tempo Disc temperature / humidity logger. Decoded fields can show version, battery, and temperature.",
+        notes = "Blue Maestro Tempo Disc 温湿度记录仪。解码字段可显示版本、电量和温度。",
         builtIn = true,
         decode = CatalogDecodes.blueMaestro,
         rules = listOf(
@@ -2336,7 +2336,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "SensorPush temperature / humidity logger.",
+        notes = "SensorPush 温湿度记录仪。",
         builtIn = true,
         rules = listOf(
             uuid("EF090000-11D6-42BA-93B8-9DD7EC090AA9"),
@@ -2353,7 +2353,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Samsara fleet tracker or vehicle Wi-Fi. Truck / van telematics, adjacent to Motive.",
+        notes = "Samsara 车队追踪器或车辆 Wi-Fi，用于卡车或厢式车的远程信息处理，与 Motive 同类。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -2373,7 +2373,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "TP-Link Tapo home camera. Consumer camera, not a roadside pole.",
+        notes = "TP-Link Tapo 家用摄像头，属于消费级设备，并非路边摄像杆。",
         builtIn = true,
         rules = listOf(
             name("Tapo"),
@@ -2388,7 +2388,7 @@ object DefaultCatalog {
         colorIndex = Hue.CAMERA,
         kind = SignatureClass.CAMERA,
         matchAny = true,
-        notes = "Reolink home / small-business camera. Consumer camera, not a roadside pole.",
+        notes = "Reolink 家用或小型商用摄像头，属于消费级设备，并非路边摄像杆。",
         builtIn = true,
         rules = listOf(
             name("Reolink"),
@@ -2403,8 +2403,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Hikvision camera. Common on commercial CCTV and some public poles.",
-        attentionNote = "Hikvision cameras. Common on commercial CCTV and some public poles. Name-only. Pattern match, not that camera. Look with your eyes.",
+        notes = "Hikvision 摄像头，常见于商业闭路电视及部分公共摄像杆。",
+        attentionNote = "Hikvision 摄像头，常见于商业闭路电视及部分公共摄像杆。仅按名称匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Hikvision"),
@@ -2420,8 +2420,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Dahua camera. Common on commercial CCTV and some public poles.",
-        attentionNote = "Dahua cameras. Common on commercial CCTV and some public poles. Name-only. Pattern match, not that camera. Look with your eyes.",
+        notes = "Dahua 摄像头，常见于商业闭路电视及部分公共摄像杆。",
+        attentionNote = "Dahua 摄像头，常见于商业闭路电视及部分公共摄像杆。仅按名称匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Dahua"),
@@ -2437,7 +2437,7 @@ object DefaultCatalog {
         colorIndex = Hue.MESH,
         kind = SignatureClass.MESH,
         matchAny = true,
-        notes = "Meshtastic LoRa mesh node. Off-grid text/location radios, not cellular.",
+        notes = "Meshtastic LoRa Mesh 节点，用于离网文字和位置通信，并非蜂窝网络。",
         builtIn = true,
         rules = listOf(
             name("Meshtastic"),
@@ -2454,7 +2454,7 @@ object DefaultCatalog {
         colorIndex = Hue.MESH,
         kind = SignatureClass.MESH,
         matchAny = true,
-        notes = "Helium / LoRaWAN hotspot when it advertises a name.",
+        notes = "广播名称的 Helium / LoRaWAN 热点。",
         builtIn = true,
         rules = listOf(
             name("Helium"),
@@ -2469,7 +2469,7 @@ object DefaultCatalog {
         colorIndex = Hue.MESH,
         kind = SignatureClass.MESH,
         matchAny = true,
-        notes = "MeshCore LoRa companion radio. Off-grid text/location, not cellular. Name-only — Nordic UART UUID is every ESP32 serial board and is not this row.",
+        notes = "MeshCore LoRa 配套通信设备，用于离网文字和位置通信，并非蜂窝网络。仅按名称匹配；Nordic UART UUID 在 ESP32 串口板上很常见，不能据此识别本项。",
         builtIn = true,
         rules = listOf(
             bleName("MeshCore"),
@@ -2484,7 +2484,7 @@ object DefaultCatalog {
         colorIndex = Hue.MESH,
         kind = SignatureClass.MESH,
         matchAny = true,
-        notes = "goTenna Mesh or Pro companion radio. Pairs over BLE; the mesh itself is UHF and Fieldwatch cannot hear it. Pro is sold to agencies. Pattern match, not that operator.",
+        notes = "goTenna Mesh 或 Pro 配套通信设备。通过 BLE 配对；Mesh 本身使用 UHF，Fieldwatch 无法接收。Pro 面向机构销售。这里只是模式匹配，不能确定具体操作者。",
         builtIn = true,
         rules = listOf(
             uuid("1276aaee-df5e-11e6-bf01-fe55135034f3"),
@@ -2502,7 +2502,7 @@ object DefaultCatalog {
         colorIndex = Hue.MESH,
         kind = SignatureClass.MESH,
         matchAny = true,
-        notes = "Seeed SenseCAP LoRaWAN / Helium indoor gateway setup AP (SenseCAP_XXXXXX). Quiet once it is on Ethernet. Helium-named units can also hit the Helium row.",
+        notes = "Seeed SenseCAP LoRaWAN / Helium 室内网关的设置热点（SenseCAP_XXXXXX）。接入以太网后通常停止广播。使用 Helium 名称的设备也可能匹配 Helium 条目。",
         builtIn = true,
         rules = listOf(
             wifiName("SenseCAP"),
@@ -2518,7 +2518,7 @@ object DefaultCatalog {
         colorIndex = Hue.MESH,
         kind = SignatureClass.MESH,
         matchAny = true,
-        notes = "RAKwireless WisGate LoRaWAN gateway setup AP (RAK7268_XXXX and similar). Quiet once it is on Ethernet.",
+        notes = "RAKwireless WisGate LoRaWAN 网关的设置热点（RAK7268_XXXX 等）。接入以太网后通常停止广播。",
         builtIn = true,
         rules = listOf(
             wifiGlob("RAK7*"),
@@ -2538,8 +2538,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Genetec AutoVu parking or roadside plate reader.",
-        attentionNote = "Genetec AutoVu is municipal / parking ALPR — reads plates at lots and roadside. Name-only when advertised. Pattern match, not that camera. Look with your eyes.",
+        notes = "Genetec AutoVu 停车场或路边车牌识别设备。",
+        attentionNote = "Genetec AutoVu 市政或停车场车牌自动识别（ALPR）设备，用于读取停车场和路边车牌。仅在广播名称时匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Genetec"),
@@ -2556,7 +2556,7 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Iteris roadside Bluetooth travel-time reader (Vantage Velocity, now BlueTOAD Spectra / Spectra CV). Samples phones, headsets, and in-car Bluetooth as vehicles pass; matching the same ID at two points gives speed. About 100 m. A sample, not a full count. Quiet or Ethernet-only cabinets may not advertise. Spectra CV also uses 5.9 GHz C-V2X, which Fieldwatch cannot hear. IEEE Iteris OUI can also hit other Iteris roadside kit. Pattern match, not that cabinet.",
+        notes = "Iteris 路边蓝牙行程时间采集设备（Vantage Velocity，现为 BlueTOAD Spectra / Spectra CV）。车辆经过时采样手机、耳机和车载蓝牙，通过在两处匹配同一 ID 估算速度，范围约 100 米。这是抽样而非完整车流计数。静默或仅接入以太网的机柜可能不广播。Spectra CV 还使用 Fieldwatch 无法接收的 5.9 GHz C-V2X。IEEE Iteris OUI 也可能匹配其他 Iteris 路侧设备。这里只是模式匹配，不能确认具体机柜。",
         builtIn = true,
         rules = listOf(
             // IEEE MA-L registered to Iteris, Inc.
@@ -2585,7 +2585,7 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "BLIP Systems BlipTrack roadside Bluetooth/Wi-Fi travel-time sensor. Same job as BlueTOAD Spectra: samples passing phones and in-car radios at two points for speed. Quiet or Ethernet-only cabinets may not advertise. Pattern match, not that cabinet.",
+        notes = "BLIP Systems BlipTrack 路边蓝牙 / Wi-Fi 行程时间传感器，与 BlueTOAD Spectra 类似，通过两处采样经过的手机和车载无线设备估算速度。静默或仅接入以太网的机柜可能不广播。这里只是模式匹配，不能确认具体机柜。",
         builtIn = true,
         rules = listOf(
             // IEEE MA-L registered to BLIP Systems
@@ -2604,8 +2604,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Hanwha Vision / Wisenet camera (ex-Samsung Techwin). Common on commercial CCTV and some public poles.",
-        attentionNote = "Hanwha Vision / Wisenet cameras. Common on commercial CCTV and some public poles. A *_WISENET setup SSID is the stronger hit; IEEE 00:09:18 is Samsung Techwin. Pattern match, not that camera. Look with your eyes.",
+        notes = "Hanwha Vision / Wisenet 摄像头（原 Samsung Techwin），常见于商业闭路电视及部分公共摄像杆。",
+        attentionNote = "Hanwha Vision / Wisenet 摄像头，常见于商业闭路电视及部分公共摄像杆。*_WISENET 设置 SSID 是较强的匹配依据；IEEE 00:09:18 属于 Samsung Techwin。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             oui("00:09:18"),
@@ -2625,8 +2625,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Uniview / UNV / Uniarch camera. Common on commercial CCTV and some public poles.",
-        attentionNote = "Uniview / UNV cameras. Common on commercial CCTV and some public poles. IEEE Zhejiang Uniview OUIs or a Uniview / UNV- name. Pattern match, not that camera. Look with your eyes.",
+        notes = "Uniview / UNV / Uniarch 摄像头，常见于商业闭路电视及部分公共摄像杆。",
+        attentionNote = "Uniview / UNV 摄像头，常见于商业闭路电视及部分公共摄像杆。依据浙江宇视的 IEEE OUI 或 Uniview / UNV- 名称匹配。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = buildList {
             listOf(
@@ -2647,8 +2647,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Rhombus cloud camera. BLE is loudest when the camera is unregistered or offline.",
-        attentionNote = "Rhombus cloud cameras on buildings and some public sites. IEEE CC:47:BD or a Rhombus name. BLE often only while unregistered or offline. Pattern match, not that camera. Look with your eyes.",
+        notes = "Rhombus 云摄像头，未注册或离线时的 BLE 广播最明显。",
+        attentionNote = "Rhombus 云摄像头，用于建筑物及部分公共场所。依据 IEEE CC:47:BD 或 Rhombus 名称匹配，通常仅在未注册或离线时发送 BLE 广播。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             oui("CC:47:BD"),
@@ -2664,8 +2664,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Rekor highway or transit plate reader.",
-        attentionNote = "Rekor is highway / transit ALPR — reads plates on roads and at checkpoints. Name-only. Pattern match, not that camera. Look with your eyes.",
+        notes = "Rekor 公路或交通运输车牌识别设备。",
+        attentionNote = "Rekor 公路或交通运输车牌自动识别（ALPR）设备，用于读取道路和检查站车牌。仅按名称匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Rekor"),
@@ -2680,8 +2680,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Axon body-worn camera, in-car system, dock, or TASER. Quiet or LTE-only units will not appear.",
-        attentionNote = "Axon body-worn, in-car (Fleet), dock, or TASER gear. IEEE OUI 00:25:DF is Axon Enterprise. Body 3/4 often advertise BLE on that public OUI while worn. A name like Axon Body is a pattern, not that officer. Quiet or LTE-only units will not appear. The word Axon also hits some ZTE phones. Look with your eyes. Not identity.",
+        notes = "Axon 随身摄像头、车载系统、底座或 TASER。静默或仅使用 LTE 的设备不会出现。",
+        attentionNote = "Axon 随身摄像头、车载系统（Fleet）、底座或 TASER 设备。IEEE OUI 00:25:DF 属于 Axon Enterprise。Body 3/4 佩戴时常使用此公共 OUI 发送 BLE 广播。Axon Body 等名称只是模式依据，不能确定具体人员。静默或仅使用 LTE 的设备不会出现。Axon 一词也可能匹配部分 ZTE 手机。请结合现场观察，不能据此确认身份。",
         builtIn = true,
         rules = listOf(
             oui("00:25:DF"),
@@ -2704,8 +2704,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "WatchGuard Video body-worn or in-car camera (now Motorola). Not the WatchGuard firewall company. Patrol units may stay quiet.",
-        attentionNote = "WatchGuard Video body-worn or in-car (VISTA / V300 family). IEEE OUI 00:1D:96 is WatchGuard Video, not the WatchGuard firewall company. Patrol units may stay quiet. Pattern match, not identity. Look with your eyes.",
+        notes = "WatchGuard Video 随身或车载摄像头（现属于 Motorola），与 WatchGuard 防火墙公司无关。巡逻设备可能保持静默。",
+        attentionNote = "WatchGuard Video 随身或车载摄像头（VISTA / V300 系列）。IEEE OUI 00:1D:96 属于 WatchGuard Video，与同名防火墙公司无关。巡逻设备可能保持静默。这里只是模式匹配，不能确认身份，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             oui("00:1D:96"),
@@ -2724,8 +2724,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Digital Ally body-worn or in-car camera (FirstVu / EVO). Quiet or LTE-only units will not appear.",
-        attentionNote = "Digital Ally body-worn or in-car (FirstVu / EVO family). IEEE OUI 00:23:BD is Digital Ally, Inc. — camera gear, not a chip vendor. Patrol units may stay on LTE and stay quiet. Pattern match, not that officer. Look with your eyes. Not identity.",
+        notes = "Digital Ally 随身或车载摄像头（FirstVu / EVO）。静默或仅使用 LTE 的设备不会出现。",
+        attentionNote = "Digital Ally 随身或车载摄像头（FirstVu / EVO 系列）。IEEE OUI 00:23:BD 属于摄像设备厂商 Digital Ally, Inc.，并非通用芯片厂商。巡逻设备可能仅使用 LTE 而保持静默。这里只是模式匹配，不能确定具体人员或身份，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             oui("00:23:BD"),
@@ -2745,8 +2745,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Reveal Media / BodyWorn camera. Common in UK and some US agencies. Quiet units will not appear.",
-        attentionNote = "Reveal Media body-worn camera (D-series / BodyWorn). Name-only when advertised. Patrol units may stay quiet. Pattern match, not that officer. Look with your eyes.",
+        notes = "Reveal Media / BodyWorn 摄像头，常见于英国及部分美国机构。静默设备不会出现。",
+        attentionNote = "Reveal Media 随身摄像头（D 系列 / BodyWorn）。仅在广播名称时匹配；巡逻设备可能保持静默。这里只是模式匹配，不能确定具体人员，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Reveal Media"),
@@ -2765,8 +2765,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Wolfcom body-worn or in-car camera. Quiet units will not appear.",
-        attentionNote = "Wolfcom body-worn or in-car camera. Name-only when advertised. Patrol units may stay quiet. Pattern match, not that officer. Look with your eyes.",
+        notes = "Wolfcom 随身或车载摄像头。静默设备不会出现。",
+        attentionNote = "Wolfcom 随身或车载摄像头。仅在广播名称时匹配；巡逻设备可能保持静默。这里只是模式匹配，不能确定具体人员，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Wolfcom"),
@@ -2782,8 +2782,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Panasonic i-PRO camera or Arbitrator in-car system. Panasonic TVs and phones use other names.",
-        attentionNote = "Panasonic i-PRO camera or Arbitrator in-car video. Used on buildings and some patrol cars — video and sometimes plates. Name-only (i-PRO / Arbitrator). Not every Panasonic radio. Pattern match, not that camera. Look with your eyes.",
+        notes = "Panasonic i-PRO 摄像头或 Arbitrator 车载系统。Panasonic 电视和手机使用其他名称。",
+        attentionNote = "Panasonic i-PRO 摄像头或 Arbitrator 车载视频系统，用于建筑物和部分巡逻车，可拍摄视频，部分可识别车牌。仅按 i-PRO / Arbitrator 名称匹配，不涵盖所有 Panasonic 无线设备。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("i-PRO"),
@@ -2801,8 +2801,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Avigilon building or municipal camera, sometimes with LPR.",
-        attentionNote = "Motorola Avigilon cameras / LPR. Used on municipal poles and commercial sites — video and sometimes plates. Name-only. Pattern match, not that camera. Look with your eyes.",
+        notes = "Avigilon 建筑或市政摄像头，部分支持车牌识别。",
+        attentionNote = "Motorola Avigilon 摄像头 / 车牌识别设备，用于市政摄像杆和商业场所，可拍摄视频，部分可识别车牌。仅按名称匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Avigilon"),
@@ -2817,8 +2817,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Axis camera, common on municipal poles and public CCTV.",
-        attentionNote = "Axis Communications cameras, common on municipal poles and public CCTV. Name-only (AXIS-). Pattern match, not that camera. Look with your eyes.",
+        notes = "Axis 摄像头，常见于市政摄像杆和公共闭路电视。",
+        attentionNote = "Axis Communications 摄像头，常见于市政摄像杆和公共闭路电视。仅按 AXIS- 名称匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             glob("AXIS-*"),
@@ -2835,8 +2835,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Hayden AI bus- or vehicle-mounted camera used for parking and traffic enforcement.",
-        attentionNote = "Hayden AI cameras ride on buses and city vehicles — video and plates. Name-only when advertised. LTE-only units will not appear. Pattern match, not that camera. Look with your eyes.",
+        notes = "Hayden AI 公交车或其他车辆上的摄像头，用于停车和交通执法。",
+        attentionNote = "Hayden AI 摄像头安装在公交车和市政车辆上，可拍摄视频和车牌。仅在广播名称时匹配；仅使用 LTE 的设备不会出现。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Hayden AI"),
@@ -2852,8 +2852,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Miovision intersection / traffic camera (SmartLink / Scout).",
-        attentionNote = "Miovision traffic cameras at intersections. Video and sometimes plates. Name-only when advertised. Many units are cellular-only and stay quiet. Pattern match, not that camera. Look with your eyes.",
+        notes = "Miovision 路口或交通摄像头（SmartLink / Scout）。",
+        attentionNote = "Miovision 路口交通摄像头，可拍摄视频，部分可识别车牌。仅在广播名称时匹配；许多设备仅使用蜂窝网络，保持静默。这里只是模式匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Miovision"),
@@ -2868,8 +2868,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "Tattile ALPR camera, common on European roads and some US sites.",
-        attentionNote = "Tattile plate readers on roads and at gates. Name-only when advertised. Pattern match, not that camera. Look with your eyes.",
+        notes = "Tattile 车牌自动识别（ALPR）摄像头，常见于欧洲道路及部分美国场所。",
+        attentionNote = "Tattile 道路或出入口车牌识别设备。仅在广播名称时匹配，不能确认具体摄像头，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("Tattile"),
@@ -2884,8 +2884,8 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "LiveView Technologies (LVT) solar surveillance trailer. Most units are cellular-only and will not appear.",
-        attentionNote = "LVT / LiveView solar camera trailer — parking lots, construction, some city parks. Video and sometimes plates. Most units use cellular and stay quiet on Wi-Fi/BLE. A LiveView or LVT- name is a pattern, not that trailer. Look with your eyes.",
+        notes = "LiveView Technologies（LVT）太阳能监控拖车。多数设备仅使用蜂窝网络，不会出现。",
+        attentionNote = "LVT / LiveView 太阳能摄像拖车，用于停车场、工地和部分城市公园，可拍摄视频，部分可识别车牌。多数设备使用蜂窝网络，不发出 Wi-Fi / BLE 广播。LiveView 或 LVT- 名称只是模式依据，不能确认具体拖车，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("LiveView"),
@@ -2902,7 +2902,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "UniFi / Ubiquiti name on Wi-Fi or BLE. Prefer UniFi AP for BSSID hits. Instant cameras stay on UniFi Protect.",
+        notes = "使用 UniFi / Ubiquiti 名称的 Wi-Fi 或 BLE 设备。依据 BSSID 匹配时优先归入 UniFi AP。Instant 摄像头归入 UniFi Protect。",
         builtIn = true,
         rules = listOf(
             name("UniFi"),
@@ -2919,7 +2919,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "UniFi / Ubiquiti Wi-Fi access point (including airMAX / AmpliFi). Renamed SSIDs still hit on the board vendor or Ubiquiti vendor tag. Instant cameras stay on UniFi Protect.",
+        notes = "UniFi / Ubiquiti Wi-Fi 接入点（包括 airMAX / AmpliFi）。即使 SSID 已改名，仍可依据主板厂商或 Ubiquiti 厂商标签匹配。Instant 摄像头归入 UniFi Protect。",
         builtIn = true,
         rules = buildList {
             add(wifiName("UniFi"))
@@ -2949,8 +2949,8 @@ object DefaultCatalog {
         colorIndex = Hue.HACKING,
         kind = SignatureClass.HACKING,
         matchAny = true,
-        notes = "Cheap hobby UART module advertised under a default name (HM-10, JDY, CC41, ESP32 BLE). Common on printers, cars, and DIY. Fieldwatch does not see Classic HC-05/HC-06.",
-        attentionNote = "These default BLE serial names are cheap hobby modules. Some pump/ATM overlays have used boards like this so someone nearby can pull data over Bluetooth. The same modules show up on printers, cars, and DIY. If this radio is loud next to a card reader, treat it with caution and look with your eyes. Not proof of a skimmer. A miss is not a clean bill (name changed, Classic HC-05/HC-06, or cellular). Fieldwatch does not connect and does not try default PINs. Fieldwatch does not see Classic HC-05/HC-06.",
+        notes = "使用默认名称的廉价 DIY UART 模块（HM-10、JDY、CC41、ESP32 BLE），常见于打印机、汽车和自制设备。Fieldwatch 无法发现经典蓝牙 HC-05/HC-06。",
+        attentionNote = "这些默认 BLE 串口名称通常来自廉价 DIY 模块。一些加油机或 ATM 的非法附加装置曾使用此类主板，让附近的人通过蓝牙读取数据；相同模块也广泛用于打印机、汽车和自制设备。如果读卡器附近此信号很强，请谨慎并结合现场观察，但这不能证明存在盗刷装置。未发现也不代表安全（可能改名、使用经典蓝牙 HC-05/HC-06 或蜂窝网络）。Fieldwatch 不连接设备，也不尝试默认 PIN，且无法发现经典蓝牙 HC-05/HC-06。",
         builtIn = true,
         rules = listOf(
             bleName("HMSoft"),
@@ -2980,8 +2980,8 @@ object DefaultCatalog {
         colorIndex = Hue.GLASSES,
         kind = SignatureClass.GLASSES,
         matchAny = true,
-        notes = "Ray-Ban Meta / Oakley Meta smart glasses, or a Quest / other Meta wearable.",
-        attentionNote = "Meta / Luxottica BLE — often Ray-Ban Meta smart glasses. The same company IDs show up on Quest headsets and other Meta wearables. Not proof someone is recording. A miss is not a clean bill (paired and quiet, asleep, or a different brand). Look with your eyes.",
+        notes = "Ray-Ban Meta / Oakley Meta 智能眼镜，或 Quest 等 Meta 可穿戴设备。",
+        attentionNote = "Meta / Luxottica BLE，通常来自 Ray-Ban Meta 智能眼镜。相同公司 ID 也用于 Quest 头显和其他 Meta 可穿戴设备。不能证明有人正在录制；未发现也不代表没有（可能已配对且静默、休眠或属于其他品牌）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             mfg(0x01AB),
@@ -3005,8 +3005,8 @@ object DefaultCatalog {
         colorIndex = Hue.GLASSES,
         kind = SignatureClass.GLASSES,
         matchAny = true,
-        notes = "Snap Spectacles or other Snap BLE product.",
-        attentionNote = "Snapchat BLE company ID — used by Snap Spectacles. Other Snap BLE products could match. Not proof of recording. Look with your eyes.",
+        notes = "Snap Spectacles 或其他 Snap BLE 产品。",
+        attentionNote = "Snapchat BLE 公司 ID，用于 Snap Spectacles，其他 Snap BLE 产品也可能匹配。不能证明正在录制，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             mfg(0x03C2),
@@ -3024,8 +3024,8 @@ object DefaultCatalog {
         colorIndex = Hue.GLASSES,
         kind = SignatureClass.GLASSES,
         matchAny = true,
-        notes = "Vuzix smart glasses or other Vuzix BLE wearable.",
-        attentionNote = "Vuzix BLE glasses. Not proof of recording. A miss is not a clean bill (paired and quiet, asleep, or a different brand). Look with your eyes.",
+        notes = "Vuzix 智能眼镜或其他 Vuzix BLE 可穿戴设备。",
+        attentionNote = "Vuzix BLE 眼镜。不能证明正在录制；未发现也不代表没有（可能已配对且静默、休眠或属于其他品牌）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             mfg(0x060C),
@@ -3041,8 +3041,8 @@ object DefaultCatalog {
         colorIndex = Hue.GLASSES,
         kind = SignatureClass.GLASSES,
         matchAny = true,
-        notes = "Brilliant Labs Frame AR glasses.",
-        attentionNote = "Brilliant Labs Frame AR glasses. BLE service 7A230001. Not proof someone is recording. A miss is not a clean bill (off, or a different brand). Look with your eyes.",
+        notes = "Brilliant Labs Frame AR 眼镜。",
+        attentionNote = "Brilliant Labs Frame AR 眼镜，BLE 服务为 7A230001。不能证明有人正在录制；未发现也不代表没有（可能已关闭或属于其他品牌）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             uuid("7A230001-5475-A6A4-654C-576174636800"),
@@ -3058,8 +3058,8 @@ object DefaultCatalog {
         colorIndex = Hue.GLASSES,
         kind = SignatureClass.GLASSES,
         matchAny = true,
-        notes = "Even Realities G1 glasses. Name-only (Even G1). Nordic UART is too common to use as a rule.",
-        attentionNote = "Even Realities G1 glasses. Name-only when advertised (Even G1). Not proof of recording. A miss is not a clean bill (off, renamed, or paired and quiet). Look with your eyes.",
+        notes = "Even Realities G1 眼镜。仅按名称 Even G1 匹配。Nordic UART 过于通用，不适合作为识别规则。",
+        attentionNote = "Even Realities G1 眼镜。仅在广播 Even G1 名称时匹配。不能证明正在录制；未发现也不代表没有（可能已关闭、改名或已配对且静默）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             bleName("Even G1"),
@@ -3074,8 +3074,8 @@ object DefaultCatalog {
         colorIndex = Hue.HACKING,
         kind = SignatureClass.HACKING,
         matchAny = true,
-        notes = "Hak5 WiFi Pineapple setup or management AP. Cloned café SSIDs from PineAP look like ordinary Wi-Fi and will not hit this row.",
-        attentionNote = "Hak5 WiFi Pineapple setup or management AP (Pineapple_XXXX). That is the admin radio, not every rogue SSID PineAP might impersonate — those look like ordinary café Wi-Fi. A miss is not a clean bill (renamed, or only cloning). Pattern match, not identity. Look with your eyes.",
+        notes = "Hak5 WiFi Pineapple 的设置或管理热点。PineAP 仿冒的咖啡店 SSID 看起来与普通 Wi-Fi 相同，不会匹配此项。",
+        attentionNote = "Hak5 WiFi Pineapple 设置或管理热点（Pineapple_XXXX）。这是管理无线接口，不涵盖 PineAP 可能仿冒的所有热点，后者看起来与普通咖啡店 Wi-Fi 相同。未发现不代表没有（可能改名或仅仿冒）。这里只是模式匹配，不能确认身份，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             glob("Pineapple_*"),
@@ -3093,8 +3093,8 @@ object DefaultCatalog {
         colorIndex = Hue.HACKING,
         kind = SignatureClass.HACKING,
         matchAny = true,
-        notes = "Flipper Zero (or other Flipper Devices). Default name starts with Flipper; custom firmware can hide it.",
-        attentionNote = "Flipper Zero (or other Flipper Devices) BLE. Default name starts with Flipper; newer units use IEEE OUI 0C:FA:22. Custom firmware can change the name and MAC. Not proof of an attack. A miss is not a clean bill (Bluetooth off, or renamed). Look with your eyes.",
+        notes = "Flipper Zero 或其他 Flipper Devices 产品。默认名称以 Flipper 开头，自定义固件可隐藏名称。",
+        attentionNote = "Flipper Zero 或其他 Flipper Devices 产品的 BLE。默认名称以 Flipper 开头；新设备使用 IEEE OUI 0C:FA:22。自定义固件可修改名称和 MAC。不能证明正在攻击；未发现也不代表没有（可能关闭蓝牙或改名）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             oui("0C:FA:22"),
@@ -3111,8 +3111,8 @@ object DefaultCatalog {
         colorIndex = Hue.HACKING,
         kind = SignatureClass.HACKING,
         matchAny = true,
-        notes = "Pwnagotchi-style Wi-Fi handshake collector. Classic units use a distinctive BSSID and the name pwnagotchi.",
-        attentionNote = "Pwnagotchi-style Wi-Fi handshake collector. Classic units beacon BSSID de:ad:be:ef:de:ad. A pwnagotchi name is a pattern. Not proof of an attack. Look with your eyes.",
+        notes = "Pwnagotchi 类 Wi-Fi 握手采集器。经典型号使用独特 BSSID 和 pwnagotchi 名称。",
+        attentionNote = "Pwnagotchi 类 Wi-Fi 握手采集器。经典型号广播 BSSID de:ad:be:ef:de:ad。pwnagotchi 名称只是模式依据，不能证明正在攻击，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             MatchRule(RuleKind.MAC_PREFIX, text = "DE:AD:BE:EF:DE:AD"),
@@ -3128,8 +3128,8 @@ object DefaultCatalog {
         colorIndex = Hue.HACKING,
         kind = SignatureClass.HACKING,
         matchAny = true,
-        notes = "ESP32 Marauder or Spacehuhn-style Wi-Fi deauther on a default name. Same boards are DIY; renamed units miss.",
-        attentionNote = "ESP32 Marauder or Spacehuhn-style Wi-Fi deauther default names. Same boards are DIY. Not proof of an attack. A miss is not a clean bill (renamed). Look with your eyes.",
+        notes = "使用默认名称的 ESP32 Marauder 或 Spacehuhn 类 Wi-Fi 断连工具。相同主板也用于 DIY；改名设备不会匹配。",
+        attentionNote = "ESP32 Marauder 或 Spacehuhn 类 Wi-Fi 断连工具的默认名称。相同主板也用于 DIY。不能证明正在攻击；未发现也不代表没有（可能改名）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("MarauderAP"),
@@ -3148,8 +3148,8 @@ object DefaultCatalog {
         colorIndex = Hue.HACKING,
         kind = SignatureClass.HACKING,
         matchAny = true,
-        notes = "GhostESP ESP32 audit firmware. Default setup AP is GhostNet. Same boards are DIY; renamed units miss.",
-        attentionNote = "GhostESP ESP32 audit firmware default AP (GhostNet). Same boards are DIY. Not proof of an attack. A miss is not a clean bill (renamed). Look with your eyes.",
+        notes = "GhostESP ESP32 安全审计固件，默认设置热点为 GhostNet。相同主板也用于 DIY；改名设备不会匹配。",
+        attentionNote = "GhostESP ESP32 安全审计固件的默认热点（GhostNet）。相同主板也用于 DIY。不能证明正在攻击；未发现也不代表没有（可能改名）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             wifiName("GhostNet"),
@@ -3164,8 +3164,8 @@ object DefaultCatalog {
         colorIndex = Hue.HACKING,
         kind = SignatureClass.HACKING,
         matchAny = true,
-        notes = "Bruce ESP32 pentest firmware. Default setup AP is BruceNet. Same boards are DIY; renamed units and evil-portal SSIDs miss.",
-        attentionNote = "Bruce ESP32 pentest firmware default AP (BruceNet). Same boards are DIY. Evil-portal SSIDs look like ordinary Wi-Fi and will not hit this row. Not proof of an attack. Look with your eyes.",
+        notes = "Bruce ESP32 渗透测试固件，默认设置热点为 BruceNet。相同主板也用于 DIY；改名设备及恶意门户 SSID 不会匹配。",
+        attentionNote = "Bruce ESP32 渗透测试固件的默认热点（BruceNet）。相同主板也用于 DIY。恶意门户 SSID 看起来与普通 Wi-Fi 相同，不会匹配此项。不能证明正在攻击，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             wifiName("BruceNet"),
@@ -3180,8 +3180,8 @@ object DefaultCatalog {
         colorIndex = Hue.HACKING,
         kind = SignatureClass.HACKING,
         matchAny = true,
-        notes = "Porkchop pentest firmware on a Cardputer or Cheap Yellow Display. Default AP name PORKCHOP. BLE spam that spoofs Apple/Android is not this row.",
-        attentionNote = "M5PORKCHOP / Porkchop — pocket Wi-Fi pentest firmware (Cardputer or Cheap Yellow Display). Default CYD remote AP is named PORKCHOP. BACON-mode fake APs brand vendor IE 50:52:4B. A miss is not a clean bill (renamed, passive only, or no AP). Pattern match, not identity, not proof of an attack. Look with your eyes.",
+        notes = "运行于 Cardputer 或 Cheap Yellow Display 的 Porkchop 渗透测试固件。默认热点名称为 PORKCHOP。仿冒 Apple / Android 的 BLE 垃圾广播不归入此项。",
+        attentionNote = "M5PORKCHOP / Porkchop 便携 Wi-Fi 渗透测试固件（Cardputer 或 Cheap Yellow Display）。默认 CYD 远程热点名称为 PORKCHOP。BACON 模式的伪造热点使用厂商 IE 50:52:4B。未发现不代表没有（可能改名、仅被动接收或未启用热点）。这里只是模式匹配，不能确认身份或证明攻击，请结合现场观察。",
         builtIn = true,
         rules = listOf(
             name("PORKCHOP"),
@@ -3198,7 +3198,7 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Nintendo Pokémon GO Plus or Plus + wrist accessory. Not a Joy-Con or Switch.",
+        notes = "Nintendo Pokémon GO Plus 或 Plus + 腕戴配件，并非 Joy-Con 或 Switch。",
         builtIn = true,
         rules = listOf(
             uuid("138C35B6-0000-1000-8000-00805F9B34FB"),
@@ -3215,7 +3215,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Hatch Rest / Restore / Mini sound machine. Nursery / bedroom noise.",
+        notes = "Hatch Rest / Restore / Mini 助眠音响，常见的婴儿房或卧室背景信号。",
         builtIn = true,
         rules = listOf(
             mfg(0x0434),
@@ -3234,7 +3234,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Orbit B-hyve hose timer / irrigation.",
+        notes = "Orbit B-hyve 水管定时器 / 灌溉设备。",
         builtIn = true,
         rules = listOf(
             oui("44:67:55"),
@@ -3252,7 +3252,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Samsung Family Hub fridge, range, or oven setup Wi-Fi. Not a SmartTag.",
+        notes = "Samsung Family Hub 冰箱、炉灶或烤箱的设置 Wi-Fi，并非 SmartTag。",
         builtIn = true,
         rules = listOf(
             wifiGlob("[fridge]*"),
@@ -3270,7 +3270,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "EcoWater / water-softener setup Wi-Fi. Home plumbing IoT.",
+        notes = "EcoWater 或软水机设置 Wi-Fi，属于家庭供水物联网设备。",
         builtIn = true,
         rules = listOf(
             wifiGlob("H2O-????????????"),
@@ -3284,8 +3284,8 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Fieldy pendant — wearable AI note-taker.",
-        attentionNote = "Fieldy wearable AI note-taker (pendant). It records conversations and transcribes them. Not proof someone is recording you. A miss is not a clean bill (off, paired and quiet, or a different brand). Look with your eyes.",
+        notes = "Fieldy 挂件，可穿戴 AI 笔记设备。",
+        attentionNote = "Fieldy 可穿戴 AI 笔记挂件，可录制并转写对话。不能证明有人正在录制你；未发现也不代表没有（可能已关闭、已配对且静默或属于其他品牌）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             bleName("Fieldy"),
@@ -3300,8 +3300,8 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Plaud Note / NotePin AI meeting recorder.",
-        attentionNote = "Plaud Note / NotePin AI recorder. It records meetings. Not proof someone is recording you. A miss is not a clean bill (off, renamed, or a different brand). Look with your eyes.",
+        notes = "Plaud Note / NotePin AI 会议录音设备。",
+        attentionNote = "Plaud Note / NotePin AI 录音设备，可录制会议。不能证明有人正在录制你；未发现也不代表没有（可能已关闭、改名或属于其他品牌）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             bleName("Plaud Note"),
@@ -3317,8 +3317,8 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Limitless / Rewind AI pendant — wearable conversation recorder.",
-        attentionNote = "Limitless Pendant wearable recorder. BLE service 632de001. It records conversations. Not proof someone is recording you. A miss is not a clean bill (off, paired and quiet, or a different brand). Look with your eyes.",
+        notes = "Limitless / Rewind AI 挂件，可穿戴对话录音设备。",
+        attentionNote = "Limitless Pendant 可穿戴录音设备，BLE 服务为 632de001，可录制对话。不能证明有人正在录制你；未发现也不代表没有（可能已关闭、已配对且静默或属于其他品牌）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             uuid("632DE001-604C-446B-A80F-7963E950F3FB"),
@@ -3334,8 +3334,8 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Bee Pioneer wearable recorder (now Amazon). Always-on audio capture.",
-        attentionNote = "Bee Pioneer wearable recorder (Amazon). BLE service 03d5d5c4. It records conversations. Not proof someone is recording you. A miss is not a clean bill (off, or a different brand). Look with your eyes.",
+        notes = "Bee Pioneer 可穿戴录音设备（现属于 Amazon），可持续采集音频。",
+        attentionNote = "Bee Pioneer 可穿戴录音设备（Amazon），BLE 服务为 03d5d5c4，可录制对话。不能证明有人正在录制你；未发现也不代表没有（可能已关闭或属于其他品牌）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             uuid("03D5D5C4-A86C-11EE-9D89-8F2089A49E7E"),
@@ -3351,8 +3351,8 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Omi / OpenGlass wearable recorder or camera glasses. Arduino-default 19B10000 is too common to use as a rule.",
-        attentionNote = "Omi pendant or OpenGlass camera glasses. Name or BLE service 23ba7924. It can record audio (OpenGlass also has a camera). Not proof someone is recording you. A miss is not a clean bill (off, renamed, or a DIY board using other names). Look with your eyes.",
+        notes = "Omi / OpenGlass 可穿戴录音设备或摄像眼镜。Arduino 默认服务 19B10000 过于通用，不适合作为识别规则。",
+        attentionNote = "Omi 挂件或 OpenGlass 摄像眼镜，依据名称或 BLE 服务 23ba7924 匹配。可录制音频，OpenGlass 还配有摄像头。不能证明有人正在录制你；未发现也不代表没有（可能已关闭、改名或是使用其他名称的 DIY 主板）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             uuid("23BA7924-0000-1000-7450-346EAC492E92"),
@@ -3370,8 +3370,8 @@ object DefaultCatalog {
         colorIndex = Hue.TRACKER,
         kind = SignatureClass.WEARABLE,
         matchAny = true,
-        notes = "Friend AI necklace — wearable companion that listens.",
-        attentionNote = "Friend Pendant / necklace. BLE service 1a3fd0e7. It listens to conversations. Not proof someone is recording you. A miss is not a clean bill (off, or a different brand). Look with your eyes.",
+        notes = "Friend AI 项链，可聆听对话的可穿戴陪伴设备。",
+        attentionNote = "Friend Pendant 挂件 / 项链，BLE 服务为 1a3fd0e7，可聆听对话。不能证明有人正在录制你；未发现也不代表没有（可能已关闭或属于其他品牌）。请结合现场观察。",
         builtIn = true,
         rules = listOf(
             uuid("1A3FD0E7-B1F3-AC9E-2E49-B647B2C4F8DA"),
@@ -3387,7 +3387,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.SIGNAGE,
         matchAny = true,
-        notes = "BLE LED message display. The advertised name is the sign text, not a product name.",
+        notes = "BLE LED 信息显示屏，广播名称是显示文字，而非产品名。",
         builtIn = true,
         rules = listOf(
             uuid("56D63956-93E7-11EE-B9D1-0242AC120002"),
@@ -3401,7 +3401,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.SIGNAGE,
         matchAny = true,
-        notes = "Electronic shelf label (store price tag) on the Bluetooth ESL service. Most Hanshow / SES-imagotag tags use a private radio and will not hit this.",
+        notes = "使用蓝牙 ESL 服务的电子货架标签（商店价签）。多数 Hanshow / SES-imagotag 标签采用专用无线协议，不会匹配此项。",
         builtIn = true,
         rules = listOf(
             uuid("1857"),
@@ -3415,7 +3415,7 @@ object DefaultCatalog {
         colorIndex = Hue.SURVEILLANCE,
         kind = SignatureClass.SURVEILLANCE,
         matchAny = true,
-        notes = "UniFi Protect Instant camera in BLE setup. Not a UniFi Wi-Fi access point.",
+        notes = "处于 BLE 设置模式的 UniFi Protect Instant 摄像头，并非 UniFi Wi-Fi 接入点。",
         builtIn = true,
         rules = listOf(
             bleGlob("UVC G* Instant"),
@@ -3432,7 +3432,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Tesla BLE tire sensor. Decoded fields can show pressure, temperature, and battery when the sensor is awake. Pattern match, not that car. Phone-as-key stays on the Tesla row.",
+        notes = "Tesla BLE 轮胎传感器。传感器唤醒时，解码字段可显示胎压、温度和电量。这里只是模式匹配，不能确定具体车辆。手机钥匙归入 Tesla 条目。",
         builtIn = true,
         decode = CatalogDecodes.teslaTstpms,
         rules = listOf(
@@ -3448,7 +3448,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "RadiaCode handheld radiation detector.",
+        notes = "RadiaCode 手持辐射检测仪。",
         builtIn = true,
         rules = listOf(
             uuid("E63215E5-7003-49D8-96B0-B024798FB901"),
@@ -3464,7 +3464,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "LG webOS TV. Unnamed LG radios can also hit this row.",
+        notes = "LG webOS 电视，未命名的 LG 无线设备也可能匹配此项。",
         builtIn = true,
         rules = listOf(
             uuid("FEB9"),
@@ -3481,7 +3481,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Roku streaming stick or Roku TV. Often a hidden Wi-Fi Direct AP for the remote. Not an ISP router.",
+        notes = "Roku 流媒体棒或 Roku 电视，常为遥控器提供隐藏的 Wi-Fi Direct 热点，并非运营商路由器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3500,7 +3500,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Nespresso machine (Vertuo / Barista).",
+        notes = "Nespresso 咖啡机（Vertuo / Barista）。",
         builtIn = true,
         rules = listOf(
             mfg(0x0225),
@@ -3520,7 +3520,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Epson EcoTank or WorkForce printer (Wi-Fi Direct or BLE).",
+        notes = "Epson EcoTank 或 WorkForce 打印机（Wi-Fi Direct 或 BLE）。",
         builtIn = true,
         rules = listOf(
             wifiGlob("*EPSON-ET-*"),
@@ -3539,7 +3539,7 @@ object DefaultCatalog {
         colorIndex = Hue.AUDIO,
         kind = SignatureClass.AUDIO,
         matchAny = true,
-        notes = "Shokz bone-conduction headphones (OpenRun / OpenFit). Worn on the head, not a tracker.",
+        notes = "Shokz 骨传导耳机（OpenRun / OpenFit），佩戴于头部，并非追踪器。",
         builtIn = true,
         rules = listOf(
             bleName("Shokz"),
@@ -3558,7 +3558,7 @@ object DefaultCatalog {
         colorIndex = Hue.DRONE,
         kind = SignatureClass.DRONE,
         matchAny = true,
-        notes = "In-flight drone digital license plate (ASTM / FAA Remote ID). Decoded fields can show ID, position, heading, and operator. Pattern match, not a tail number. Wi-Fi Remote ID often misses on stock Android.",
+        notes = "飞行中的无人机数字标识（ASTM / FAA Remote ID）。解码字段可显示 ID、位置、航向和操作者信息。这里只是模式匹配，不能确认航空器注册号。原生 Android 往往无法接收 Wi-Fi Remote ID。",
         builtIn = true,
         decode = CatalogDecodes.remoteId,
         rules = listOf(
@@ -3574,7 +3574,7 @@ object DefaultCatalog {
         colorIndex = Hue.DRONE,
         kind = SignatureClass.DRONE,
         matchAny = true,
-        notes = "Skydio drone (common in US public-safety / enterprise). In-flight Remote ID is often Wi-Fi and easy to miss — the Remote ID row is the license plate.",
+        notes = "Skydio 无人机（常见于美国公共安全机构和企业）。飞行中的 Remote ID 通常通过 Wi-Fi 发送，容易漏检；数字标识单独归入 Remote ID 条目。",
         builtIn = true,
         rules = listOf(
             name("Skydio"),
@@ -3591,7 +3591,7 @@ object DefaultCatalog {
         colorIndex = Hue.DRONE,
         kind = SignatureClass.DRONE,
         matchAny = true,
-        notes = "Autel drone, controller, or setup Wi-Fi. In-flight digital license plate is the Remote ID row.",
+        notes = "Autel 无人机、遥控器或设置 Wi-Fi。飞行中的数字标识归入 Remote ID 条目。",
         builtIn = true,
         rules = listOf(
             name("Autel"),
@@ -3608,7 +3608,7 @@ object DefaultCatalog {
         colorIndex = Hue.DRONE,
         kind = SignatureClass.DRONE,
         matchAny = true,
-        notes = "Parrot ANAFI or Bebop drone. In-flight digital license plate is the Remote ID row. Not a Parrot car kit.",
+        notes = "Parrot ANAFI 或 Bebop 无人机。飞行中的数字标识归入 Remote ID 条目，不包括 Parrot 车载套件。",
         builtIn = true,
         rules = listOf(
             name("ANAFI"),
@@ -3629,7 +3629,7 @@ object DefaultCatalog {
         colorIndex = Hue.DRONE,
         kind = SignatureClass.DRONE,
         matchAny = true,
-        notes = "HOVERAir pocket selfie drone. In-flight digital license plate (PRO / PROMAX) is the Remote ID row.",
+        notes = "HOVERAir 便携自拍无人机。飞行中的数字标识（PRO / PROMAX）归入 Remote ID 条目。",
         builtIn = true,
         rules = listOf(
             name("HOVERAir"),
@@ -3648,8 +3648,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Cradlepoint vehicle router (IBR / R-series). Common in police, EMS, utilities, and commercial fleets. Hidden SSIDs still hit on the board vendor.",
-        attentionNote = "Ericsson Cradlepoint vehicle router (IBR / R-series). Common in US police and public-safety fleets; also utilities, EMS, and commercial fleet. Hidden or renamed SSIDs still hit on the CradlePoint IEEE OUI. Pattern match, not that agency or that car. Look with your eyes.",
+        notes = "Cradlepoint 车载路由器（IBR / R 系列），常见于警务、急救、公用事业及商业车队。隐藏 SSID 仍可依据主板厂商匹配。",
+        attentionNote = "Ericsson Cradlepoint 车载路由器（IBR / R 系列），常见于美国警务和公共安全车队，也用于公用事业、急救及商业车队。隐藏或改名的 SSID 仍可依据 CradlePoint IEEE OUI 匹配。这里只是模式匹配，不能确定具体机构或车辆，请结合现场观察。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3680,8 +3680,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Sierra Wireless AirLink vehicle / fleet gateway. Common in public-safety and commercial fleets. Hidden SSIDs still hit on the board vendor.",
-        attentionNote = "Sierra Wireless AirLink vehicle gateway. Common in US police and public-safety fleets; also commercial fleet. Hidden or renamed SSIDs still hit on the Sierra Wireless IEEE OUI. Pattern match, not that agency or that car. Look with your eyes.",
+        notes = "Sierra Wireless AirLink 车载 / 车队网关，常见于公共安全及商业车队。隐藏 SSID 仍可依据主板厂商匹配。",
+        attentionNote = "Sierra Wireless AirLink 车载网关，常见于美国警务、公共安全及商业车队。隐藏或改名的 SSID 仍可依据 Sierra Wireless IEEE OUI 匹配。这里只是模式匹配，不能确定具体机构或车辆，请结合现场观察。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3700,8 +3700,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Compex vehicle or agency Wi-Fi access point. Same boards appear on other Compex radios.",
-        attentionNote = "Compex Wi-Fi AP. Some US public-safety agencies use these in vehicles. The same IEEE OUIs appear on other Compex radios. Pattern match, not that agency. Look with your eyes.",
+        notes = "Compex 车载或机构 Wi-Fi 接入点，相同主板也用于其他 Compex 无线设备。",
+        attentionNote = "Compex Wi-Fi 接入点，部分美国公共安全机构用于车载设备。相同 IEEE OUI 也用于其他 Compex 无线设备。这里只是模式匹配，不能确定具体机构，请结合现场观察。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3718,8 +3718,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Novatel Wireless / Inseego vehicle radio. The same prefix is also on some consumer MiFi hotspots.",
-        attentionNote = "Novatel Wireless / Inseego OUI 28:80:A2. Reported in public-safety vehicle AP work. Same prefix is also on some Inseego consumer MiFi radios. Pattern match, not that agency. Look with your eyes.",
+        notes = "Novatel Wireless / Inseego 车载无线设备。相同前缀也用于部分消费级 MiFi 热点。",
+        attentionNote = "Novatel Wireless / Inseego OUI 28:80:A2，曾在公共安全车载热点观察中出现。相同前缀也用于部分 Inseego 消费级 MiFi 设备。这里只是模式匹配，不能确定具体机构，请结合现场观察。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.NOVATEL),
     )
@@ -3731,8 +3731,8 @@ object DefaultCatalog {
         colorIndex = Hue.LAW,
         kind = SignatureClass.LAW_ENFORCEMENT,
         matchAny = true,
-        notes = "Utility, Inc vehicle or public-safety access point.",
-        attentionNote = "Utility, Inc radio. Reported in public-safety vehicle AP work. Pattern match, not that agency. Look with your eyes.",
+        notes = "Utility, Inc 车载或公共安全接入点。",
+        attentionNote = "Utility, Inc 无线设备，曾在公共安全车载热点观察中出现。这里只是模式匹配，不能确定具体机构，请结合现场观察。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.UTILITY_INC),
     )
@@ -3744,7 +3744,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Cisco Aironet / Catalyst / Business access point. Fieldwatch sees AP beacons, not phones or switches. Meraki has its own row.",
+        notes = "Cisco Aironet / Catalyst / Business 接入点。Fieldwatch 接收接入点信标，无法发现手机或交换机。Meraki 单独列出。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3762,7 +3762,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "HPE Aruba campus or Instant On Wi-Fi access point. An HPE BSSID here is an AP, not a server. Not an HP printer.",
+        notes = "HPE Aruba 园区或 Instant On Wi-Fi 接入点。此处 HPE BSSID 代表接入点，而非服务器，也不是 HP 打印机。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3781,7 +3781,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "RUCKUS Unleashed / ZoneFlex campus access point. Not the Arris cable-modem family.",
+        notes = "RUCKUS Unleashed / ZoneFlex 园区接入点，并非 Arris 有线调制解调器系列。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3800,7 +3800,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Ruijie / Reyee campus or SMB access point.",
+        notes = "Ruijie / Reyee 园区或中小企业接入点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3819,7 +3819,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Fortinet FortiAP / FortiWiFi campus or branch access point.",
+        notes = "Fortinet FortiAP / FortiWiFi 园区或分支机构接入点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3838,7 +3838,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "MikroTik RouterOS access point or travel router.",
+        notes = "MikroTik RouterOS 接入点或便携路由器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3855,7 +3855,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "EnGenius Cloud / ECW access point.",
+        notes = "EnGenius Cloud / ECW 接入点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3873,7 +3873,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Zyxel home or SMB gateway / access point.",
+        notes = "Zyxel 家用或中小企业网关 / 接入点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3890,7 +3890,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Peplink / Pepwave travel or branch router.",
+        notes = "Peplink / Pepwave 便携或分支机构路由器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3908,7 +3908,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "OpenWrt factory SSID on a flashed travel / DIY router that was never renamed.",
+        notes = "刷入固件后尚未改名、保留 OpenWrt 出厂 SSID 的便携或 DIY 路由器。",
         builtIn = true,
         rules = listOf(
             wifiGlob("OpenWrt*"),
@@ -3922,7 +3922,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Arris / SURFboard cable gateway. After the ISP renames the Wi-Fi, the board vendor still hits.",
+        notes = "Arris / SURFboard 有线网关。即使运营商已修改 Wi-Fi 名称，仍可依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -3940,7 +3940,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Juniper Mist campus access point. Cloud SSIDs are site names; the board vendor is the hit.",
+        notes = "Juniper Mist 园区接入点。云管理 SSID 是场所名称，因此依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.MIST),
     )
@@ -3952,7 +3952,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "T-Mobile Home Internet or hotspot. Gateways are often HUMAX / Arcadyan / Askey OEM.",
+        notes = "T-Mobile Home Internet 网关或热点。网关通常由 HUMAX / Arcadyan / Askey 代工。",
         builtIn = true,
         rules = listOf(
             wifiGlob("TMOBILE*"),
@@ -3967,7 +3967,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "HUMAX 5G or cable gateway. Often T-Mobile Home Internet in the field.",
+        notes = "HUMAX 5G 或有线网关，现场常见于 T-Mobile Home Internet。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.HUMAX),
     )
@@ -3979,7 +3979,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Sagemcom ISP gateway. Common Comcast / other cable OEM.",
+        notes = "Sagemcom 运营商网关，常为 Comcast 等有线运营商代工。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.SAGEMCOM),
     )
@@ -3991,7 +3991,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Arcadyan ISP gateway or mesh. Common Verizon / T-Mobile OEM.",
+        notes = "Arcadyan 运营商网关或 Mesh，常为 Verizon / T-Mobile 代工。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.ARCADYAN),
     )
@@ -4003,7 +4003,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Askey 5G / ISP gateway. Common T-Mobile Home Internet OEM.",
+        notes = "Askey 5G / 运营商网关，常为 T-Mobile Home Internet 代工。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.ASKEY),
     )
@@ -4015,7 +4015,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Calix fiber gateway (GigaSpire class). After rename, the board vendor still hits.",
+        notes = "Calix 光纤网关（GigaSpire 系列）。改名后仍可依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.CALIX),
     )
@@ -4027,7 +4027,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Nokia ISP gateway or small cell. Not a Nokia phone.",
+        notes = "Nokia 运营商网关或小型基站，并非 Nokia 手机。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.NOKIA_NSN),
     )
@@ -4039,7 +4039,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "AirTies ISP mesh extender. Carrier-issued home mesh.",
+        notes = "AirTies 运营商 Mesh 扩展器，属于运营商提供的家庭 Mesh。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.AIRTIES),
     )
@@ -4051,7 +4051,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Tenda consumer router or extender.",
+        notes = "Tenda 消费级路由器或扩展器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4069,7 +4069,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "WAVLINK consumer travel / home router.",
+        notes = "WAVLINK 消费级便携或家用路由器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4087,7 +4087,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Sercomm ISP gateway. Common cable / fiber OEM.",
+        notes = "Sercomm 运营商网关，常见的有线 / 光纤代工设备。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.SERCOMM),
     )
@@ -4099,7 +4099,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Luxul / Legrand small-business access point.",
+        notes = "Luxul / Legrand 小型企业接入点。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.LUXUL),
     )
@@ -4111,7 +4111,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Sophos firewall or access point. Campus / SMB Wi-Fi, not a camera pole.",
+        notes = "Sophos 防火墙或接入点，属于园区 / 中小企业 Wi-Fi，并非摄像杆。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.SOPHOS),
     )
@@ -4123,7 +4123,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Vehicle Wi-Fi from an AUMOVIO (ex-Continental) module. The car’s AP, not an ISP router.",
+        notes = "采用 AUMOVIO（原 Continental）模块的车载 Wi-Fi，属于车辆接入点，并非运营商路由器。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.AUMOVIO),
     )
@@ -4135,7 +4135,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "CenturyLink factory gateway name. Renamed fiber Wi-Fi misses this row.",
+        notes = "使用 CenturyLink 出厂名称的网关。改名的光纤 Wi-Fi 不会匹配此项。",
         builtIn = true,
         rules = listOf(
             wifiGlob("CenturyLink*"),
@@ -4149,7 +4149,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "GM in-car hotspot (Cadillac, GMC, Buick). myChevrolet has its own row. BSSID is often randomized.",
+        notes = "GM 车载热点（Cadillac、GMC、Buick）。myChevrolet 单独列出。BSSID 经常随机化。",
         builtIn = true,
         rules = listOf(
             mfg(0x0068),
@@ -4169,7 +4169,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Audi in-car MMI hotspot. Factory name from the car, not a dealer.",
+        notes = "Audi 车载 MMI 热点，使用车辆出厂名称，并非经销商网络。",
         builtIn = true,
         rules = listOf(
             mfg(0x010E),
@@ -4186,7 +4186,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Extreme Networks campus access point. Cloud SSIDs are site names; the board vendor is the hit.",
+        notes = "Extreme Networks 园区接入点。云管理 SSID 是场所名称，因此依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.EXTREME),
     )
@@ -4198,7 +4198,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Adtran fiber gateway. Common CenturyLink / Lumen / Quantum Fiber OEM.",
+        notes = "Adtran 光纤网关，常为 CenturyLink / Lumen / Quantum Fiber 代工。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4215,7 +4215,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Cambium or IgniteNet outdoor / WISP access point.",
+        notes = "Cambium 或 IgniteNet 室外 / 无线运营商接入点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4234,7 +4234,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "TRENDnet consumer access point.",
+        notes = "TRENDnet 消费级接入点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4251,7 +4251,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Cudy travel or home router.",
+        notes = "Cudy 便携或家用路由器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4268,7 +4268,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.HOME,
         matchAny = true,
-        notes = "Control4 / Wattbox home-AV processor or power unit.",
+        notes = "Control4 / Wattbox 家庭影音处理器或电源设备。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4287,7 +4287,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Vantiva (ex-Technicolor) ISP gateway. After the ISP renames the Wi-Fi, the board vendor still hits.",
+        notes = "Vantiva（原 Technicolor）运营商网关。即使运营商已修改 Wi-Fi 名称，仍可依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4306,7 +4306,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Hitron cable gateway. Common Xfinity OEM; the Xfinity name row can also hit.",
+        notes = "Hitron 有线网关，常为 Xfinity 代工，也可能匹配 Xfinity 名称条目。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4323,7 +4323,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Actiontec FiOS / Frontier gateway. Often a Verizon box; the Verizon name row can also hit.",
+        notes = "Actiontec FiOS / Frontier 网关，常为 Verizon 设备，也可能匹配 Verizon 名称条目。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4340,7 +4340,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Buffalo AirStation home router.",
+        notes = "Buffalo AirStation 家用路由器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4358,7 +4358,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Grandstream GWN office access point.",
+        notes = "Grandstream GWN 办公接入点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4376,7 +4376,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Edgecore campus / open Wi-Fi access point. Cloud SSIDs are site names; the board vendor is the hit.",
+        notes = "Edgecore 园区或开放式 Wi-Fi 接入点。云管理 SSID 是场所名称，因此依据主板厂商匹配。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.EDGECORE),
     )
@@ -4388,7 +4388,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "WatchGuard firewall or access point. Not WatchGuard Video body-worn cameras.",
+        notes = "WatchGuard 防火墙或接入点，并非 WatchGuard Video 随身摄像头。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.WATCHGUARD),
     )
@@ -4400,7 +4400,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Mojo / Arista Cognitive Wi-Fi campus access point.",
+        notes = "Mojo / Arista Cognitive Wi-Fi 园区接入点。",
         builtIn = true,
         rules = withWifiOuis(emptyList(), ApVendorOuis.MOJO),
     )
@@ -4412,7 +4412,7 @@ object DefaultCatalog {
         colorIndex = Hue.VEHICLE,
         kind = SignatureClass.VEHICLE,
         matchAny = true,
-        notes = "Winegard RV or marine Wi-Fi antenna / router.",
+        notes = "Winegard 房车或船用 Wi-Fi 天线 / 路由器。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4429,7 +4429,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Inseego 5G / MiFi hotspot.",
+        notes = "Inseego 5G / MiFi 热点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4446,7 +4446,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Franklin 5G / LTE home-internet gateway (often carrier-issued). Guest SSIDs still hit.",
+        notes = "Franklin 5G / LTE 家庭互联网网关（通常由运营商提供）。访客 SSID 仍可匹配。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4463,7 +4463,7 @@ object DefaultCatalog {
         colorIndex = Hue.HOME_CAM,
         kind = SignatureClass.ISP,
         matchAny = true,
-        notes = "Synology NAS or router access point.",
+        notes = "Synology NAS 或路由器接入点。",
         builtIn = true,
         rules = withWifiOuis(
             listOf(
@@ -4480,7 +4480,7 @@ object DefaultCatalog {
         colorIndex = Hue.HEALTH,
         kind = SignatureClass.HEALTH,
         matchAny = true,
-        notes = "Honeywell Xenon healthcare barcode scanner or its charge base (white, disinfectant-ready). Clinic / hospital kit, not a home thermostat and not a warehouse-only Xenon.",
+        notes = "Honeywell Xenon 医疗条码扫描器或充电底座（白色、可消毒），用于诊所或医院。并非家用恒温器，也不是仅用于仓库的 Xenon。",
         builtIn = true,
         rules = listOf(
             bleGlob("Xenon_*HC*"),
@@ -4499,7 +4499,7 @@ object DefaultCatalog {
         colorIndex = Hue.HEALTH,
         kind = SignatureClass.HEALTH,
         matchAny = true,
-        notes = "Omron blood-pressure cuff or body-composition scale. Home / clinic health kit, not industrial Omron.",
+        notes = "Omron 血压计或体脂秤，用于家庭或诊所健康监测，并非 Omron 工业设备。",
         builtIn = true,
         rules = listOf(
             mfg(0x020E),
@@ -4517,7 +4517,7 @@ object DefaultCatalog {
         colorIndex = Hue.HEALTH,
         kind = SignatureClass.HEALTH,
         matchAny = true,
-        notes = "Withings (Nokia Health) scale or BPM Connect cuff. Not a Nokia phone and not a Nokia ISP gateway.",
+        notes = "Withings（Nokia Health）体重秤或 BPM Connect 血压计，并非 Nokia 手机或运营商网关。",
         builtIn = true,
         rules = listOf(
             bleName("Withings"),
@@ -4534,7 +4534,7 @@ object DefaultCatalog {
         colorIndex = Hue.HEALTH,
         kind = SignatureClass.HEALTH,
         matchAny = true,
-        notes = "Dexcom continuous glucose monitor (G6 / G7). Pattern match, not a patient.",
+        notes = "Dexcom 连续血糖监测仪（G6 / G7）。这里只是模式匹配，不能确定具体患者。",
         builtIn = true,
         rules = listOf(
             bleName("Dexcom"),
@@ -4576,7 +4576,7 @@ object DefaultCatalog {
 
     fun newBlankFleet(): Fleet = Fleet(
         id = UUID.randomUUID().toString(),
-        name = "New Signature",
+        name = "新特征",
         enabled = true,
         matchAny = true,
         colorIndex = 0,
